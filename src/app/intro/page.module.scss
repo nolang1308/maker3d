@@ -1,0 +1,158 @@
+@use 'sass:color';
+@import '../../styles/style-system';
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  .graphWrapper {
+    margin-top: 120px;
+    width: 100%;
+    max-width: 1920px;
+    height: auto;
+    position: relative;
+    margin-bottom: 124px;
+
+    .graphTitle {
+      @include headline-small();
+      color: #0a0a0a;
+      position: absolute;
+      top: 0;
+      left: 90px;
+      line-height: 1.5;
+    }
+
+    .graphInfoWrapper {
+      max-width: 1500px;
+      padding-left: 100px;
+      padding-right: 100px;
+      width: 100%;
+      position: absolute;
+      top: 10px;
+
+      .graphInfo {
+        width: 100%;
+        height: auto;
+      }
+    }
+
+
+    .graph {
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  .introPhoto3 {
+    width: 100%;
+    height: auto;
+    max-width: 1920px;
+  }
+
+
+  .innerContainer {
+    width: 100%;
+    max-width: 1500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .logoIcon {
+      width: 100%;
+      height: auto;
+    }
+
+    .come {
+      margin-top: 207px;
+      @include display-large();
+      color: #0a0a0a;
+    }
+
+    .emptySpace {
+      width: 100%;
+      height: 158px;
+
+    }
+
+    .mapWrapper {
+      margin-top: 53px;
+      width: 1178px;
+      height: 427px;
+      background-color: #888888;
+    }
+
+    .addressWrapper {
+      width: 948px;
+      height: 69px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 72px;
+
+      .address {
+        width: 98px;
+        height: 24px;
+        text-align: center;
+        @include title-small();
+        color: #0a0a0a;
+      }
+      .info{
+        @include body-small();
+        color: #0a0a0a;
+      }
+
+    }
+
+    .boldLine {
+      margin-top: 89px;
+      width: 948px;
+      height: 2px;
+      background-color: #0a0a0a;
+    }
+
+    .thinLine {
+      width: 948px;
+      height: 1px;
+      background-color: #0a0a0a;
+    }
+
+    .buttonWrapper {
+      width: 976px;
+      height: 56px;
+      margin-top: -80px;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+
+      .button {
+        cursor: pointer;
+        width: 448px;
+        height: 56px;
+        border-bottom: 2px solid #0a0a0a;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.3s ease;
+
+        &:hover {
+          transform: translateY(-2px);
+
+          .buttonTitle {
+            color: #2493D8;
+          }
+        }
+
+        .buttonTitle {
+          @include title-small();
+          color: #0a0a0a;
+          transition: color 0.3s ease;
+        }
+      }
+    }
+
+  }
+
+}

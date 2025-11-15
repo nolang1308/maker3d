@@ -1,0 +1,412 @@
+@import '../../../styles/style-system';
+
+.Main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  .modal {
+    position: fixed;
+    transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+    width: 448px;
+    height: 349px;
+    border-radius: 20px;
+    background: linear-gradient(to bottom, #2493D8, #2493D8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: none;
+
+    // ✨ 등장 애니메이션
+    animation: slideUp 0.4s ease-in forwards;
+
+    .pop1 {
+      position: absolute;
+      top: 21px;
+      left: 342px;
+    }
+
+    .pop2 {
+      position: absolute;
+      top: 88px;
+      left: 28px;
+    }
+
+    .pop3 {
+      position: absolute;
+      top: 136px;
+      left: 378px;
+    }
+
+    .info {
+      width: 100%;
+      height: 293px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      white-space: pre;
+      text-align: center;
+      gap: 14px;
+
+      p {
+        @include title-large();
+        color: #ffffff;
+      }
+
+      p:nth-child(3) {
+        @include body-small();
+        color: #ffffff;
+      }
+    }
+
+    .ButtonWrapper {
+      width: 100%;
+      height: 56px;
+      border-top: solid 1px #eaeaea;
+      display: flex;
+      flex-direction: row;
+
+      .LeftBtn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        cursor: pointer;
+        border-bottom-left-radius: 20px;
+        @include title-large();
+      }
+    }
+  }
+}
+
+.InformationContainer {
+  width: 1200px;
+  padding-top: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 252px;
+
+  .Title {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 24px;
+    margin-bottom: 43px;
+    margin-left: 80px;
+
+    p {
+      @include title-large();
+      color: #121212;
+    }
+  }
+
+  .SubTitle {
+    width: 100%;
+    @include button-small();
+    color: #464C53;
+    margin-bottom: 24px;
+  }
+
+  .SectionTitleWrapper {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    .SectionTitle {
+      color: #333333;
+      width: 141px;
+      @include button-small();
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .innerWrapper{
+      display: flex;
+      align-items: center;
+    }
+    .PostTitle{
+      flex: 1;
+      height: 42px;
+      border-radius: 6px;
+      border: solid 1px #CDD1D5;
+      padding: 12px;
+      &::placeholder {
+        color: #777777;
+        @include label-large();
+      }
+    }
+
+
+  }
+  .AddBtnWrapper {
+    margin-top: 20px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    gap: 8px;
+
+    .AddBtn {
+      width: auto;
+      padding: 17px 67px 17px 67px;
+      height: 54px;
+      background-color: #2493D8;
+      border-radius: 10px;
+      @include button-medium();
+      color: white;
+    }
+  }
+}
+
+.EditorContainer {
+  margin-top: 20px;
+}
+
+.SubmitButton {
+  margin-top: 20px;
+  padding: 10px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+}
+
+.selectInput {
+  width: 100%;
+  height: 42px;
+  border-radius: 6px;
+  border: solid 1px #CDD1D5;
+  padding: 12px;
+  font-size: 14px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #333333;
+}
+
+.textEditorWrapper {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+}
+
+.textEditor {
+  width: 100%;
+  height: 400px;
+  border-radius: 6px;
+  border: solid 1px #CDD1D5;
+  padding: 12px;
+  font-size: 14px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.fileUploadSection {
+  width: 100%;
+}
+
+.fileUploadFooter {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.fileCounter {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.currentCount {
+  color: #2493D8;
+  @include button-small();
+}
+
+.maxCount {
+  color: #1E2124;
+  @include button-small();
+
+}
+
+.clearAllBtn {
+  width: 118px;
+  height: 32px;
+  border: 1px solid #33363D;
+  border-radius: 4px;
+  background: white;
+  color: #1E2124;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @include label-large();
+  
+  &:hover {
+    background-color: #f8f9fa;
+  }
+}
+
+.fileUploadArea {
+  width: 100%;
+  height: 176px;
+  border: 2px dashed #CDD1D5;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f9f9f9;
+  position: relative;
+  transition: all 0.3s ease;
+  
+  p {
+    margin: 10px 0 5px 0;
+    color: #777777;
+    text-align: center;
+  }
+  
+  &.dragActive {
+    border-color: #5C9CDB;
+    background-color: #f0f8ff;
+  }
+}
+
+.fileSelectBtn {
+  background-color: #5C9CDB;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  
+  &:hover {
+    background-color: #4a8bc2;
+  }
+}
+
+.fileInput {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.fileList {
+  margin-top: 15px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 19px;
+}
+
+.fileItem {
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  background-color: white;
+  
+  &.oversizeFile {
+    background-color: #fff5f5;
+    border-left: 4px solid #e53e3e;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    
+    .fileMainRow {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+  }
+}
+
+.fileMainRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.fileLeftSection {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.fileInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.fileCheckbox {
+  flex-shrink: 0;
+}
+
+.fileName {
+  @include label-large();
+  color: #333333;
+}
+
+.errorMessage {
+  display: flex;
+  align-items: center;
+  color: #e53e3e;
+  font-size: 12px;
+  margin-top: 5px;
+  
+  .errorIcon {
+    margin-right: 5px;
+    color: #e53e3e;
+  }
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: #777777;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 5px;
+  flex-shrink: 0;
+  
+  &:hover {
+    color: #e53e3e;
+  }
+}
+

@@ -1,0 +1,454 @@
+@use "sass:map";
+@use 'sass:math';
+
+
+// #region Shadows
+$shadow-0-value: 0 0 0 1px #CCCCCC;
+$shadow-2-value: $shadow-0-value, 0 1px 2px 0 rgba(0,0,0, 0.16), 0 0 1px 0 rgba(0,0,0, 0.12);
+$shadow-4-value: $shadow-0-value, 0 2px 4px 0 rgba(0,0,0, 0.16), 0 0 2px 0 rgba(0,0,0, 0.12);
+$shadow-8-value: $shadow-0-value, 0 4px 8px 0 rgba(0,0,0, 0.16), 0 0 4px 0 rgba(0,0,0, 0.12);
+$shadow-16-value: $shadow-0-value, 0 8px 16px 0 rgba(0,0,0, 0.16), 0 0 8px 0 rgba(0,0,0, 0.12);
+@mixin shadow-0 {
+  box-shadow: $shadow-0-value;
+}
+@mixin shadow-2 {
+  box-shadow: $shadow-2-value;
+}
+@mixin shadow-4 {
+  box-shadow: $shadow-4-value;
+}
+@mixin shadow-8 {
+  box-shadow: $shadow-8-value;
+}
+@mixin shadow-16 {
+  box-shadow: $shadow-16-value;
+}
+// #endregion Shadows
+
+// #region Layouts
+@mixin layout-mobile {
+  @media (max-width: 1200px) {
+    @content;
+  }
+}
+@mixin layout-desktop {
+  @media (min-width: 1201px) {
+    @content;
+  }
+}
+@mixin layout-phone {
+  @media (max-width: 768px) {
+    @content;
+  }
+}
+// #endregion Layouts
+
+// #region Fonts
+// Font weights
+$weight-extra-bold: 900;
+$weight-bold: 700;
+$weight-normal: 400;
+
+@mixin apply-styles($style, $important: false) {
+  @if $important {
+    font-size: map.get($style, "size") !important;
+    font-weight: map.get($style, "weight") !important;
+    line-height: calc(
+            map.get($style, "line-height")
+            / map.get($style, "size")
+            * 100%
+    ) !important;
+  } @else {
+    font-size: map.get($style, "size");
+    font-weight: map.get($style, "weight");
+    line-height: calc(
+            map.get($style, "line-height")
+            / map.get($style, "size")
+            * 100%
+    );
+  }
+}
+@function mix-style($style-a, $style-b, $ratio) {
+  $mix-style: ();
+  @each $name, $value in $style-a {
+    $mix-style: map.set(
+                    $mix-style, $name,
+                    map.get($style-a, $name) * (1 - $ratio) + map.get($style-b, $name) * ($ratio)
+    );
+  }
+  @return $mix-style;
+}
+@mixin apply-layout($style, $important: false) {
+  $desktop-style: map.get($map: $style, $key: "desktop");
+  $phone-style: map.get($map: $style, $key: "phone");
+  @include apply-styles(
+                  $desktop-style,
+                  $important
+  );
+  @include layout-mobile {
+    @include apply-styles(
+                    mix-style($desktop-style, $phone-style, .85),
+                    $important
+    );
+  }
+  @include layout-phone {
+    @include apply-styles(
+                    $phone-style,
+                    $important
+    );
+  }
+}
+
+// Display Large
+$display-large-value: (
+        "desktop": (
+                "size": 2.75rem,
+                "weight": $weight-extra-bold,
+                "line-height": calc(56rem / 16),
+        ),
+        "phone": (
+                "size": 1.5rem,
+                "weight": $weight-extra-bold,
+                "line-height": calc(32rem /16),
+        ),
+);
+@mixin display-large($important: false) {
+  @include apply-layout($display-large-value, $important);
+}
+
+// Display medium
+$display-medium-value: (
+        "desktop": (
+                "size": 2.25rem,
+                "weight": $weight-extra-bold,
+                "line-height": calc(48rem /16),
+        ),
+        "phone": (
+                "size": 1.375rem,
+                "weight": $weight-extra-bold,
+                "line-height": calc(30rem /16),
+        ),
+);
+@mixin display-medium($important: false) {
+  @include apply-layout($display-medium-value, $important);
+}
+
+// Display small
+$display-small-value: (
+        "desktop": (
+                "size": 2rem,
+                "weight": $weight-bold,
+                "line-height": calc(44rem /16),
+        ),
+        "phone": (
+                "size": 1.25rem,
+                "weight": $weight-bold,
+                "line-height": calc(28rem /16),
+        ),
+);
+@mixin display-small($important: false) {
+  @include apply-layout($display-small-value, $important);
+}
+
+// Headline large
+$headline-large-value: (
+        "desktop": (
+                "size": 2rem,
+                "weight": $weight-bold,
+                "line-height": calc(40rem /16),
+        ),
+        "phone": (
+                "size": 1.25rem,
+                "weight": $weight-bold,
+                "line-height": calc(26rem /16),
+        ),
+);
+@mixin headline-large($important: false) {
+  @include apply-layout($headline-large-value, $important);
+}
+
+// Headline medium
+$headline-medium-value: (
+        "desktop": (
+                "size": 1.75rem,
+                "weight": $weight-bold,
+                "line-height": calc(36rem /16),
+        ),
+        "phone": (
+                "size": 1.125rem,
+                "weight": $weight-bold,
+                "line-height": calc(24rem /16),
+        ),
+);
+@mixin headline-medium($important: false) {
+  @include apply-layout($headline-medium-value, $important);
+}
+
+// Headline small
+$headline-small-value: (
+        "desktop": (
+                "size": 1.625rem,
+                "weight": $weight-bold,
+                "line-height": calc(32rem /16),
+        ),
+        "phone": (
+                "size": 1.0625rem,
+                "weight": $weight-bold,
+                "line-height": calc(22rem /16),
+        ),
+);
+@mixin headline-small($important: false) {
+  @include apply-layout($headline-small-value, $important);
+}
+
+// Title large
+$title-large-value: (
+        "desktop": (
+                "size": 1.375rem,
+                "weight": $weight-bold,
+                "line-height": calc(28rem /16),
+        ),
+        "phone": (
+                "size": 1.0rem,
+                "weight": $weight-bold,
+                "line-height": calc(22rem /16),
+        ),
+);
+@mixin title-large($important: false) {
+  @include apply-layout($title-large-value, $important);
+}
+
+// Title medium
+$title-medium-value: (
+        "desktop": (
+                "size": 1.25rem,
+                "weight": $weight-bold,
+                "line-height": calc(26rem /16),
+        ),
+        "phone": (
+                "size": 0.9375rem,
+                "weight": $weight-bold,
+                "line-height": calc(21rem /16),
+        ),
+);
+@mixin title-medium($important: false) {
+  @include apply-layout($title-medium-value, $important);
+}
+
+// Title small
+$title-small-value: (
+        "desktop": (
+                "size": 1.125rem,
+                "weight": $weight-bold,
+                "line-height": calc(24rem /16),
+        ),
+        "phone": (
+                "size": 0.875rem,
+                "weight": $weight-bold,
+                "line-height": calc(20rem /16),
+        ),
+);
+@mixin title-small($important: false) {
+  @include apply-layout($title-small-value, $important);
+}
+
+// Body large
+$body-large-value: (
+        "desktop": (
+                "size": 1.25rem,
+                "weight": $weight-normal,
+                "line-height": calc(26rem /16),
+        ),
+        "phone": (
+                "size": 0.9375rem,
+                "weight": $weight-normal,
+                "line-height": calc(21rem /16),
+        ),
+);
+@mixin body-large($important: false) {
+  @include apply-layout($body-large-value, $important);
+}
+
+// Body medium
+$body-medium-value: (
+        "desktop": (
+                "size": 1.125rem,
+                "weight": $weight-normal,
+                "line-height": calc(24rem /16),
+        ),
+        "phone": (
+                "size": 0.875rem,
+                "weight": $weight-normal,
+                "line-height": calc(20rem /16),
+        ),
+);
+@mixin body-medium($important: false) {
+  @include apply-layout($body-medium-value, $important);
+}
+
+// Body small
+$body-small-value: (
+        "desktop": (
+                "size": 1rem,
+                "weight": $weight-normal,
+                "line-height": calc(20rem /16),
+        ),
+        "phone": (
+                "size": 0.8125rem,
+                "weight": $weight-normal,
+                "line-height": calc(18rem /16),
+        ),
+);
+@mixin body-small($important: false) {
+  @include apply-layout($body-small-value, $important);
+}
+
+// Button large
+$button-large-value: (
+        "desktop": (
+                "size": 1.125rem,
+                "weight": $weight-bold,
+                "line-height": calc(22rem /16),
+        ),
+        "phone": (
+                "size": 0.875rem,
+                "weight": $weight-bold,
+                "line-height": calc(19rem /16),
+        ),
+);
+@mixin button-large($important: false) {
+  @include apply-layout($button-large-value, $important);
+}
+
+// Button medium
+$button-medium-value: (
+        "desktop": (
+                "size": 1rem,
+                "weight": $weight-bold,
+                "line-height": calc(20rem /16),
+        ),
+        "phone": (
+                "size": 0.8125rem,
+                "weight": $weight-bold,
+                "line-height": calc(18rem /16),
+        ),
+);
+@mixin button-medium($important: false) {
+  @include apply-layout($button-medium-value, $important);
+}
+
+// Button small
+$button-small-value: (
+        "desktop": (
+                "size": 0.875rem,
+                "weight": $weight-bold,
+                "line-height": calc(18rem /18),
+        ),
+        "phone": (
+                "size": 0.75rem,
+                "weight": $weight-bold,
+                "line-height": calc(16rem /16),
+        ),
+);
+@mixin button-small($important: false) {
+  @include apply-layout($button-small-value, $important);
+}
+
+// Label large
+$label-large-value: (
+        "desktop": (
+                "size": 0.875rem,
+                "weight": $weight-normal,
+                "line-height": calc(18rem /18),
+        ),
+        "phone": (
+                "size": 0.75rem,
+                "weight": $weight-normal,
+                "line-height": calc(16rem /16),
+        ),
+);
+@mixin label-large($important: false) {
+  @include apply-layout($label-large-value, $important);
+}
+
+// Label medium
+$label-medium-value: (
+        "desktop": (
+                "size": 0.75rem,
+                "weight": $weight-normal,
+                "line-height": calc(16rem /18),
+        ),
+        "phone": (
+                "size": 0.625rem,
+                "weight": $weight-normal,
+                "line-height": calc(15rem /16),
+        ),
+);
+@mixin label-medium($important: false) {
+  @include apply-layout($label-medium-value, $important);
+}
+
+// Label small
+$label-small-value: (
+        "desktop": (
+                "size": 0.625rem,
+                "weight": $weight-normal,
+                "line-height": calc(14rem /18),
+        ),
+        "phone": (
+                "size": 0.5625rem,
+                "weight": $weight-normal,
+                "line-height": calc(14rem /16),
+        ),
+);
+@mixin label-small($important: false) {
+  @include apply-layout($label-small-value, $important);
+}
+// #endregion Fonts
+
+// #region Stroke
+@mixin stroke-1($color: #CCCCCC) {
+  border: 1px solid $color;
+}
+@mixin stroke-2($color: #CCCCCC) {
+  border: 2px solid $color;
+}
+@mixin stroke-4($color: #CCCCCC) {
+  border: 4px solid $color;
+}
+@mixin stroke-8($color: #CCCCCC) {
+  border: 8px solid $color;
+}
+// #endregion Stroke
+
+// #region Ease
+$ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+$ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+$ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+// #endregion Ease
+
+// #region Animation
+@keyframes popup {
+  from {
+    opacity: .8;
+    transform: translateY(9px) scale(0.96) perspective(260px) rotateX(9deg);
+  }
+}
+@mixin animation-popup {
+  animation: popup 200ms $ease-out-expo;
+}
+
+@keyframes skeleton-gradient {
+  0% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 100% 0%;
+  }
+}
+@mixin adnimation-skeleton {
+  background: linear-gradient(-90deg, #e2e2e2, #e2e2e2, #b1b1b1, #e2e2e2, #e2e2e2);
+  background-size: 600% 100%;
+  animation: skeleton-gradient 1.8s ease infinite;
+}
+// #endregion Animation

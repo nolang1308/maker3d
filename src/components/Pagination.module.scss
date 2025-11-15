@@ -1,0 +1,90 @@
+@use 'sass:color';
+@import '../styles/style-system';
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+    margin: 40px 0;
+    
+    @media (max-width: 1024px) {
+        margin: 32px 0;
+    }
+}
+
+.pageButton {
+    min-width: 40px;
+    height: 40px;
+    padding: 0;
+    border: none;
+    background-color: transparent;
+    color: #999999;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    @include body-medium();
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:hover:not(.active) {
+        color: #2493D8;
+    }
+    
+    &.active {
+        color: #E11269;
+        font-weight: 600;
+    }
+    
+    @media (max-width: 1024px) {
+        min-width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+}
+
+.arrowButton {
+    min-width: 40px;
+    height: 40px;
+    padding: 0;
+    border: none;
+    background-color: transparent;
+    color: #999999;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    @include body-medium();
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    
+    &:hover:not(.disabled) {
+        color: #2493D8;
+    }
+    
+    &.disabled {
+        color: #CCCCCC;
+        cursor: not-allowed;
+    }
+    
+    @media (max-width: 1024px) {
+        min-width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+}
+
+.ellipsis {
+    padding: 0 8px;
+    color: #999999;
+    @include body-medium();
+    display: flex;
+    align-items: center;
+    height: 40px;
+    
+    @media (max-width: 1024px) {
+        padding: 0 4px;
+        font-size: 14px;
+        height: 36px;
+    }
+}

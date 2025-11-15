@@ -1,0 +1,114 @@
+@use 'sass:color';
+@import '../styles/style-system';
+
+.footer {
+  background-color: #0A0A0A;
+  color: #888;
+  padding: 40px 0 20px;
+  margin-top: auto;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 60px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-weight: bold;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.logoIcon {
+  width: 185px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.logoText {
+  color: white;
+}
+
+.companyInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.infoSection {
+  display: flex;
+  gap: 262px;
+  align-items: center;
+}
+
+.sectionTitle {
+  color: #ccc;
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.contactInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contactRow {
+  display: flex;
+  gap: 20px;
+  font-size: 0.9rem;
+  color: #888;
+  flex-wrap: wrap;
+  
+  span {
+    white-space: nowrap;
+  }
+}
+.contactRow_ {
+  gap: 20px;
+  color: #888;
+  @include label-large()
+}
+
+.phoneNumber {
+  color: #ccc !important;
+  font-weight: 500;
+}
+
+.copyright {
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .infoSection {
+    flex-direction: column;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  
+  .contactRow {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .logo {
+    align-self: center;
+  }
+}

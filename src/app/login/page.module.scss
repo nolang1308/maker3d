@@ -1,0 +1,143 @@
+@use 'sass:color';
+@import '../../styles/style-system';
+
+.container {
+  width: 100%;
+  margin-top: 202px;
+  margin-bottom: 202px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+
+}
+
+.loginContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+
+}
+
+.loginForm {
+  width: 483px;
+  height: 406px;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  @include headline-medium();
+  color: #0a0a0a;
+  text-align: left;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.label {
+  @include label-large();
+  color: #828A8F;
+  margin: 0;
+}
+
+.input {
+  width: 100%;
+  height: 48px;
+  padding: 12px 20px;
+  border: 1px solid #E8E9EB;
+  border-radius: 8px;
+  color: #0a0a0a;
+  background: white;
+  @include body-small();
+  
+  &::placeholder {
+    color: #9D9D9D;
+    @include body-small();
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: #2493D8;
+  }
+}
+
+.loginButton {
+  margin-top: 40px;
+  width: 100%;
+  height: 58px;
+  background: #D2D5D6;
+  border: none;
+  border-radius: 8px;
+  @include button-medium();
+  color: #FAFAFB;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  
+  &.active {
+    background: #2493D8;
+    
+    &:hover {
+      background: #1e7ec0;
+    }
+  }
+  
+  &:not(.active):hover {
+    background: #b8bec1;
+  }
+}
+
+
+.bottomRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.accountActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.accountLink {
+  @include label-large();
+  color: #4F5558;
+  cursor: pointer;
+  text-decoration: none;
+
+  &:hover {
+    color: #2493D8;
+  }
+}
+
+.separator {
+  color: rgba(0,0,0,0.05);
+}
+
+.checkmarkContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #2493D8;
+}
+
+.checkText {
+  @include button-small();
+  color: #4F5558;
+  cursor: pointer;
+  margin: 0;
+}

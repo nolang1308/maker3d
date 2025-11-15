@@ -1,0 +1,27 @@
+<svg width="1044" height="587" viewBox="0 0 1044 587" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1044" height="587" rx="20" fill="#F8F9FA"/>
+  
+  <!-- Header -->
+  <rect x="40" y="40" width="964" height="80" rx="10" fill="#FF9800"/>
+  <text x="522" y="90" text-anchor="middle" fill="white" font-size="32" font-weight="bold">3D 모델링 파일 업로드</text>
+  
+  <!-- Drag & Drop Area -->
+  <rect x="200" y="180" width="644" height="280" rx="20" fill="#FFF3E0" stroke="#FF9800" stroke-width="4" stroke-dasharray="20,10"/>
+  
+  <!-- Upload Icon -->
+  <circle cx="522" cy="280" r="40" fill="#FFE0B2"/>
+  <path d="M502 280 L522 260 L542 280 M522 260 L522 300" stroke="#FF9800" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- File Icon -->
+  <rect x="480" y="320" width="84" height="100" rx="8" fill="#FFCC02"/>
+  <rect x="540" y="320" width="24" height="24" fill="#FF9800"/>
+  <text x="522" y="385" text-anchor="middle" fill="white" font-size="16" font-weight="bold">.STL</text>
+  
+  <!-- Text -->
+  <text x="522" y="490" text-anchor="middle" fill="#E65100" font-size="24" font-weight="bold">파일을 여기에 드래그하거나 클릭하여 업로드</text>
+  <text x="522" y="520" text-anchor="middle" fill="#FF9800" font-size="16">지원 파일: STL, OBJ, 3MF (최대 100MB)</text>
+  
+  <!-- Progress indicator -->
+  <rect x="300" y="540" width="444" height="8" rx="4" fill="#FFE0B2"/>
+  <rect x="300" y="540" width="200" height="8" rx="4" fill="#FF9800"/>
+</svg>

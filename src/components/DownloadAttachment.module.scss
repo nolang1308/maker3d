@@ -1,0 +1,53 @@
+@use 'sass:color';
+@import '../styles/style-system';
+
+.NormalChip {
+  @include body-small();
+  display: flex;
+  flex: 1;
+  align-items: center;
+  padding: 8px 12px;
+  height: 34px;
+  border-radius: 100px;
+  border: 1px solid #E9ECEF;
+  background-color: #F9F9F9;
+  color: #121212;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin-right: 12px;
+}
+
+
+.attachmentList {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.byte {
+  margin-left: 18px;
+  @include body-small;
+  color: #B81C7E;
+
+}
+
+.viewOriginal {
+  width: 80px;
+  height: 32px;
+  border-radius: 100px;
+  background-color: #2493d8;
+  border: none;
+  color: white;
+  @include body-small();
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #1a7bb8;
+  }
+}

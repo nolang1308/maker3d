@@ -1,0 +1,552 @@
+@use 'sass:color';
+@import '../styles/style-system';
+
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+
+  .innerContainer {
+    width: 100%;
+    max-width: 1500px;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .logoIcon {
+      width: 100%;
+      height: auto;
+    }
+
+    .buttonWrapper {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      width: 815px;
+      height: 80px;
+      gap: 12px;
+      
+      @media (max-width: 1024px) {
+        width: 100%;
+        flex-direction: column;
+        height: auto;
+        gap: 8px;
+        padding: 0 20px;
+      }
+
+      .storeButton {
+        gap: 10px;
+        width: 162px;
+        height: 80px;
+        background-color: #2493D8;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 2px 30px rgba(0, 0, 0, 0.25);
+        cursor: pointer;
+
+        @media (max-width: 1024px) {
+          width: 100%;
+          height: 60px;
+        }
+
+        .storeButtonText {
+          @include title-small();
+        }
+      }
+
+      .checkQuoteButton {
+        gap: 10px;
+        width: 229px;
+        height: 80px;
+        background-color: #2493D8;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 2px 30px rgba(0, 0, 0, 0.25);
+        cursor: pointer;
+
+        @media (max-width: 1024px) {
+          width: 100%;
+          height: 60px;
+        }
+
+        .storeButtonText {
+          @include title-small();
+        }
+      }
+
+
+
+      .kakaoRequestButton {
+        gap: 10px;
+        width: 194px;
+        height: 80px;
+        background-color: white;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 2px 30px rgba(0, 0, 0, 0.25);
+        cursor: pointer;
+
+        @media (max-width: 1024px) {
+          width: 100%;
+          height: 60px;
+        }
+
+        .storeButtonText {
+          @include title-small();
+          color: #0a0a0a;
+        }
+      }
+
+    }
+
+    .underArrow {
+      margin-top: 30px;
+    }
+
+    .processTitle {
+      @include display-large();
+      color: #0a0a0a;
+      margin-top: 120px;
+      text-align: center;
+      
+      @media (max-width: 1024px) {
+        @include headline-medium();
+        margin-top: 80px;
+        padding: 0 20px;
+      }
+    }
+
+    .processButtonWrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-evenly;
+      margin-top: 46px;
+      gap: 10px;
+      
+      @media (max-width: 1024px) {
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        margin-top: 32px;
+        padding: 0 20px;
+      }
+
+      .processButton {
+        gap: 5px;
+        width: 350px;
+        height: 71px;
+        border-radius: 15px;
+        background-color: rgba(10, 10, 10, 0.1);
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding-left: 13px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        
+        @media (max-width: 1024px) {
+          width: 100%;
+          max-width: 400px;
+          height: 60px;
+          padding-left: 16px;
+        }
+
+        .circle {
+          width: 30px;
+          height: 30px;
+          border-radius: 100px;
+          background-color: #145177;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          @include body-medium();
+          color: white;
+        }
+
+        .processButtonText {
+          @include body-medium();
+          color: #0a0a0a;
+        }
+
+        &.active {
+          background-color: #2493D8;
+
+          .processButtonText {
+            color: white;
+          }
+        }
+
+        &:hover {
+          background-color: rgba(36, 147, 216, 0.1);
+        }
+
+        &.active:hover {
+          background-color: #2493D8;
+        }
+      }
+
+
+    }
+
+    .processView {
+      width: 1130px;
+      height: 655px;
+      border-radius: 30px;
+      background-color: #ffffff;
+      box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+      margin-top: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      
+      @media (max-width: 1024px) {
+        width: calc(100% - 40px);
+        height: 400px;
+        border-radius: 20px;
+        margin: 20px 20px 0 20px;
+      }
+      
+      .processImage {
+        width: 1044px;
+        height: 587px;
+        object-fit: cover;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        
+        @media (max-width: 1024px) {
+          width: calc(100% - 20px);
+          height: calc(100% - 20px);
+          border-radius: 15px;
+        }
+      }
+
+    }
+    .image{
+      margin-top: 300px;
+      width: 1434px;
+      height: 701px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      
+      @media (max-width: 1024px) {
+        margin-top: 150px;
+        width: calc(100% - 40px);
+        height: 400px;
+        margin-left: 20px;
+        margin-right: 20px;
+      }
+
+      
+      .imageTitle{
+        font-size: 80px;
+        font-family: var(--font-pretendard);
+        font-weight: 800;
+        line-height: 100px;
+        color: white;
+        position: absolute;
+        z-index: 20;
+        text-align: left;
+        left: 93px;
+        top: 215px;
+        
+        @media (max-width: 1024px) {
+          font-size: 32px;
+          line-height: 40px;
+          left: 24px;
+          top: 80px;
+        }
+      }
+      .imageSubTitle{
+        font-size: 20px;
+        font-family: var(--font-pretendard);
+        font-weight: 300;
+        color: white;
+        position: absolute;
+        z-index: 20;
+        text-align: left;
+        left: 93px;
+        top: 435px;
+        
+        @media (max-width: 1024px) {
+          font-size: 14px;
+          left: 24px;
+          top: 200px;
+        }
+      }
+      .goToStore{
+        cursor: pointer;
+        position: absolute;
+        gap: 10px;
+        width: 194px;
+        height: 80px;
+        background-color: #2493D8;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 2px 30px rgba(0, 0, 0, 0.25);
+        z-index: 20;
+        top: 528px;
+        left: 93px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        
+        @media (max-width: 1024px) {
+          width: 140px;
+          height: 50px;
+          top: 250px;
+          left: 24px;
+        }
+
+        &:hover {
+          transform: scale(1.05);
+          box-shadow: 0 4px 40px rgba(36, 147, 216, 0.4);
+        }
+
+        .storeButtonText {
+          @include title-small();
+          color: white;
+        }
+
+      }
+      
+      img {
+        filter: blur(5px);
+        transition: filter 0.3s ease;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+
+      }
+      
+      .blur{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        z-index: 10;
+      }
+    }
+    .columnLine{
+      width: 1px;
+      height:160px;
+      background-color: #0a0a0a;
+      margin-top: 16px;
+      
+      @media (max-width: 1024px) {
+        height: 80px;
+        margin-top: 32px;
+      }
+    }
+    .boxWrapper{
+      margin-top: 16px;
+      width: 1500px;
+      height: 420px;
+      background-color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      gap: 60px;
+      
+      @media (max-width: 1024px) {
+        width: calc(100% - 40px);
+        height: auto;
+        margin: 16px 20px 0 20px;
+        gap: 40px;
+      }
+      .top{
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        
+        @media (max-width: 1024px) {
+          flex-direction: column;
+          gap: 20px;
+        }
+        .box{
+          width: 720px;
+          height: 180px;
+          padding-left: 80px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          border-radius: 44px;
+          border: 1px solid #2493D8;
+          box-shadow: 0 0 60px rgba(15, 123, 190, 0.25);
+          backdrop-filter: blur(60px);
+          
+          @media (max-width: 1024px) {
+            width: 100%;
+            height: 140px;
+            padding-left: 40px;
+            border-radius: 24px;
+          }
+
+
+          .boxTitle{
+            @include headline-small();
+            color: #2493D8;
+            margin-bottom: 24px;
+
+          }
+          .boxSubTitle{
+            @include body-medium();
+            color: #0a0a0a;
+          }
+        }
+
+      }
+
+    }
+    .reviewWrapper{
+      margin-top: 187px;
+      width: 100%;
+      max-width: 1320px;
+      height: 44px;
+      background-color: #ffffff;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      
+      @media (max-width: 1024px) {
+        margin-top: 100px;
+        padding: 0 20px;
+        max-width: calc(100% - 40px);
+      }
+      .reviewTitle{
+        @include headline-small();
+        color: #0a0a0a;
+      }
+      .reviewBtnWrapper{
+        width: 106px;
+        height: 44px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        .reviewBtn{
+          width: 44px;
+          height: 44px;
+          border-radius: 100%;
+          background-color:  #EBEBEB;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+
+        }
+        .reviewBtn:hover {
+          background-color: #2493D8;
+        }
+
+
+
+
+      }
+
+    }
+    .reviewCardWrapper{
+      margin-top: 40px;
+      width: 1320px;
+      margin-bottom: 80px;
+      overflow: hidden;
+      
+      @media (max-width: 1024px) {
+        width: calc(100% - 40px);
+        margin-left: 20px;
+        margin-right: 20px;
+        margin-bottom: 60px;
+      }
+      
+      .reviewCardTrack {
+        display: flex;
+        flex-direction: row;
+        gap: 24px;
+        transition: transform 0.5s ease;
+        width: fit-content;
+        
+        @media (max-width: 1024px) {
+          gap: 16px;
+        }
+      }
+    }
+
+
+  }
+
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.modalContent {
+  padding: 40px;
+  text-align: center;
+}
+
+.modalTitle {
+  @include headline-small();
+  color: #0a0a0a;
+  margin: 0 0 20px 0;
+}
+
+.modalMessage {
+  @include body-large();
+  color: #4F5558;
+  line-height: 1.6;
+  margin: 0 0 30px 0;
+}
+
+.modalButton {
+  @include button-medium();
+  background: #2493D8;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  
+  &:hover {
+    background: #1e7ec0;
+  }
+}

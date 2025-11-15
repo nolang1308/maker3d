@@ -1,0 +1,41 @@
+<svg width="1044" height="587" viewBox="0 0 1044 587" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1044" height="587" rx="20" fill="#F8F9FA"/>
+  
+  <!-- Header -->
+  <rect x="40" y="40" width="964" height="80" rx="10" fill="#FF5722"/>
+  <text x="522" y="90" text-anchor="middle" fill="white" font-size="32" font-weight="bold">견적 요청 작성</text>
+  
+  <!-- Form Container -->
+  <rect x="150" y="160" width="744" height="360" rx="20" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="2"/>
+  
+  <!-- Form Fields -->
+  <rect x="200" y="200" width="300" height="40" rx="8" fill="#F5F5F5" stroke="#DDD" stroke-width="1"/>
+  <text x="210" y="225" fill="#666" font-size="16">이름 *</text>
+  
+  <rect x="544" y="200" width="300" height="40" rx="8" fill="#F5F5F5" stroke="#DDD" stroke-width="1"/>
+  <text x="554" y="225" fill="#666" font-size="16">연락처 *</text>
+  
+  <rect x="200" y="260" width="644" height="40" rx="8" fill="#F5F5F5" stroke="#DDD" stroke-width="1"/>
+  <text x="210" y="285" fill="#666" font-size="16">이메일 *</text>
+  
+  <rect x="200" y="320" width="300" height="40" rx="8" fill="#F5F5F5" stroke="#DDD" stroke-width="1"/>
+  <text x="210" y="345" fill="#666" font-size="16">배송지 주소</text>
+  
+  <rect x="544" y="320" width="300" height="40" rx="8" fill="#F5F5F5" stroke="#DDD" stroke-width="1"/>
+  <text x="554" y="345" fill="#666" font-size="16">희망 납기일</text>
+  
+  <!-- Message Area -->
+  <rect x="200" y="380" width="644" height="100" rx="8" fill="#F5F5F5" stroke="#DDD" stroke-width="1"/>
+  <text x="210" y="405" fill="#666" font-size="16">추가 요청사항</text>
+  <text x="210" y="430" fill="#999" font-size="14">특별한 요구사항이나 질문을 자유롭게 작성해주세요.</text>
+  
+  <!-- Submit Button -->
+  <rect x="400" y="540" width="244" height="50" rx="25" fill="#FF5722"/>
+  <text x="522" y="570" text-anchor="middle" fill="white" font-size="18" font-weight="bold">견적 요청 보내기</text>
+  
+  <!-- Icons -->
+  <circle cx="180" cy="220" r="8" fill="#FF5722"/>
+  <circle cx="180" cy="280" r="8" fill="#FF5722"/>
+  <circle cx="180" cy="340" r="8" fill="#FF9800"/>
+  <rect x="176" y="396" width="8" height="8" fill="#FF9800"/>
+</svg>

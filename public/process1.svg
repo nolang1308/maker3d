@@ -1,0 +1,33 @@
+<svg width="1044" height="587" viewBox="0 0 1044 587" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1044" height="587" rx="20" fill="#F8F9FA"/>
+  
+  <!-- Header -->
+  <rect x="40" y="40" width="964" height="80" rx="10" fill="#2493D8"/>
+  <text x="522" y="90" text-anchor="middle" fill="white" font-size="32" font-weight="bold">실시간 견적 확인</text>
+  
+  <!-- Calculator Icon -->
+  <rect x="400" y="180" width="244" height="180" rx="20" fill="#E3F2FD" stroke="#2493D8" stroke-width="3"/>
+  <rect x="420" y="200" width="40" height="30" rx="5" fill="#2493D8"/>
+  <rect x="480" y="200" width="40" height="30" rx="5" fill="#BBDEFB"/>
+  <rect x="540" y="200" width="40" height="30" rx="5" fill="#BBDEFB"/>
+  <rect x="600" y="200" width="40" height="30" rx="5" fill="#BBDEFB"/>
+  
+  <!-- Calculator buttons -->
+  <circle cx="440" cy="270" r="15" fill="#2493D8"/>
+  <circle cx="480" cy="270" r="15" fill="#2493D8"/>
+  <circle cx="520" cy="270" r="15" fill="#2493D8"/>
+  <circle cx="560" cy="270" r="15" fill="#90CAF9"/>
+  
+  <circle cx="440" cy="310" r="15" fill="#2493D8"/>
+  <circle cx="480" cy="310" r="15" fill="#2493D8"/>
+  <circle cx="520" cy="310" r="15" fill="#2493D8"/>
+  <circle cx="560" cy="310" r="15" fill="#90CAF9"/>
+  
+  <!-- Price display -->
+  <rect x="200" y="400" width="644" height="100" rx="15" fill="#E8F5E8"/>
+  <text x="522" y="430" text-anchor="middle" fill="#2E7D32" font-size="20" font-weight="bold">예상 견적가</text>
+  <text x="522" y="470" text-anchor="middle" fill="#1B5E20" font-size="36" font-weight="bold">₩ 45,000</text>
+  
+  <!-- Arrow -->
+  <path d="M680 280 L720 260 L720 300 Z" fill="#4CAF50"/>
+</svg>

@@ -1,0 +1,69 @@
+@use 'sass:color';
+@import '../../styles/style-system';
+
+.container {
+  width: 150px;
+  height: 230px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .imageWrapper {
+    width: 100%;
+    height: 150px;
+    overflow: hidden;
+    background-color: #f8f8f8;
+    position: relative;
+
+    .productImage {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .contentWrapper {
+
+    .title {
+      margin-top: 20px;
+      width: 150px;
+      height: 36px;
+      @include label-large();
+      color: #212121;
+      word-break: keep-all;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+
+    .priceWrapper {
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      position: relative;
+
+      .discountRate {
+        @include button-medium();
+        color: #2493D8;
+      }
+
+      .finalPrice {
+        @include button-small();
+        color: #333333;
+        margin-left: 6.7px;
+
+      }
+      .cartIcon{
+        position: absolute;
+        right: 0;
+        bottom: 0;
+      }
+    }
+  }
+}

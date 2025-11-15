@@ -1,0 +1,195 @@
+@import '../styles/style-system';
+
+.header {
+  background-color: #0A0A0A;
+  padding: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 75px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 20px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+  
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.logoIcon {
+  width: 185px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.logoText {
+  color: white;
+}
+
+.navigation {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+  
+  &:hover .dropdownMenu {
+    display: block;
+  }
+}
+
+.dropdownMenu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 4px;
+  min-width: 120px;
+  z-index: 1001;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  margin-top: 0px;
+  padding-top: 8px;
+}
+
+.dropdownItem {
+  @include body-small();
+  color: white;
+  text-decoration: none;
+  padding: 12px 16px;
+  display: block;
+  transition: background-color 0.3s ease;
+  
+  &:hover {
+    background-color: #333;
+    color: #00d4ff;
+  }
+  
+  &:first-child {
+    border-radius: 4px 4px 0 0;
+  }
+  
+  &:last-child {
+    border-radius: 0 0 4px 4px;
+  }
+}
+
+.navItem {
+  @include title-small();
+  color: white;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  cursor: pointer;
+  
+  &:hover {
+    color: #00d4ff;
+  }
+}
+
+.authButtons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.checkQuoteButton {
+  width: 142px;
+  height: 30px;
+  background-color: #2493d8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  @include body-small();
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover {
+    background-color: #00b8e6;
+  }
+}
+
+.storeButton {
+  @include body-small();
+  width: 120px;
+  height: 30px;
+  background-color: #2493d8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover {
+    background-color: #00b8e6;
+  }
+}
+
+.userActions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.userAction {
+  color: white;
+  @include body-small();
+  cursor: pointer;
+  transition: color 0.3s ease;
+  text-decoration: none;
+  
+  &:hover {
+    color: #00d4ff;
+  }
+}
+
+@media (max-width: 768px) {
+  .navigation {
+    display: none;
+  }
+  
+  .authButtons {
+    gap: 8px;
+  }
+  
+  .loginButton,
+  .signupButton {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .userActions {
+    gap: 12px;
+  }
+}

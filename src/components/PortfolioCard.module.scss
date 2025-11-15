@@ -1,0 +1,60 @@
+@use 'sass:color';
+@import '../styles/style-system';
+
+.portfolioCard {
+  width: 380px;
+  height: 400px;
+  background-color: #ffffff;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-8px);
+  }
+}
+
+.imageWrapper {
+  width: 100%;
+  height: 268px;
+  overflow: hidden;
+  position: relative;
+  background-color: #d9d9d9;
+}
+
+.portfolioImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  
+  .portfolioCard:hover & {
+    transform: scale(1.05);
+  }
+}
+
+.contentWrapper {
+  height: 124px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.title {
+  margin-top: 20px;
+  @include title-medium();
+  color: #0a0a0a;
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+}
+
+.date {
+  @include body-small();
+  color: #999999;
+  margin: 0;
+}

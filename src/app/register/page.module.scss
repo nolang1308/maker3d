@@ -1,0 +1,135 @@
+@use 'sass:color';
+@import '../../styles/style-system';
+
+.container {
+  width: 100%;
+  padding-top: 120px;
+  padding-bottom: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+}
+
+.registerContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.registerForm {
+  width: 413px;
+  height: 570px;
+  display: flex;
+  flex-direction: column;
+
+}
+
+.title {
+  @include headline-medium();
+  color: #0a0a0a;
+  text-align: center;
+  margin-bottom: 51px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.input {
+  width: 100%;
+  height: 43px;
+  padding: 12px 16px;
+  border: 1px solid #E8E9EB;
+  color: #0a0a0a;
+  background: white;
+  @include body-small();
+  
+  &::placeholder {
+    color: #9D9D9D;
+    @include body-small();
+
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: #2493D8;
+  }
+}
+
+.sectionTitle {
+  @include button-medium();
+  color: #0a0a0a;
+  margin-top: 25px;
+  margin-bottom: 5px;
+}
+
+.birthdateGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.select {
+  padding-left: 12px;
+  border: 1px solid #E8E9EB;
+  background: white;
+  color: #0a0a0a;
+  width: 108px;
+  height: 46px;
+  @include body-small();
+  cursor: pointer;
+  
+  &:focus {
+    outline: none;
+    border-color: #2493D8;
+  }
+  
+  option[value=""] {
+    color: #9D9D9D;
+  }
+}
+
+.selectLabel {
+  @include body-medium();
+  color: #4F5558;
+  margin-right: 8px;
+}
+
+.errorMessage {
+  @include body-small();
+  color: #ff4444;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.registerButton {
+  width: 100%;
+  height: 44px;
+  background: #D2D5D6;
+  border: none;
+  border-radius: 8px;
+  @include button-medium();
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 25px;
+  
+  &.active {
+    background: #2493D8;
+    
+    &:hover {
+      background: #1e7ec0;
+    }
+  }
+  
+  &:not(.active) {
+    cursor: not-allowed;
+    
+    &:hover {
+      background: #b8bec1;
+    }
+  }
+}

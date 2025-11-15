@@ -1,0 +1,154 @@
+@use 'sass:color';
+@import '../../styles/style-system';
+
+.reviewContainer {
+    width: 100%;
+    padding: 24px 0;
+    border-bottom: 1px solid #F0F0F0;
+
+    .reviewHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        width: 100%;
+        
+        .leftSection {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            
+            .ratingSection {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                
+                .stars {
+                    display: flex;
+                    gap: 2px;
+                    
+                    .star {
+                        font-size: 18px;
+                        
+                        &.filled {
+                            color: #000000;
+                        }
+                        
+                        &.empty {
+                            color: #E0E0E0;
+                        }
+                    }
+                }
+                
+                .ratingText {
+                    @include button-medium();
+                    color: #000000;
+                }
+                
+                .reviewDate {
+                    @include label-small();
+                    color: #999999;
+                }
+            }
+        }
+        
+        .rightSection {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+            margin-right: 66px;
+            
+            .reviewerInfo {
+                @include label-medium();
+                color: #14161A;
+                text-align: right;
+                
+                .reviewerName {
+                    font-weight: bold;
+                }
+            }
+            
+            .actionButtons {
+                display: flex;
+                gap: 8px;
+                margin-right: 5px;
+                
+                .editBtn,
+                .deleteBtn {
+                @include label-medium();
+                padding: 6px 12px;
+                border: 1px solid #E0E0E0;
+                background-color: #ffffff;
+                cursor: pointer;
+                border-radius: 4px;
+                transition: all 0.3s ease;
+                
+                &:hover {
+                    background-color: #f8f8f8;
+                }
+            }
+            
+            .editBtn {
+                color: #000000;
+                border-color: #D1D1D1;
+                
+                &:hover {
+                    background-color: #ffffff;
+                }
+            }
+            
+            .deleteBtn {
+                color: #FF5656;
+                border-color: #D1D1D1;
+                
+                &:hover {
+                    background-color: #fff0f0;
+                }
+                }
+            }
+        }
+    }
+    
+    .reviewContent {
+        margin-bottom: 20px;
+        
+        .contentText {
+            @include body-small();
+            color: #14161A;
+            line-height: 1.6;
+            margin: 0;
+        }
+    }
+    
+    .reviewImageSection {
+        .reviewImagesGrid {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            
+            .reviewImageContainer {
+                width: 120px;
+                height: 120px;
+                overflow: hidden;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: transform 0.3s ease;
+                flex-shrink: 0;
+                
+                &:hover {
+                    transform: scale(1.05);
+                }
+                
+                .reviewImage {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+            }
+        }
+    }
+    
+    &:last-child {
+        border-bottom: none;
+    }
+}

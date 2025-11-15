@@ -1,0 +1,315 @@
+@use 'sass:color';
+@import '../../styles/style-system';
+
+
+.container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: center;
+
+  .innerContainer {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    min-height: auto;
+    .adPanel{
+      width: 100%;
+      height: 277px;
+      background-color: #ffffff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      
+      .slideWrapper {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        
+        // 호버 시 네비게이션 버튼과 인디케이터 표시
+        &:hover {
+          .navButton {
+            opacity: 1;
+            visibility: visible;
+          }
+          
+          .indicators {
+            opacity: 1;
+            visibility: visible;
+          }
+        }
+        
+        .slideContainer {
+          display: flex;
+          height: 100%;
+          transition: transform 0.5s ease-in-out;
+          
+          .slide {
+            min-width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            
+            .slideContent {
+              width: 100%;
+              height: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              padding: 40px 60px;
+              color: white;
+              
+              .textSection {
+                flex: 1;
+                max-width: 500px;
+                
+                .adTitle {
+                  @include display-medium();
+                  color: white;
+                  margin-bottom: 16px;
+                  font-weight: bold;
+                }
+                
+                .adDescription {
+                  @include body-large();
+                  color: rgba(255, 255, 255, 0.9);
+                  margin-bottom: 24px;
+                  line-height: 1.6;
+                }
+                
+                .ctaButton {
+                  @include button-medium();
+                  background-color: #ffffff;
+                  color: #667eea;
+                  border: none;
+                  padding: 12px 28px;
+                  border-radius: 25px;
+                  cursor: pointer;
+                  font-weight: bold;
+                  transition: all 0.3s ease;
+                  
+                  &:hover {
+                    background-color: #f0f0f0;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                  }
+                }
+              }
+              
+              .imageSection {
+                flex-shrink: 0;
+                margin-left: 40px;
+                
+                .adImage {
+                  border-radius: 8px;
+                  object-fit: cover;
+                  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+                }
+              }
+            }
+          }
+        }
+        
+        // 네비게이션 버튼
+        .navButton {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          background-color: rgba(255, 255, 255, 0.9);
+          border: none;
+          width: 50px;
+          height: 50px;
+          border-radius: 50%;
+          font-size: 24px;
+          color: #333;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.3s ease;
+          z-index: 10;
+          opacity: 0;
+          visibility: hidden;
+          
+          &:hover {
+            background-color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transform: translateY(-50%) scale(1.1);
+          }
+          
+          &.prevButton {
+            left: 20px;
+          }
+          
+          &.nextButton {
+            right: 20px;
+          }
+        }
+        
+        // 인디케이터
+        .indicators {
+          position: absolute;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 12px;
+          z-index: 10;
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.3s ease;
+          
+          .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            
+            &.active {
+              background-color: white;
+              transform: scale(1.2);
+            }
+            
+            &:hover {
+              background-color: rgba(255, 255, 255, 0.8);
+            }
+          }
+        }
+      }
+    }
+    .itemWrapper{
+      width: 100%;
+      height: 100%;
+      padding: 20px 17.5px 20px 17.5px;
+      display: flex;
+      flex-direction: column;
+      .topItem{
+        width: 100%;
+        height: 303px;
+        display: flex;
+        justify-content: space-between;
+        .bestReviewWrapper{
+          width: 545px;
+          height: 100%;
+          .title{
+            width: 100%;
+            height: auto;
+            display: flex;
+            justify-content: space-between;
+            flex-direction: row;
+            @include title-large();
+            color: #000000;
+            p{
+              @include button-medium();
+              cursor: pointer;
+              color: #555555;
+
+            }
+          }
+          .reviewList{
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: repeat(4, 125px);
+            grid-template-rows: repeat(2, 125px);
+            gap: 15px;
+            
+            .reviewItem {
+              width: 125px;
+              height: 125px;
+              overflow: hidden;
+              cursor: pointer;
+              transition: transform 0.3s ease, box-shadow 0.3s ease;
+              background-color: #b5b5b5;
+              
+              &:hover {
+                transform: scale(1.05);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+              }
+              
+              .reviewImage {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: 8px;
+              }
+            }
+          }
+        }
+        .mdItem{
+          width: 530px;
+          height: 268px;
+          display: flex;
+          flex-direction: column;
+          .title{
+            width: 100%;
+            height: auto;
+            display: flex;
+            justify-content: space-between;
+            flex-direction: row;
+            @include title-large();
+            color: #000000;
+            margin-bottom: 10px;
+
+          }
+          .mdItemWrapper{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+          }
+        }
+
+      }
+      .bestItemWrapper{
+        margin-top: 30px;
+        width:  100%;
+        height: 1660px;
+        display: flex;
+        flex-direction: column;
+        .title{
+          width: 100%;
+          height: auto;
+          display: flex;
+          justify-content: space-between;
+          flex-direction: row;
+          @include title-large();
+          color: #000000;
+          margin-bottom: 30px;
+
+          p{
+            @include button-medium();
+            cursor: pointer;
+            color: #555555;
+          }
+        }
+        .ItemWrapper{
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          grid-template-rows: repeat(4, auto);
+          column-gap: 53px;
+          row-gap: 32px;
+        }
+
+      }
+    }
+    .policyBtn{
+      margin-top: 30px;
+      cursor: pointer;
+      width: 251px;
+      height: 65px;
+      background-color: #F5F5F5;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #0a0a0a;
+      @include body-medium();
+      padding: 28px;
+
+    }
+
+  }
+}
