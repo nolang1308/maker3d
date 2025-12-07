@@ -10,7 +10,6 @@
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   }
 
   .imageWrapper {
@@ -28,11 +27,14 @@
   }
 
   .contentWrapper {
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 
     .title {
       margin-top: 20px;
       width: 150px;
-      height: 36px;
       @include label-large();
       color: #212121;
       word-break: keep-all;
@@ -40,10 +42,13 @@
       display: -webkit-box;
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 2;
+      line-height: 1.3;
+      max-height: calc(1.3em * 2);
     }
 
     .priceWrapper {
-      margin-top: 4px;
+      margin-top: auto;
+      margin-bottom: 0;
       display: flex;
       align-items: center;
       position: relative;

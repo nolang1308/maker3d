@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { AuthProvider } from "../contexts/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -82,13 +83,15 @@ export default function RootLayout({
       <body
         className={`${pretendard.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-          <Header />
-          <main style={{ flex: 1, paddingTop: '75px', backgroundColor: "white" }}>
-            {children}
-          </main>
-          <Footer />
-        </div>
+        <AuthProvider>
+          <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            <Header />
+            <main style={{ flex: 1, paddingTop: '75px', backgroundColor: "white" }}>
+              {children}
+            </main>
+            <Footer />
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

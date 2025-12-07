@@ -3,9 +3,13 @@
 import styles from './page.module.scss';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function RegisterPage() {
     const router = useRouter();
+    const { signUp } = useAuth();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -56,12 +60,37 @@ export default function RegisterPage() {
         formData.phone.trim() !== '' &&
         formData.password === formData.confirmPassword;
 
-    const handleSubmit = () => {
-        if (isFormValid) {
-            // 회원가입 로직 구현
-            console.log('회원가입 데이터:', formData);
-            // 성공 후 다음 페이지로 이동 또는 로그인 페이지로 이동
+    const handleSubmit = async () => {
+        if (!isFormValid) return;
+
+        setLoading(true);
+        setError('');
+
+        try {
+            await signUp(formData.email, formData.password);
+            
+            // 회원가입 성공 시 추가 사용자 정보를 저장할 수 있습니다.
+            // 예: Firestore에 사용자 프로필 정보 저장
+            
+            console.log('회원가입 성공:', formData);
+            alert('회원가입이 완료되었습니다!');
             router.push('/login');
+        } catch (error: any) {
+            console.error('회원가입 에러:', error);
+            
+            // Firebase 에러 메시지 한국어로 변환
+            let errorMessage = '회원가입에 실패했습니다.';
+            if (error.code === 'auth/email-already-in-use') {
+                errorMessage = '이미 사용 중인 이메일입니다.';
+            } else if (error.code === 'auth/weak-password') {
+                errorMessage = '비밀번호는 6자 이상이어야 합니다.';
+            } else if (error.code === 'auth/invalid-email') {
+                errorMessage = '올바르지 않은 이메일 형식입니다.';
+            }
+            
+            setError(errorMessage);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -70,6 +99,12 @@ export default function RegisterPage() {
             <div className={styles.registerContainer}>
                 <div className={styles.registerForm}>
                     <h1 className={styles.title}>정보입력</h1>
+                    
+                    {error && (
+                        <div className={styles.errorMessage}>
+                            {error}
+                        </div>
+                    )}
                     
                     <div className={styles.inputGroup}>
                         <input 
@@ -173,9 +208,9 @@ export default function RegisterPage() {
                     <button 
                         className={`${styles.registerButton} ${isFormValid ? styles.active : ''}`}
                         onClick={handleSubmit}
-                        disabled={!isFormValid}
+                        disabled={!isFormValid || loading}
                     >
-                        가입하기
+                        {loading ? '가입 중...' : '가입하기'}
                     </button>
                 </div>
             </div>

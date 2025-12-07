@@ -1,58 +1,88 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './page.module.scss';
 import Pagination from '../../components/Pagination';
 import Image from 'next/image';
 import Link from 'next/link';
-
-interface NoticeItem {
-    id: number;
-    title: string;
-    author: string;
-    date: string;
-    views: number;
-    isPublic: boolean;
-}
-
-const mockNotices: NoticeItem[] = [
-    { id: 1, title: '[공지] 문의 및 질문은 고객센터를 이용해주세요', author: 'MAKER3D', date: '2024-08-12', views: 270, isPublic: true },
-    { id: 2, title: '프로존 소녀 미니 8K 출력 관련 질문', author: '박규만', date: '2024-08-29', views: 438, isPublic: false },
-    { id: 3, title: 'X축 방전층력', author: '조선의', date: '2024-08-27', views: 353, isPublic: true },
-    { id: 4, title: '치루박스 프로 1년 이용권 판매합니다.(부적절 하시면 삭제해 주세요)', author: '김명길', date: '2024-08-23', views: 373, isPublic: false },
-    { id: 5, title: '레본에 w40 레진 사용중인데', author: '최지원', date: '2024-08-19', views: 379, isPublic: false },
-    { id: 6, title: '소녀 레본 14K 소모품 궁금해요', author: '박인', date: '2024-08-06', views: 414, isPublic: false },
-    { id: 7, title: '안녕하세요, 프로존 소녀 마이티 8K으로 애니규빅 Water-Wash Resin 사용하려하는데..', author: '김준호', date: '2024-08-06', views: 437, isPublic: false },
-    { id: 8, title: '소녀 미니 8K s 수조 레진누이 질문', author: '석경호', date: '2024-08-05', views: 229, isPublic: false },
-    { id: 9, title: '안녕하세요 소녀 레본 14K질문드립니다', author: '문현기', date: '2024-07-31', views: 408, isPublic: false },
-    { id: 10, title: '프로존 릴 블랙 3d 프린터 레진의 프린터 세팅방법이 궁금합니다.', author: '이선경', date: '2024-07-30', views: 678, isPublic: false }
-];
+import { getPosts, searchPosts, Post } from '@/services/postService';
 
 export default function NoticePage() {
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeSearchTerm, setActiveSearchTerm] = useState('');
+    const [lastDoc, setLastDoc] = useState<any>(null);
+    const [hasMore, setHasMore] = useState(true);
     const itemsPerPage = 20;
 
-    const filteredNotices = mockNotices.filter(notice => 
-        notice.title.toLowerCase().includes(activeSearchTerm.toLowerCase()) ||
-        notice.author.toLowerCase().includes(activeSearchTerm.toLowerCase())
-    );
+    // 게시글 목록 로드
+    const loadPosts = async (reset: boolean = false) => {
+        try {
+            setLoading(true);
+            const { posts: newPosts, lastDoc: newLastDoc } = await getPosts(itemsPerPage, reset ? null : lastDoc);
+            
+            if (reset) {
+                setPosts(newPosts);
+            } else {
+                setPosts(prev => [...prev, ...newPosts]);
+            }
+            
+            setLastDoc(newLastDoc);
+            setHasMore(newPosts.length === itemsPerPage);
+        } catch (error) {
+            console.error('게시글 로드 에러:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    const totalPages = Math.ceil(filteredNotices.length / itemsPerPage);
-    const currentNotices = filteredNotices.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+    // 검색 실행
+    const handleSearch = async () => {
+        try {
+            setLoading(true);
+            setActiveSearchTerm(searchTerm);
+            setCurrentPage(1);
+            
+            if (searchTerm.trim()) {
+                const searchResults = await searchPosts(searchTerm);
+                setPosts(searchResults.posts);
+                setHasMore(false);
+            } else {
+                loadPosts(true);
+            }
+        } catch (error) {
+            console.error('검색 에러:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 컴포넌트 마운트 시 게시글 로드
+    useEffect(() => {
+        loadPosts(true);
+    }, []);
+
+    // 페이지네이션용 (검색이 아닐 때)
+    const totalPages = activeSearchTerm ? Math.ceil(posts.length / itemsPerPage) : Math.ceil(posts.length / itemsPerPage);
+    const currentPosts = activeSearchTerm 
+        ? posts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+        : posts.slice(0, currentPage * itemsPerPage);
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
     };
 
-    const handleSearch = () => {
-        setActiveSearchTerm(searchTerm);
-        setCurrentPage(1);
+    // 날짜 포맷팅
+    const formatDate = (date: Date) => {
+        return date.toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).replace(/\./g, '-').replace(/ /g, '').slice(0, -1);
     };
+
 
     return (
         <div className={styles.container}>
@@ -70,27 +100,33 @@ export default function NoticePage() {
                                 <th>글쓴이</th>
                                 <th>작성시간</th>
                                 <th>조회수</th>
-                                <th>공개여부</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {currentNotices.map((notice) => (
-                                <tr key={notice.id}>
-                                    <td className={styles.titleCell}>
-                                        <Link href={`/freenoticeboard/${notice.id}`} className={styles.titleLink}>
-                                            {notice.title}
-                                        </Link>
-                                    </td>
-                                    <td>{notice.author}</td>
-                                    <td>{notice.date}</td>
-                                    <td>{notice.views}</td>
-                                    <td className={styles.statusCell}>
-                                        <span className={notice.isPublic ? styles.public : styles.private}>
-                                            {notice.isPublic ? '공개' : '비공개'}
-                                        </span>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={4} className={styles.loading}>로딩 중...</td>
+                                </tr>
+                            ) : currentPosts.length > 0 ? (
+                                currentPosts.map((post) => (
+                                    <tr key={post.id}>
+                                        <td className={styles.titleCell}>
+                                            <Link href={`/freenoticeboard/${post.id}`} className={styles.titleLink}>
+                                                {post.title}
+                                            </Link>
+                                        </td>
+                                        <td>{post.author}</td>
+                                        <td>{formatDate(post.createdAt)}</td>
+                                        <td>{post.views}</td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={4} className={styles.noData}>
+                                        {activeSearchTerm ? '검색 결과가 없습니다.' : '게시글이 없습니다.'}
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>

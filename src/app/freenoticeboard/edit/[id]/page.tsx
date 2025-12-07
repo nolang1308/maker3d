@@ -1,21 +1,18 @@
 'use client';
 
-import Styles from "./page.module.scss";
-import React, {useEffect, useState} from "react";
-import Image from "next/image";
-import { useRouter } from 'next/navigation';
+import Styles from "../../write/page.module.scss";
+import React, { useEffect, useState } from "react";
+import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { createPost, PostFormData } from '@/services/postService';
+import { getPost, updatePost, PostFormData } from '@/services/postService';
 
 const buttons = [
     {id: "write", text: "게시글"},
-    // {id: "INFRA_INFO", text: "시설안내"},
-    // {id: "NOTIFICATION", text: "안내사항"},
-    // {id: "NEWS_LETTER", text: "뉴스레터"},
 ];
 
-export default function Page(): React.ReactElement {
+export default function EditPage(): React.ReactElement {
     const router = useRouter();
+    const params = useParams();
     const { user } = useAuth();
     const [savedDialogOpen, setSavedDialogOpen] = useState(false);
     const [markdown, setMarkdown] = useState("");
@@ -26,17 +23,50 @@ export default function Page(): React.ReactElement {
     const [dragActive, setDragActive] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-
-    // 로그인 체크
-    useEffect(() => {
-        if (!user) {
-            alert('로그인이 필요합니다.');
-            router.push('/login');
-        }
-    }, [user, router]);
+    const [initialLoading, setInitialLoading] = useState(true);
 
     const MAX_FILES = 10;
     const MAX_SIZE = 20 * 1024 * 1024; // 20MB
+
+    // 게시글 데이터 로드
+    useEffect(() => {
+        const loadPostData = async () => {
+            try {
+                const postId = params.id as string;
+                if (!postId) {
+                    setError('잘못된 게시글 ID입니다.');
+                    setInitialLoading(false);
+                    return;
+                }
+
+                const post = await getPost(postId);
+                if (post) {
+                    setTitle(post.title);
+                    setMarkdown(post.content);
+                    setSelectedCategory(post.category || "write");
+                    setPassword(post.password || "");
+                } else {
+                    setError('게시글을 찾을 수 없습니다.');
+                    setTimeout(() => router.push('/freenoticeboard'), 2000);
+                }
+            } catch (error) {
+                console.error('게시글 로드 에러:', error);
+                setError('게시글을 불러오는데 실패했습니다.');
+            } finally {
+                setInitialLoading(false);
+            }
+        };
+
+        loadPostData();
+    }, [params.id, router]);
+
+    // 로그인 체크
+    useEffect(() => {
+        if (!user && !initialLoading) {
+            alert('로그인이 필요합니다.');
+            router.push('/login');
+        }
+    }, [user, router, initialLoading]);
 
     const handleFileUpload = (newFiles: FileList) => {
         const fileArray = Array.from(newFiles);
@@ -101,6 +131,12 @@ export default function Page(): React.ReactElement {
             return;
         }
 
+        const postId = params.id as string;
+        if (!postId) {
+            setError('잘못된 게시글 ID입니다.');
+            return;
+        }
+
         // 유효성 검사
         if (!title.trim()) {
             setError('제목을 입력해주세요.');
@@ -126,35 +162,58 @@ export default function Page(): React.ReactElement {
             setLoading(true);
             setError('');
 
-            const postData: PostFormData = {
+            const updateData: Partial<PostFormData> = {
                 title: title.trim(),
                 content: markdown.trim(),
                 category: selectedCategory,
                 password: password
             };
 
-            const authorName = user.email?.split('@')[0] || '익명';
-            await createPost(postData, user.email!, authorName);
+            await updatePost(postId, updateData);
 
             setSavedDialogOpen(true);
             
-            // 3초 후 목록으로 이동
+            // 3초 후 상세 페이지로 이동
             setTimeout(() => {
-                router.push('/freenoticeboard');
+                router.push(`/freenoticeboard/${postId}`);
             }, 3000);
 
         } catch (error) {
-            console.error('게시글 저장 에러:', error);
-            setError('게시글 저장에 실패했습니다. 다시 시도해주세요.');
+            console.error('게시글 수정 에러:', error);
+            setError('게시글 수정에 실패했습니다. 다시 시도해주세요.');
         } finally {
             setLoading(false);
         }
     };
 
+    if (initialLoading) {
+        return (
+            <div className={Styles.Main}>
+                <div className={Styles.InformationContainer}>
+                    <div style={{ textAlign: 'center', padding: '40px' }}>
+                        로딩 중...
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (error && !title) {
+        return (
+            <div className={Styles.Main}>
+                <div className={Styles.InformationContainer}>
+                    <div style={{ textAlign: 'center', padding: '40px', color: '#FF4444' }}>
+                        {error}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return <div className={Styles.Main}>
         <div className={Styles.InformationContainer}>
             <div className={Styles.Title}>
-                <p>게시글 작성</p>
+                <p>게시글 수정</p>
             </div>
 
             {error && (
@@ -181,7 +240,6 @@ export default function Page(): React.ReactElement {
                 </div>
             </div>
 
-
             {/* 제목 */}
             <div className={Styles.SectionTitleWrapper}>
                 <p className={Styles.SectionTitle}>제목</p>
@@ -194,7 +252,6 @@ export default function Page(): React.ReactElement {
                 />
             </div>
 
-
             {/* 내용 */}
             <div className={Styles.SectionTitleWrapper}>
                 <p className={Styles.SectionTitle}>내용</p>
@@ -202,7 +259,7 @@ export default function Page(): React.ReactElement {
                     <textarea
                         value={markdown}
                         onChange={(e) => setMarkdown(e.target.value)}
-                        placeholder="새로운 게시글을 작성하세요."
+                        placeholder="게시글 내용을 입력하세요."
                         className={Styles.textEditor}
                     />
                 </div>
@@ -238,7 +295,6 @@ export default function Page(): React.ReactElement {
                         onChange={(e) => {
                             if (e.target.files) {
                                 handleFileUpload(e.target.files);
-                                // Reset input value to allow re-uploading same file
                                 e.target.value = '';
                             }
                         }}
@@ -278,7 +334,6 @@ export default function Page(): React.ReactElement {
                                     <>
                                         <div className={Styles.fileMainRow}>
                                             <div className={Styles.fileLeftSection}>
-                                                {/*<input type="checkbox" className={Styles.fileCheckbox} />*/}
                                                 <span className={Styles.fileName}>{file.name}</span>
                                             </div>
                                             <button 
@@ -298,7 +353,6 @@ export default function Page(): React.ReactElement {
                                 ) : (
                                     <>
                                         <div className={Styles.fileLeftSection}>
-                                            {/*<input type="checkbox" className={Styles.fileCheckbox} />*/}
                                             <span className={Styles.fileName}>{file.name}</span>
                                         </div>
                                         <button 
@@ -322,7 +376,7 @@ export default function Page(): React.ReactElement {
                     className={`${Styles.AddBtn} ${loading ? Styles.loading : ''}`}
                     onClick={loading ? undefined : save}
                 >
-                    {loading ? '등록 중...' : '게시글 등록'}
+                    {loading ? '수정 중...' : '게시글 수정'}
                 </div>
             </div>
         </div>
@@ -331,15 +385,10 @@ export default function Page(): React.ReactElement {
             <div className={Styles.modal}>
                 <div className={Styles.info}>
                     <p>🎉</p>
-                    <p>게시글 등록이 완료되었습니다.</p>
-                    {/*<p>*/}
-                    {/*    수정이 필요하시다면 목록창에서<br/>*/}
-                    {/*    수정하고자 하는 게시글 우측<br/>*/}
-                    {/*    '수정'을 눌러주세요.*/}
-                    {/*</p>*/}
+                    <p>게시글 수정이 완료되었습니다.</p>
                 </div>
                 <div className={Styles.ButtonWrapper}>
-                    <div className={Styles.LeftBtn} onClick={() => router.push('/freenoticeboard')}>
+                    <div className={Styles.LeftBtn} onClick={() => router.push(`/freenoticeboard/${params.id}`)}>
                         확인
                     </div>
                 </div>

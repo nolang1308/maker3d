@@ -1,8 +1,21 @@
+'use client';
+
 import styles from './Header.module.scss';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useAuth } from '../contexts/AuthContext';
 
 const Header = () => {
+    const { user, logout } = useAuth();
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+            console.log('로그아웃 성공');
+        } catch (error) {
+            console.error('로그아웃 에러:', error);
+        }
+    };
     return (
         <header className={styles.header}>
             <div className={styles.container}>
@@ -36,9 +49,27 @@ const Header = () => {
                 </div>
 
                 <div className={styles.userActions}>
-                    <Link href="/login" className={styles.userAction}>로그인</Link>
-                    <span className={styles.userAction}>·</span>
-                    <Link href="/signup" className={styles.userAction}>회원가입</Link>
+                    {user ? (
+                        <>
+                            <span className={styles.userAction}>
+                                {user.email?.split('@')[0]}님
+                            </span>
+                            <span className={styles.userAction}>·</span>
+                            <button 
+                                onClick={handleLogout}
+                                className={styles.userAction}
+                                style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}
+                            >
+                                로그아웃
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <Link href="/login" className={styles.userAction}>로그인</Link>
+                            <span className={styles.userAction}>·</span>
+                            <Link href="/signup" className={styles.userAction}>회원가입</Link>
+                        </>
+                    )}
                 </div>
             </div>
         </header>

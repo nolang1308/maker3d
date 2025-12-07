@@ -3,49 +3,145 @@
 
 .container {
   width: 100%;
-  padding-top: 120px;
-  padding-bottom: 120px;
   display: flex;
-  align-items: center;
   justify-content: center;
   background-color: #ffffff;
-  min-height: calc(100vh - 75px);
+  padding-top: 90px;
+  .contactContainer {
+    width: 100%;
+    max-width: 1200px;
+    .title_1{
+      color: #222222;
+      @include headline-large();
+
+    }
+    .title_2{
+      margin-top: 40px;
+      color: #222222;
+      @include display-large();
+
+    }
+    .title_3{
+      margin-top: 50px;
+
+      color: #222222;
+      @include display-large();
+
+    }
+    .line{
+      width: 100%;
+      height: 1px;
+      background-color: #0A0A0A;
+      margin-top: 48px;
+    }
+
+
+
+
+
+    .qnaSection {
+      margin-top: 60px;
+      padding: 40px 0;
+    }
+
+    .qnaTitle {
+      color: #222222;
+      @include display-medium();
+      margin-bottom: 32px;
+    }
+
+    .qnaList {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .customerServiceSection {
+      margin-top: 51px;
+      margin-bottom: 100px;
+      border-radius: 12px;
+      max-width: 713px;
+      height: 106px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .serviceHeader {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .serviceTitle {
+      @include title-large();
+      color: #222222;
+    }
+
+    .serviceTime {
+      @include title-large();
+      color: #2493D8;
+    }
+
+    .serviceContent {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+      }
+    }
+
+    .serviceInfo {
+      flex: 1;
+    }
+
+    .serviceInfoItem {
+      @include body-large();
+      color: #000000;
+    }
+
+    .serviceButtons {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+
+      @media (max-width: 768px) {
+        justify-content: center;
+      }
+    }
+
+    .consultButton {
+      width: 146px;
+      height: 56px;
+      border-radius: 12px;
+      background-color: #2493D8;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      @include title-small();
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        background-color: #1976c7;
+      }
+    }
+
+    .phoneNumber {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 194px;
+      height: 56px;
+      background-color: white;
+      border: 1px solid #000000;
+      border-radius: 12px;
+      @include title-small();
+      color: #000000;
+    }
+
+  }
+
 }
 
-.contactContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  max-width: 800px;
-  text-align: center;
-}
-
-.title {
-  @include display-large();
-  color: #0a0a0a;
-  margin: 0 0 20px 0;
-}
-
-.subtitle {
-  @include headline-small();
-  color: #4F5558;
-  margin: 0 0 60px 0;
-}
-
-.content {
-  background: white;
-  border: 1px solid #E8E9EB;
-  border-radius: 12px;
-  padding: 60px 40px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  width: 100%;
-}
-
-.message {
-  @include body-large();
-  color: #828A8F;
-  line-height: 1.6;
-  margin: 0;
-}

@@ -3,6 +3,7 @@
 import styles from './page.module.scss';
 import Image from "next/image";
 import {useState} from 'react';
+import STLViewer from '../../components/STLViewer';
 
 interface FileItem {
     id: number;
@@ -20,6 +21,11 @@ export default function QuotePage() {
     const [color, setColor] = useState('');
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
     const [fileItems, setFileItems] = useState<FileItem[]>([]);
+    const [currentPreviewFile, setCurrentPreviewFile] = useState<File | null>(null);
+    const [isCalculating, setIsCalculating] = useState(false);
+    const [estimatedPrice, setEstimatedPrice] = useState(0);
+    const [printTime, setPrintTime] = useState<string>('');
+    const [isDragOver, setIsDragOver] = useState(false);
 
     const increaseQuantity = () => {
         setQuantity(prev => prev + 1);
@@ -48,9 +54,96 @@ export default function QuotePage() {
         }
     };
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            setUploadedFiles(Array.from(e.target.files));
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const files = Array.from(e.target.files);
+            setUploadedFiles(files);
+            setCurrentPreviewFile(files[0]);
+            
+            // STL 파일인 경우 자동으로 견적 계산
+            if (files[0].name.toLowerCase().endsWith('.stl')) {
+                await calculateEstimate(files[0]);
+            }
+        }
+    };
+
+    const calculateEstimate = async (file: File) => {
+        setIsCalculating(true);
+        setEstimatedPrice(0);
+        
+        try {
+            // PrusaSlicer 백엔드 API 호출
+            const formData = new FormData();
+            formData.append('stlFile', file);
+            
+            const response = await fetch('http://35.192.48.34:10000/api/upload-stl', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log('PrusaSlicer 출력 시간:', result.printTime);
+                setPrintTime(result.printTime);
+                
+                // 출력 시간을 기반으로 견적 계산 (예시)
+                // 실제로는 시간, 재료비, 전력비 등을 고려한 계산 로직 필요
+                const estimatedHours = parseTimeToHours(result.printTime);
+                const hourlyRate = 10000; // 시간당 10,000원 가정
+                const materialCost = 20000; // 재료비 20,000원 가정
+                const calculatedPrice = Math.round((estimatedHours * hourlyRate) + materialCost);
+                
+                setEstimatedPrice(calculatedPrice);
+            } else {
+                console.error('PrusaSlicer 오류:', result.error);
+                // 오류 시 기본 가격 설정
+                const fallbackPrice = Math.floor(Math.random() * 200000) + 50000;
+                setEstimatedPrice(fallbackPrice);
+            }
+        } catch (error) {
+            console.error('네트워크 오류:', error);
+            // 네트워크 오류 시 기본 가격 설정
+            const fallbackPrice = Math.floor(Math.random() * 200000) + 50000;
+            setEstimatedPrice(fallbackPrice);
+        } finally {
+            setIsCalculating(false);
+        }
+    };
+    
+    // 시간 문자열을 시간으로 변환하는 헬퍼 함수
+    const parseTimeToHours = (timeString: string): number => {
+        // "2h 30m 15s" 형태의 문자열을 시간으로 변환
+        const hours = timeString.match(/(\d+)h/)?.[1] || '0';
+        const minutes = timeString.match(/(\d+)m/)?.[1] || '0';
+        const seconds = timeString.match(/(\d+)s/)?.[1] || '0';
+        
+        return parseInt(hours) + parseInt(minutes) / 60 + parseInt(seconds) / 3600;
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragOver(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragOver(false);
+    };
+
+    const handleDrop = async (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragOver(false);
+        
+        const files = Array.from(e.dataTransfer.files);
+        const stlFiles = files.filter(file => file.name.toLowerCase().endsWith('.stl'));
+        
+        if (stlFiles.length > 0) {
+            setUploadedFiles(stlFiles);
+            setCurrentPreviewFile(stlFiles[0]);
+            await calculateEstimate(stlFiles[0]);
+        } else {
+            alert('STL 파일만 업로드 가능합니다.');
         }
     };
 
@@ -62,7 +155,7 @@ export default function QuotePage() {
                 material,
                 color,
                 quantity,
-                price: Math.floor(Math.random() * 200000) + 50000 // 임시 랜덤 가격
+                price: estimatedPrice || Math.floor(Math.random() * 200000) + 50000
             }));
 
             setFileItems(prev => [...prev, ...newItems]);
@@ -72,6 +165,9 @@ export default function QuotePage() {
             setColor('');
             setQuantity(1);
             setUploadedFiles([]);
+            setCurrentPreviewFile(null);
+            setEstimatedPrice(0);
+            setPrintTime('');
 
             // 파일 input 초기화
             const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
@@ -115,7 +211,12 @@ export default function QuotePage() {
                 <div className={styles.line}></div>
                 <div className={styles.fileUploader}>
                     <p>STL 파일 업로드</p>
-                    <div className={styles.dragBox}>
+                    <div 
+                        className={`${styles.dragBox} ${isDragOver ? styles.dragOver : ''}`}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                    >
                         <Image
                             src="/download_icon2.svg"
                             alt="MAKER 3D Logo"
@@ -150,7 +251,16 @@ export default function QuotePage() {
 
                 </div>
                 <div className={styles.selectOption}>
-                    <div className={styles.viewer}></div>
+                    <div className={styles.viewer}>
+                        {currentPreviewFile ? (
+                            <STLViewer file={currentPreviewFile} className={styles.stlViewer} />
+                        ) : (
+                            <div className={styles.viewerPlaceholder}>
+                                <p>STL 파일을 업로드하면</p>
+                                <p>3D 미리보기가 표시됩니다</p>
+                            </div>
+                        )}
+                    </div>
                     <div className={styles.option}>
                         <p className={styles.optionTitle}>상세 설정</p>
                         <div className={styles.divider}></div>
@@ -234,7 +344,16 @@ export default function QuotePage() {
                             <p className={styles.title}>예상 견적</p>
                             <p className={styles.vat}>(VAT 포함)</p>
                         </div>
-                        <p className={styles.price}>￦ : 0</p>
+                        {isCalculating ? (
+                            <p className={styles.price}>계산 중...</p>
+                        ) : (
+                            <>
+                                <p className={styles.price}>₩ {estimatedPrice.toLocaleString()}</p>
+                                {printTime && (
+                                    <p className={styles.printTime}>예상 출력 시간: {printTime}</p>
+                                )}
+                            </>
+                        )}
                         <div className={styles.saveBtn} onClick={handleSave}>저장</div>
 
 

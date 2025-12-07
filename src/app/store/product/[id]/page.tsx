@@ -3,15 +3,16 @@
 import styles from './page.module.scss';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MiniItemComponent from '@/components/MiniItemComponent';
 import ReviewComponent from '@/components/ReviewComponent';
+
 
 export default function ProductDetailPage() {
     const params = useParams();
     const router = useRouter();
     const productId = params.id as string;
-    
+
     const [quantity, setQuantity] = useState(1);
     const [selectedOption, setSelectedOption] = useState('');
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -20,20 +21,179 @@ export default function ProductDetailPage() {
     const [activeInfoTab, setActiveInfoTab] = useState('상품결제정보');
     const [activeShoppingGuideTab, setActiveShoppingGuideTab] = useState('상품결제정보');
     const [activeReviewFilter, setActiveReviewFilter] = useState('추천순');
+    const [product, setProduct] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
+    const [thumbnailStartIndex, setThumbnailStartIndex] = useState(0);
+    const [categoryId, setCategoryId] = useState('');
 
-    // 샘플 상품 데이터 (실제로는 API에서 productId로 조회)
-    const product = {
-        id: productId,
-        name: '프리미엄 3D 프린터 필라멘트 카키롤부상자',
-        images: ['/exampleItem.png', '/mainPhoto2.svg', '/mainPhoto3.svg', '/mainPhoto4.svg'],
-        originalPrice: 67000,
-        finalPrice: 46900,
-        description: '사이즈는 어떻게되고, 용량은 어떻게 됩니다.',
-        optionLabel: '옵션선택',
-        options: ['[필수] 옵션선택'],
-        totalScore: 0,
-        reviewCount: 0
-    };
+    // 상품 데이터 가져오기
+    useEffect(() => {
+        const fetchProductDetail = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch(`http://localhost:3001/api/naver/product/${productId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.data) {
+                    const naverProduct = data.data;
+                    console.log('상품 상세 응답:', data);
+                    //
+                    console.log('상품 상세 API 응답:', naverProduct);
+                    console.log('ㄴㄹㅇㄴㄹ:', naverProduct.originProduct.leafCategoryId);
+                    setCategoryId(naverProduct.originProduct.leafCategoryId);
+                    console.log('===============',categoryId)
+
+
+                    // 네이버 상품 상세 API 응답을 우리 형식으로 변환
+                    const transformedProduct = {
+                        id: naverProduct.channelProductNo || productId,
+                        name: naverProduct.originProduct.name || '상품명 없음',
+                        images: [
+                            naverProduct.originProduct.images?.representativeImage?.url,
+                            ...(naverProduct.originProduct.images?.optionalImages?.map((img: any) => img.url) || []), // eslint-disable-line @typescript-eslint/no-explicit-any
+                        ].filter(Boolean).slice(0, 30), // 최대 30개 이미지
+                        originalPrice: naverProduct.originProduct.salePrice || 0,
+                        finalPrice: naverProduct.originProduct.salePrice || naverProduct.salePrice || 0,
+                        description: naverProduct.productDescription || naverProduct.detailContent || '네이버 스마트스토어 상품입니다.',
+                        optionLabel: '옵션선택',
+                        options: naverProduct.options?.map((opt: any) => opt.name) || ['[필수] 옵션선택'], // eslint-disable-line @typescript-eslint/no-explicit-any
+                        totalScore: 5,
+                        reviewCount: 7,
+                        categoryName: naverProduct.wholeCategoryName || naverProduct.categoryName || '',
+                        statusType: naverProduct.statusType || 'SALE',
+                        stockQuantity: naverProduct.stockQuantity || 0,
+                        detailContent: naverProduct.originProduct.detailContent,
+                        leafCategoryId: naverProduct.originProduct.leafCategoryId,
+                    };
+
+                    setProduct(transformedProduct);
+                } else {
+                    // // 기본 상품 데이터 (API 실패 시)
+                    // setProduct({
+                    //     id: productId,
+                    //     name: '프리미엄 3D 프린터 필라멘트',
+                    //     images: ['/exampleItem.png', '/mainPhoto2.svg', '/mainPhoto3.svg', '/mainPhoto4.svg'],
+                    //     originalPrice: 67000,
+                    //     finalPrice: 46900,
+                    //     description: '사이즈는 어떻게되고, 용량은 어떻게 됩니다.',
+                    //     optionLabel: '옵션선택',
+                    //     options: ['[필수] 옵션선택'],
+                    //     totalScore: 5,
+                    //     reviewCount: 7
+                    // });
+                }
+
+
+
+                // 현재 상품 정보를 product/all API로도 조회
+                await fetchProductFromAll(productId);
+
+            } catch (error) {
+                console.error('상품 상세 정보 로딩 실패:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const fetchProductFromAll = async (currentProductId: string) => {
+            try {
+                console.log('=== product/all API로 전체 상품 목록 조회 시작 ===');
+                const response = await fetch('http://localhost:3001/api/naver/product/all', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                console.log('product/all API 전체 응답:', data);
+
+                if (data.success && data.data.contents) {
+                    console.log('===== 전체 상품 목록 =====');
+                    console.log('상품 개수:', data.data.contents.length);
+                    console.log('전체 상품 상세 정보:', data.data.contents[0].channelProducts[0]);
+
+                    // 현재 상품을 제외한 모든 상품들을 관련 상품으로 설정
+                    const relatedProducts = data.data.contents
+                        .filter((content: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+                            // 현재 상품만 제외
+                            return !content.channelProducts?.some((cp: any) => // eslint-disable-line @typescript-eslint/no-explicit-any
+                                cp.channelProductNo.toString() === currentProductId.toString()
+                            );
+                        })
+                            .slice(0, 6) // 최대 6개만
+                            .map((content: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+                                const channelProduct = content.channelProducts?.[0];
+                                const discountRate = channelProduct?.salePrice && channelProduct?.discountedPrice 
+                                    ? Math.round((1 - channelProduct.discountedPrice / channelProduct.salePrice) * 100)
+                                    : 0;
+
+
+                                return {
+                                    id: channelProduct?.channelProductNo,
+                                    name: channelProduct.name || '상품명 없음',
+                                    image: channelProduct.representativeImage.url ?? null,
+                                    originalPrice: channelProduct?.salePrice || 0,
+                                    discountRate: discountRate,
+                                    finalPrice: channelProduct?.discountedPrice || channelProduct?.salePrice || 0
+                                };
+                            });
+
+                    console.log('===== 관련 상품들 (현재 상품 제외) =====');
+                    console.log('관련 상품 개수:', relatedProducts.length);
+                    console.log('관련 상품 상세 정보:', relatedProducts);
+
+                    setRelatedProducts(relatedProducts);
+
+                    // 현재 상품 ID와 매치되는 상품 찾기 (기존 로직)
+                    const matchingProduct = data.data.contents.find((content: any) => // eslint-disable-line @typescript-eslint/no-explicit-any
+                        content.channelProducts?.some((cp: any) => // eslint-disable-line @typescript-eslint/no-explicit-any
+                            cp.channelProductNo.toString() === currentProductId.toString()
+                        )
+                    );
+
+                    if (matchingProduct) {
+                        // console.log('=== 매치되는 상품 발견! ===');
+                        // console.log('매치된 상품 전체 정보:', matchingProduct);
+                        const matchingChannelProduct = matchingProduct.channelProducts?.find((cp: any) => // eslint-disable-line @typescript-eslint/no-explicit-any
+                            cp.channelProductNo.toString() === currentProductId.toString()
+                        );
+
+
+                        // 기존 상품 데이터의 finalPrice를 업데이트
+                        setProduct((prevProduct: any) => {
+                            if (prevProduct) {
+                                return {
+                                    ...prevProduct,
+                                    finalPrice: matchingChannelProduct.discountedPrice || prevProduct.finalPrice
+                                };
+                            }
+                            return prevProduct;
+                        });
+
+                        return matchingChannelProduct.discountedPrice;
+                    } else {
+                        console.log('=== 현재 상품 ID와 매치되는 상품을 찾을 수 없습니다 ===');
+                        console.log('찾고 있는 상품 ID:', currentProductId);
+                        console.log('전체 상품의 ID들:', data.data.contents.map((content: any) => // eslint-disable-line @typescript-eslint/no-explicit-any
+                            content.channelProducts?.map((cp: any) => cp.channelProductNo) // eslint-disable-line @typescript-eslint/no-explicit-any
+                        ));
+                    }
+                }
+            } catch (error) {
+                console.error('product/all API로 상품 조회 실패:', error);
+            }
+        };
+
+        fetchProductDetail();
+    }, [productId,categoryId]);
 
     const handleQuantityChange = (change: number) => {
         const newQuantity = quantity + change;
@@ -58,6 +218,24 @@ export default function ProductDetailPage() {
             selectedOption
         });
         // 실제로는 주문 페이지로 이동
+    };
+
+    // 썸네일 네비게이션 함수들
+    const visibleThumbnailCount = 5; // 한 번에 보이는 썸네일 개수
+
+    const canGoThumbnailPrev = thumbnailStartIndex > 0;
+    const canGoThumbnailNext = product && thumbnailStartIndex + visibleThumbnailCount < product.images.length;
+
+    const goThumbnailPrev = () => {
+        if (canGoThumbnailPrev) {
+            setThumbnailStartIndex(prev => Math.max(0, prev - 1));
+        }
+    };
+
+    const goThumbnailNext = () => {
+        if (canGoThumbnailNext) {
+            setThumbnailStartIndex(prev => prev + 1);
+        }
     };
 
     // 탭 목록
@@ -139,7 +317,7 @@ export default function ProductDetailPage() {
     };
 
     function handleProductClick(number: number) {
-        
+
     }
 
     // 샘플 리뷰 데이터
@@ -155,7 +333,7 @@ export default function ProductDetailPage() {
             helpfulCount: 12
         },
         {
-            id: '2', 
+            id: '2',
             rating: 4,
             name: '이지영',
             content: '해당 자리에 리뷰가 작성됩니다.',
@@ -179,26 +357,51 @@ export default function ProductDetailPage() {
     // 리뷰 필터링 로직
     const getFilteredReviews = () => {
         const sortedReviews = [...sampleReviews];
-        
+
         switch (activeReviewFilter) {
             case '추천순':
                 // 추천순 = 도움이 된 수가 많은 순
                 return sortedReviews.sort((a, b) => b.helpfulCount - a.helpfulCount);
-            
+
             case '최신순':
                 // 최신순 = 날짜가 최근인 순
                 return sortedReviews.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-            
+
             case '별점순':
                 // 별점순 = 별점이 높은 순
                 return sortedReviews.sort((a, b) => b.rating - a.rating);
-            
+
             default:
                 return sortedReviews;
         }
     };
 
     const filteredReviews = getFilteredReviews();
+
+    if (loading) {
+        return (
+            <div className={styles.container}>
+                <div className={styles.innerContainer}>
+                    <div className={styles.loadingContainer}>
+                        <div>상품 정보를 불러오는 중...</div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!product) {
+        return (
+            <div className={styles.container}>
+                <div className={styles.innerContainer}>
+                    <div className={styles.errorContainer}>
+                        <div>상품을 찾을 수 없습니다.</div>
+                        <button onClick={() => router.back()}>돌아가기</button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.container}>
@@ -216,11 +419,28 @@ export default function ProductDetailPage() {
                                 height={583}
                                 className={styles.productImage}
                             />
+                            {/* 메인 이미지 네비게이션 버튼 */}
+                            {product.images.length > 1 && (
+                                <>
+                                    <button
+                                        className={`${styles.imageNavBtn} ${styles.prevImageBtn}`}
+                                        onClick={() => setSelectedImageIndex(prev => prev > 0 ? prev - 1 : product.images.length - 1)}
+                                    >
+                                        &#8249;
+                                    </button>
+                                    <button
+                                        className={`${styles.imageNavBtn} ${styles.nextImageBtn}`}
+                                        onClick={() => setSelectedImageIndex(prev => prev < product.images.length - 1 ? prev + 1 : 0)}
+                                    >
+                                        &#8250;
+                                    </button>
+                                </>
+                            )}
                         </div>
                         <div className={styles.thumbnails}>
-                            {product.images.map((image, index) => (
-                                <div 
-                                    key={index} 
+                            {product.images.map((image: any, index: number) => (
+                                <div
+                                    key={index}
                                     className={`${styles.thumbnail} ${index === selectedImageIndex ? styles.active : ''}`}
                                     onClick={() => setSelectedImageIndex(index)}
                                 >
@@ -239,7 +459,7 @@ export default function ProductDetailPage() {
                     {/* 상품 정보 영역 */}
                     <div className={styles.infoSection}>
                         <h1 className={styles.productName}>{product.name}</h1>
-                        
+
                         {/* 가격 정보 테이블 */}
                         <div className={styles.priceTable}>
                             <div className={styles.priceRow}>
@@ -260,12 +480,12 @@ export default function ProductDetailPage() {
                         <div className={styles.optionSection}>
                             <div className={styles.priceRow}>
                                 <span className={styles.optionLabel}>{product.optionLabel}</span>
-                                <select 
+                                <select
                                     className={styles.optionSelect}
                                     value={selectedOption}
                                     onChange={(e) => setSelectedOption(e.target.value)}
                                 >
-                                    {product.options.map((option) => (
+                                    {product.options.map((option: any) => (
                                         <option key={option} value={option}>- {option} -</option>
                                     ))}
                                 </select>
@@ -333,17 +553,27 @@ export default function ProductDetailPage() {
                 <p className={styles.text2}>같이 보기 좋은 상품입니다.</p>
                 
                 <div className={styles.withItemGrid}>
-                    {Array.from({length: 6}, (_, index) => (
-                        <MiniItemComponent
-                            key={index}
-                            image="/exampleItem.png"
-                            title="구글 애드리틱스(건전성기) 레진 상자"
-                            originalPrice={100000}
-                            discountRate={35}
-                            finalPrice={65000}
-                            onClick={() => handleProductClick(3001 + index)}
-                        />
-                    ))}
+                    {loading ? (
+                        // 로딩 스켈레톤
+                        Array.from({length: 6}, (_, index) => (
+                            <div key={index} className={styles.loadingSkeleton}>
+                                <div className={styles.skeletonImage}></div>
+                                <div className={styles.skeletonText}></div>
+                            </div>
+                        ))
+                    ) : (
+                        relatedProducts.map((relatedProduct, index) => (
+                            <MiniItemComponent
+                                key={relatedProduct.id || index}
+                                image={relatedProduct.image}
+                                title={relatedProduct.name}
+                                originalPrice={relatedProduct.originalPrice}
+                                discountRate={relatedProduct.discountRate}
+                                finalPrice={relatedProduct.finalPrice}
+                                onClick={() => router.push(`/store/product/${relatedProduct.id}`)}
+                            />
+                        ))
+                    )}
                 </div>
                 <div className={styles.lineWrapper}>
                     <div className={styles.line}></div>
@@ -362,12 +592,11 @@ export default function ProductDetailPage() {
                         </div>
                     ))}
                 </div>
-                <p className={styles.text3}>프리미엄 3D 프린터 필라멘트 카키블루색상</p>
+                {/*<p className={styles.text3}>프리미엄 3D 프린터 필라멘트 카키블루색상</p>*/}
                 <div className={styles.itemInfoPhotoWrapper}>
-                    {/* 여기다가 세부정보 사진 넣기 */}
-
-
-
+                    {product.detailContent && (
+                        <div className={styles.naverContent} dangerouslySetInnerHTML={{ __html: product.detailContent }} />
+                    )}
                 </div>
                 <div className={styles.lineWrapper}>
                     <div className={styles.line}></div>

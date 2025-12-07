@@ -7,8 +7,42 @@ import MiniItemComponent from "@/components/MiniItemComponent";
 import ItemComponent from "@/components/ItemComponent";
 import { useRouter } from 'next/navigation';
 
+interface Product {
+    id: string | number;
+    name: string;
+    image: string;
+    originalPrice: number;
+    discountRate: number;
+    finalPrice: number;
+}
+
+interface NaverChannelProduct {
+    channelProductNo: number;
+    name: string;
+    salePrice: number;
+    discountedPrice: number;
+    representativeImage?: {
+        url: string;
+    };
+    categoryId: string;
+    channelProductDisplayStatusType: string;
+    statusType: string;
+}
+
+interface NaverContent {
+    originProductNo: number;
+    channelProducts: NaverChannelProduct[];
+    representativeImage?: {
+        url: string;
+    };
+}
+
+
 export default function StorePage() {
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [popularProducts, setPopularProducts] = useState<Product[]>([]);
+    const [mdRecommendedProducts, setMdRecommendedProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
     const router = useRouter();
 
     // 샘플 광고 이미지들 (실제로는 서버에서 받아온 데이터)
@@ -42,6 +76,90 @@ export default function StorePage() {
             gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
         }
     ];
+
+    useEffect(() => {
+        const fetchStoreData = async () => {
+            setLoading(true);
+            try {
+                // 1. 토큰 발행
+                const tokenResponse = await fetch('http://localhost:3001/api/naver/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const tokenData = await tokenResponse.json();
+                // console.log('토큰 발행 성공:', tokenData);
+
+                // 2. 상품 목록 가져오기
+                const productsResponse = await fetch('http://localhost:3001/api/naver/product/all', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const productsData = await productsResponse.json();
+                
+                if (productsData.success && productsData.data) {
+                    // console.log('상품 목록 조회 성공:', productsData.data);
+                    
+                    // 네이버 API 응답 구조에 맞춰 데이터 추출
+                    const contents: NaverContent[] = productsData.data.contents || [];
+                    // console.log('상품 contents:', contents);
+                    
+                    // 각 content의 channelProducts를 평탄화하여 상품 목록 생성
+                    const allProducts: (NaverContent & NaverChannelProduct)[] = [];
+                    contents.forEach((content: NaverContent) => {
+                        if (content.channelProducts && content.channelProducts.length > 0) {
+                            content.channelProducts.forEach((channelProduct: NaverChannelProduct) => {
+                                allProducts.push({
+                                    // 원본 상품 정보와 채널 상품 정보를 조합
+                                    ...content,
+                                    ...channelProduct,
+                                    originProductNo: content.originProductNo,
+                                    representativeImage: content.representativeImage || channelProduct.representativeImage
+                                });
+                            });
+                        }
+                    });
+                    
+                    // console.log('평탄화된 상품 목록:', allProducts);
+                    
+                    const transformedProducts = allProducts.map(product => {
+                        // 할인율 계산
+                        const discountRate = product.salePrice && product.discountedPrice 
+                            ? Math.round(((product.salePrice - product.discountedPrice) / product.salePrice) * 100)
+                            : 0;
+                            
+                        return {
+                            id: product.channelProductNo || product.originProductNo,
+                            name: product.name || '상품명 없음',
+                            image: product.representativeImage?.url || '/exampleItem.png',
+                            originalPrice: product.salePrice || 0,
+                            discountRate: discountRate,
+                            finalPrice: product.discountedPrice || product.salePrice || 0
+                        };
+                    });
+
+                    // MD 추천 상품 (처음 3개)
+                    setMdRecommendedProducts(transformedProducts.slice(0, 3));
+                    
+                    // 인기 상품 (처음 16개)
+                    setPopularProducts(transformedProducts.slice(0, 16));
+                } else {
+                    console.error('상품 데이터 형식 오류:', productsData);
+                }
+
+            } catch (error) {
+                console.error('데이터 로딩 실패:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStoreData();
+    }, []);
+
 
     // 자동 슬라이드 기능
     useEffect(() => {
@@ -135,13 +253,12 @@ export default function StorePage() {
                         <div className={styles.bestReviewWrapper}>
                             <div className={styles.title}>
                                 ✨ 베스트 리뷰
-
                             </div>
                             <div className={styles.reviewList}>
                                 {[1, 2, 3, 4, 5, 6, 7, 8].map((index) => (
                                     <div key={index} className={styles.reviewItem}>
                                         <Image
-                                            src={index <= 1 ? '/exampleItem.png' : `/exampleItem${index}.svg`}
+                                            src={index <= 1 ? '/exampleItem.png' : `/exampleItem.png`}
                                             alt={`리뷰 이미지 ${index}`}
                                             width={125}
                                             height={125}
@@ -156,36 +273,29 @@ export default function StorePage() {
                                 🏆 MD 추천 제품
                             </div>
                             <div className={styles.mdItemWrapper}>
-                                <MiniItemComponent
-                                    image="/exampleItem.png"
-                                    title="구글 애드리틱스(건전성기) 레진 상자"
-                                    originalPrice={100000}
-                                    discountRate={35}
-                                    finalPrice={65000}
-                                    onClick={() => handleProductClick(1001)}
-                                />
-                                <MiniItemComponent
-                                    image="/exampleItem.png"
-                                    title="구글 애드리틱스(건전성기) 레진 상자"
-                                    originalPrice={100000}
-                                    discountRate={35}
-                                    finalPrice={65000}
-                                    onClick={() => handleProductClick(1002)}
-                                />
-                                <MiniItemComponent
-                                    image="/exampleItem.png"
-                                    title="구글 애드리틱스(건전성기) 레진 상자"
-                                    originalPrice={100000}
-                                    discountRate={35}
-                                    finalPrice={65000}
-                                    onClick={() => handleProductClick(1003)}
-                                />
-
+                                {loading ? (
+                                    // 로딩 스켈레톤
+                                    Array.from({ length: 3 }, (_, index) => (
+                                        <div key={index} className={styles.loadingSkeleton}>
+                                            <div className={styles.skeletonImage}></div>
+                                            <div className={styles.skeletonText}></div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    mdRecommendedProducts.map((product) => (
+                                        <MiniItemComponent
+                                            key={product.id}
+                                            image={product.image}
+                                            title={product.name}
+                                            originalPrice={product.originalPrice}
+                                            discountRate={product.discountRate}
+                                            finalPrice={product.finalPrice}
+                                            onClick={() => handleProductClick(typeof product.id === 'string' ? parseInt(product.id) : product.id)}
+                                        />
+                                    ))
+                                )}
                             </div>
-
                         </div>
-
-
                     </div>
 
                     <div className={styles.bestItemWrapper}>
@@ -193,25 +303,32 @@ export default function StorePage() {
                             🎁 메이커 3D 인기상품
                             <p>
                                 {"더보기 >"}
-
                             </p>
-
                         </div>
                         <div className={styles.ItemWrapper}>
-                            {Array.from({length: 16}, (_, index) => (
-                                <ItemComponent
-                                    key={index}
-                                    image="/exampleItem.png"
-                                    title="구글 애드리틱스(건전성기) 레진 상자"
-                                    originalPrice={100000}
-                                    discountRate={35}
-                                    finalPrice={65000}
-                                    onClick={() => handleProductClick(2000 + index + 1)}
-                                />
-                            ))}
+                            {loading ? (
+                                // 로딩 스켈레톤
+                                Array.from({ length: 16 }, (_, index) => (
+                                    <div key={index} className={styles.loadingItemSkeleton}>
+                                        <div className={styles.skeletonItemImage}></div>
+                                        <div className={styles.skeletonItemText}></div>
+                                        <div className={styles.skeletonItemPrice}></div>
+                                    </div>
+                                ))
+                            ) : (
+                                popularProducts.map((product) => (
+                                    <ItemComponent
+                                        key={product.id}
+                                        image={product.image}
+                                        title={product.name}
+                                        originalPrice={product.originalPrice}
+                                        discountRate={product.discountRate}
+                                        finalPrice={product.finalPrice}
+                                        onClick={() => handleProductClick(typeof product.id === 'string' ? parseInt(product.id) : product.id)}
+                                    />
+                                ))
+                            )}
                         </div>
-
-
                     </div>
                     <div className={styles.policyBtn}>
                         배송 및 환불정책

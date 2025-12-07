@@ -1,0 +1,45 @@
+
+@use 'sass:color';
+@import '../styles/style-system';
+.qnaCard {
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 160px;
+  height: auto;
+  border-bottom: 1px solid #DDDDDD;
+
+
+}
+
+.questionSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.question {
+  @include headline-medium();
+  color: #222222;
+  transition: color 0.3s ease;
+}
+
+.questionExpanded {
+  color: #2493D8 !important;
+}
+
+.date {
+@include body-medium();
+  color: #999999;
+  margin-top: 11px;
+}
+
+.answerSection {
+  margin-top: 14px;
+}
+
+.answer {
+  @include body-medium();
+  color: #555555;
+}

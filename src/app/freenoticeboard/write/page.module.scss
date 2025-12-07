@@ -150,6 +150,18 @@
 
 
   }
+  .errorMessage {
+    @include body-small();
+    color: #FF4444;
+    background-color: #FFF5F5;
+    border: 1px solid #FFB3B3;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 500;
+  }
+
   .AddBtnWrapper {
     margin-top: 20px;
     width: 100%;
@@ -165,6 +177,11 @@
       height: 54px;
       background-color: #2493D8;
       border-radius: 10px;
+      
+      &.loading {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
       @include button-medium();
       color: white;
     }

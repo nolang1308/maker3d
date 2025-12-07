@@ -2,13 +2,55 @@
 
 import styles from './page.module.scss';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
+    const router = useRouter();
+    const { signIn } = useAuth();
     const [isChecked, setIsChecked] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    const isFormValid = email.trim() !== '' && password.trim() !== '';
+    const validateEmail = (email: string) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
+
+    const isFormValid = email.trim() !== '' && password.trim() !== '' && validateEmail(email);
+
+    const handleLogin = async () => {
+        if (!isFormValid) return;
+
+        setLoading(true);
+        setError('');
+
+        try {
+            await signIn(email, password);
+            console.log('로그인 성공');
+            router.push('/'); // 메인 페이지로 이동
+        } catch (error: any) {
+            console.error('로그인 에러:', error);
+            
+            // Firebase 에러 메시지 한국어로 변환
+            let errorMessage = '로그인에 실패했습니다.';
+            if (error.code === 'auth/user-not-found') {
+                errorMessage = '등록되지 않은 이메일입니다.';
+            } else if (error.code === 'auth/wrong-password') {
+                errorMessage = '비밀번호가 올바르지 않습니다.';
+            } else if (error.code === 'auth/invalid-email') {
+                errorMessage = '올바르지 않은 이메일 형식입니다.';
+            } else if (error.code === 'auth/too-many-requests') {
+                errorMessage = '너무 많은 로그인 시도가 있었습니다. 잠시 후 다시 시도해주세요.';
+            }
+            
+            setError(errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className={styles.container}>
@@ -26,6 +68,11 @@ export default function LoginPage() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
+                        {email && !validateEmail(email) && (
+                            <div className={styles.fieldError}>
+                                올바른 이메일 형식을 입력해주세요.
+                            </div>
+                        )}
                     </div>
                     
                     <div className={styles.inputGroup}>
@@ -38,9 +85,19 @@ export default function LoginPage() {
                             onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
+
+                    {error && (
+                        <div className={styles.errorMessage}>
+                            {error}
+                        </div>
+                    )}
                     
-                    <button className={`${styles.loginButton} ${isFormValid ? styles.active : ''}`}>
-                        로그인
+                    <button 
+                        className={`${styles.loginButton} ${isFormValid ? styles.active : ''}`}
+                        onClick={handleLogin}
+                        disabled={!isFormValid || loading}
+                    >
+                        {loading ? '로그인 중...' : '로그인'}
                     </button>
                     
                     <div className={styles.bottomRow}>
