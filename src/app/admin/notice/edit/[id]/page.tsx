@@ -19,7 +19,9 @@ export default function EditPage(): React.ReactElement {
     const [markdown, setMarkdown] = useState("");
     const [title, setTitle] = useState("");
     const [isPublic, setIsPublic] = useState(true);
-    const [files, setFiles] = useState<any[]>([]);
+    const [newFiles, setNewFiles] = useState<any[]>([]); // 새로 추가하는 파일들
+    const [existingFiles, setExistingFiles] = useState<any[]>([]); // 기존 첨부파일들
+    const [deletedFileIds, setDeletedFileIds] = useState<string[]>([]); // 삭제된 기존 파일들의 ID
     const [password, setPassword] = useState("");
     const [dragActive, setDragActive] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -46,6 +48,19 @@ export default function EditPage(): React.ReactElement {
                     setMarkdown(notice.content);
                     setIsPublic(notice.isPublic);
                     setPassword(notice.password || "");
+                    
+                    // 기존 첨부파일 로드
+                    if (notice.attachments && notice.attachments.length > 0) {
+                        const existingFileData = notice.attachments.map((attachment, index) => ({
+                            id: `existing_${index}`,
+                            name: attachment.name,
+                            url: attachment.url,
+                            size: attachment.size,
+                            type: attachment.type || 'application/octet-stream',
+                            isExisting: true
+                        }));
+                        setExistingFiles(existingFileData);
+                    }
                 } else {
                     setError('공지사항을 찾을 수 없습니다.');
                     setTimeout(() => router.push('/admin/notice'), 2000);
@@ -69,24 +84,27 @@ export default function EditPage(): React.ReactElement {
         }
     }, [user, router, initialLoading]);
 
-    const handleFileUpload = (newFiles: FileList) => {
-        const fileArray = Array.from(newFiles);
+    const handleFileUpload = (uploadedFiles: FileList) => {
+        const fileArray = Array.from(uploadedFiles);
         const validFiles: any[] = [];
         
+        const totalExistingFiles = existingFiles.length - deletedFileIds.length + newFiles.length;
+        
         fileArray.forEach(file => {
-            if (files.length + validFiles.length < MAX_FILES) {
+            if (totalExistingFiles + validFiles.length < MAX_FILES) {
                 const fileData = {
                     name: file.name,
                     size: file.size,
                     file,
                     isOverSize: file.size > MAX_SIZE,
-                    id: Date.now() + Math.random()
+                    id: `new_${Date.now()}_${Math.random()}`,
+                    isExisting: false
                 };
                 validFiles.push(fileData);
             }
         });
         
-        setFiles(prev => [...prev, ...validFiles]);
+        setNewFiles(prev => [...prev, ...validFiles]);
     };
 
     const handleDrag = (e: React.DragEvent) => {
@@ -110,11 +128,26 @@ export default function EditPage(): React.ReactElement {
     };
 
     const removeFile = (id: any) => {
-        setFiles(prev => prev.filter(file => file.id !== id));
+        // 기존 파일인지 새 파일인지 확인
+        if (id.startsWith('existing_')) {
+            // 기존 파일은 삭제 대상으로 표시
+            const fileToDelete = existingFiles.find(file => file.id === id);
+            if (fileToDelete) {
+                setDeletedFileIds(prev => [...prev, fileToDelete.url]); // url을 삭제 ID로 사용
+                setExistingFiles(prev => prev.filter(file => file.id !== id));
+            }
+        } else {
+            // 새 파일은 바로 제거
+            setNewFiles(prev => prev.filter(file => file.id !== id));
+        }
     };
 
     const clearAllFiles = () => {
-        setFiles([]);
+        // 모든 기존 파일을 삭제 대상으로 표시
+        const allExistingUrls = existingFiles.map(file => file.url);
+        setDeletedFileIds(prev => [...prev, ...allExistingUrls]);
+        setExistingFiles([]);
+        setNewFiles([]);
     };
 
     const formatFileSize = (bytes: number) => {
@@ -163,11 +196,74 @@ export default function EditPage(): React.ReactElement {
             setLoading(true);
             setError('');
 
-            const updateData: Partial<NoticeFormData> = {
+            // 1. 먼저 삭제된 기존 파일들을 삭제
+            if (deletedFileIds.length > 0) {
+                console.log('Deleting removed files:', deletedFileIds);
+                const deletePromises = deletedFileIds.map(async (filePath) => {
+                    try {
+                        const deleteResponse = await fetch(`/api/upload?filePath=${encodeURIComponent(filePath)}`, {
+                            method: 'DELETE'
+                        });
+                        if (!deleteResponse.ok) {
+                            console.error(`Failed to delete file: ${filePath}`);
+                        }
+                    } catch (error) {
+                        console.error(`Error deleting file ${filePath}:`, error);
+                    }
+                });
+                
+                await Promise.allSettled(deletePromises);
+            }
+
+            // 2. 새로운 파일들 업로드
+            let newAttachments: { name: string; url: string; size: number; type?: string; }[] = [];
+            
+            if (newFiles.length > 0) {
+                try {
+                    const formData = new FormData();
+                    formData.append('noticeId', noticeId);
+                    
+                    newFiles.forEach(fileData => {
+                        if (fileData.file && !fileData.isOverSize) {
+                            formData.append('files', fileData.file);
+                        }
+                    });
+
+                    if (formData.getAll('files').length > 0) {
+                        const uploadResponse = await fetch('/api/upload', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (uploadResponse.ok) {
+                            const uploadResult = await uploadResponse.json();
+                            newAttachments = uploadResult.files || [];
+                        } else {
+                            console.error('File upload failed');
+                        }
+                    }
+                } catch (uploadError) {
+                    console.error('File upload error:', uploadError);
+                }
+            }
+
+            // 3. 최종 첨부파일 목록 생성 (기존 파일 + 새 파일)
+            const remainingExistingFiles = existingFiles.map(file => ({
+                name: file.name,
+                url: file.url,
+                size: file.size,
+                type: file.type
+            }));
+
+            const finalAttachments = [...remainingExistingFiles, ...newAttachments];
+
+            // 4. 공지사항 업데이트
+            const updateData: Partial<NoticeFormData> & { attachments?: any[] } = {
                 title: title.trim(),
                 content: markdown.trim(),
                 password: password,
-                isPublic: isPublic
+                isPublic: isPublic,
+                attachments: finalAttachments
             };
 
             await updateNotice(noticeId, updateData);
@@ -300,7 +396,7 @@ export default function EditPage(): React.ReactElement {
                             }
                         }}
                         className={Styles.fileInput}
-                        disabled={files.length >= MAX_FILES}
+                        disabled={(existingFiles.length - deletedFileIds.length + newFiles.length) >= MAX_FILES}
                     />
                     <p>첨부할 파일을 여기에 끌어다 놓거나. 파일 선택 버튼을 직접 선택해주세요.</p>
                     <button className={Styles.fileSelectBtn} type="button">
@@ -310,10 +406,10 @@ export default function EditPage(): React.ReactElement {
 
                 <div className={Styles.fileUploadFooter}>
                     <div className={Styles.fileCounter}>
-                        <span className={Styles.currentCount}>{files.length}개</span>
+                        <span className={Styles.currentCount}>{existingFiles.length + newFiles.length}개</span>
                         <span className={Styles.maxCount}> / {MAX_FILES}개</span>
                     </div>
-                    {files.length > 0 && (
+                    {(existingFiles.length + newFiles.length) > 0 && (
                         <button 
                             className={Styles.clearAllBtn}
                             onClick={clearAllFiles}
@@ -324,9 +420,30 @@ export default function EditPage(): React.ReactElement {
                     )}
                 </div>
 
-                {files.length > 0 && (
+                {(existingFiles.length > 0 || newFiles.length > 0) && (
                     <div className={Styles.fileList}>
-                        {files.map((file) => (
+                        {/* 기존 파일들 표시 */}
+                        {existingFiles.map((file) => (
+                            <div 
+                                key={file.id} 
+                                className={`${Styles.fileItem} ${Styles.existingFile}`}
+                            >
+                                <div className={Styles.fileLeftSection}>
+                                    <span className={Styles.fileName}>{file.name}</span>
+                                    <span className={Styles.fileInfo}> (기존 파일, {formatFileSize(file.size)})</span>
+                                </div>
+                                <button 
+                                    className={Styles.deleteBtn}
+                                    onClick={() => removeFile(file.id)}
+                                    type="button"
+                                >
+                                    삭제 ×
+                                </button>
+                            </div>
+                        ))}
+
+                        {/* 새로 추가된 파일들 표시 */}
+                        {newFiles.map((file) => (
                             <div 
                                 key={file.id} 
                                 className={`${Styles.fileItem} ${file.isOverSize ? Styles.oversizeFile : ''}`}
@@ -336,6 +453,7 @@ export default function EditPage(): React.ReactElement {
                                         <div className={Styles.fileMainRow}>
                                             <div className={Styles.fileLeftSection}>
                                                 <span className={Styles.fileName}>{file.name}</span>
+                                                <span className={Styles.fileInfo}> (새 파일)</span>
                                             </div>
                                             <button 
                                                 className={Styles.deleteBtn}
@@ -355,6 +473,7 @@ export default function EditPage(): React.ReactElement {
                                     <>
                                         <div className={Styles.fileLeftSection}>
                                             <span className={Styles.fileName}>{file.name}</span>
+                                            <span className={Styles.fileInfo}> (새 파일, {formatFileSize(file.size)})</span>
                                         </div>
                                         <button 
                                             className={Styles.deleteBtn}
