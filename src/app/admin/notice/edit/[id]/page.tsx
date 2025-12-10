@@ -220,16 +220,21 @@ export default function EditPage(): React.ReactElement {
             
             if (newFiles.length > 0) {
                 try {
+                    console.log('Preparing to upload new files:', newFiles);
                     const formData = new FormData();
                     formData.append('noticeId', noticeId);
                     
                     newFiles.forEach(fileData => {
                         if (fileData.file && !fileData.isOverSize) {
+                            console.log('Adding file to FormData:', fileData.name);
                             formData.append('files', fileData.file);
                         }
                     });
 
-                    if (formData.getAll('files').length > 0) {
+                    const fileCount = formData.getAll('files').length;
+                    console.log('Total files to upload:', fileCount);
+
+                    if (fileCount > 0) {
                         const uploadResponse = await fetch('/api/upload', {
                             method: 'POST',
                             body: formData
@@ -238,8 +243,10 @@ export default function EditPage(): React.ReactElement {
                         if (uploadResponse.ok) {
                             const uploadResult = await uploadResponse.json();
                             newAttachments = uploadResult.files || [];
+                            console.log('File upload successful:', newAttachments);
                         } else {
-                            console.error('File upload failed');
+                            const errorData = await uploadResponse.json();
+                            console.error('File upload failed:', uploadResponse.status, errorData);
                         }
                     }
                 } catch (uploadError) {

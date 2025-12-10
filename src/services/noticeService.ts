@@ -204,6 +204,8 @@ export async function createNotice(
         const validFiles = formData.files.slice(0, 10);
         
         if (validFiles.length > 0) {
+          console.log('Preparing to upload files in createNotice:', validFiles.length);
+          
           // 백엔드 API를 통해 파일 업로드
           const uploadResponse = await fetch('/api/upload', {
             method: 'POST',
@@ -211,6 +213,7 @@ export async function createNotice(
               const formData = new FormData();
               formData.append('noticeId', docRef.id);
               validFiles.forEach(file => {
+                console.log('Adding file to FormData in createNotice:', file.name);
                 formData.append('files', file);
               });
               return formData;
@@ -221,6 +224,8 @@ export async function createNotice(
             const uploadResult = await uploadResponse.json();
             attachments = uploadResult.files || [];
             
+            console.log('File upload successful in createNotice:', attachments);
+            
             // 첨부파일 정보를 Firestore 문서에 업데이트
             await updateDoc(docRef, {
               attachments: attachments,
@@ -228,7 +233,7 @@ export async function createNotice(
             });
           } else {
             const errorData = await uploadResponse.json();
-            console.error('파일 업로드 API 에러:', errorData.error);
+            console.error('파일 업로드 API 에러:', uploadResponse.status, errorData);
             // 파일 업로드 실패해도 공지사항은 생성됨
           }
         }
