@@ -113,7 +113,14 @@ app.get('/api/server-info', async (req, res) => {
       success: true,
       serverIP: serverIP,
       timestamp: new Date().toISOString(),
-      message: '이 IP를 네이버 커머스 API 허용 목록에 추가해주세요'
+      message: '이 IP를 네이버 커머스 API 허용 목록에 추가해주세요',
+      // GCS 환경변수 상태 체크 (보안상 실제 값은 숨김)
+      gcsConfig: {
+        projectId: process.env.GOOGLE_CLOUD_PROJECT_ID ? '설정됨' : '설정안됨',
+        bucketName: process.env.GOOGLE_CLOUD_BUCKET_NAME ? '설정됨' : '설정안됨',
+        credentialsJson: process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON ? '설정됨' : '설정안됨',
+        credentialsFile: process.env.GOOGLE_APPLICATION_CREDENTIALS ? '설정됨' : '설정안됨'
+      }
     });
   } catch (error) {
     res.json({
