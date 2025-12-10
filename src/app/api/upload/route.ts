@@ -7,10 +7,23 @@ let bucket: any;
 
 try {
   console.log('Initializing Google Cloud Storage...');
-  storage = new Storage({
-    projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
-    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-  });
+  
+  // Render 환경에서는 환경변수로 직접 인증 정보 전달
+  const credentials = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+  
+  if (credentials) {
+    // JSON 문자열을 파싱하여 사용
+    storage = new Storage({
+      projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+      credentials: JSON.parse(credentials),
+    });
+  } else {
+    // 로컬 개발 환경에서는 기존 방식 사용
+    storage = new Storage({
+      projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+      keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    });
+  }
 
   const bucketName = process.env.GOOGLE_CLOUD_BUCKET_NAME || 'maker3d-attachments';
   bucket = storage.bucket(bucketName);
