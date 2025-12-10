@@ -7,27 +7,46 @@ let bucket: any;
 
 try {
   console.log('Initializing Google Cloud Storage...');
+  console.log('Environment check:', {
+    hasProjectId: !!process.env.GOOGLE_CLOUD_PROJECT_ID,
+    hasCredentialsJson: !!process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON,
+    hasCredentialsFile: !!process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    projectId: process.env.GOOGLE_CLOUD_PROJECT_ID
+  });
   
-  // Render 환경에서는 환경변수로 직접 인증 정보 전달
-  const credentials = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
-  
-  if (credentials) {
-    // JSON 문자열을 파싱하여 사용
-    storage = new Storage({
-      projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
-      credentials: JSON.parse(credentials),
-    });
+  // 다중 인증 방식 시도
+  let storageOptions: any = {
+    projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+  };
+
+  // 방법 1: JSON 환경변수 사용
+  const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+  if (credentialsJson) {
+    try {
+      const credentials = JSON.parse(credentialsJson);
+      storageOptions.credentials = credentials;
+      console.log('Using JSON credentials');
+    } catch (jsonError) {
+      console.error('JSON parsing error:', jsonError);
+      // JSON 파싱 실패 시 파일 방식으로 폴백
+      if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+        storageOptions.keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+        console.log('Falling back to keyFilename');
+      }
+    }
+  } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    // 방법 2: 파일 경로 사용 (로컬 개발용)
+    storageOptions.keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    console.log('Using keyFilename');
   } else {
-    // 로컬 개발 환경에서는 기존 방식 사용
-    storage = new Storage({
-      projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
-      keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-    });
+    // 방법 3: Application Default Credentials (GCE, Cloud Run 등)
+    console.log('Using Application Default Credentials');
   }
 
+  storage = new Storage(storageOptions);
   const bucketName = process.env.GOOGLE_CLOUD_BUCKET_NAME || 'maker3d';
   bucket = storage.bucket(bucketName);
-  console.log('GCS initialized successfully');
+  console.log('GCS initialized with options:', Object.keys(storageOptions));
 } catch (error) {
   console.error('GCS initialization error:', error);
 }
