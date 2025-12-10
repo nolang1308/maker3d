@@ -84,8 +84,22 @@ app.use(cors({
 }));
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.json({ message: 'Backend server is running!' });
+app.get('/', async (req, res) => {
+  try {
+    // 서버 IP 정보 추가
+    const ipResponse = await axios.get('https://api.ipify.org?format=json');
+    const serverIP = ipResponse.data.ip;
+    
+    console.log('서버 IP:', serverIP); // 로그에 출력
+    
+    res.json({ 
+      message: 'Backend server is running!',
+      serverIP: serverIP,
+      note: '이 IP를 네이버 커머스 API에 등록하세요'
+    });
+  } catch (error) {
+    res.json({ message: 'Backend server is running!' });
+  }
 });
 
 // 서버 IP 확인 API
