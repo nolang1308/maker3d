@@ -139,8 +139,8 @@ export async function POST(request: NextRequest) {
         console.log(`파일 업로드 완료: ${file.name} -> ${filePath}`);
       } catch (error) {
         console.error(`파일 ${file.name} 업로드 실패:`, error);
-        console.error('Error stack:', error.stack);
-        console.error('Error message:', error.message);
+        console.error('Error stack:', (error as Error).stack);
+        console.error('Error message:', (error as Error).message);
         return NextResponse.json(
           { error: `파일 ${file.name} 업로드에 실패했습니다.` },
           { status: 500 }
@@ -156,8 +156,8 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('파일 업로드 API 에러:', error);
-    console.error('Error stack:', error.stack);
-    console.error('Error message:', error.message);
+    console.error('Error stack:', (error as Error).stack);
+    console.error('Error message:', (error as Error).message);
     return NextResponse.json(
       { error: '파일 업로드에 실패했습니다.' },
       { status: 500 }
