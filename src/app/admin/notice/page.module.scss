@@ -1,0 +1,241 @@
+@use 'sass:color';
+@import '../../../styles/style-system';
+
+.container {
+
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-top: 0;
+  flex-direction: column;
+  align-items: center;
+
+
+  .ManagerSignatureBar {
+    position: fixed;
+    top: 75px; // 상단 바 높이에 맞게 조정
+
+    width: 100%;
+    height: 44px;
+    background-color: #333333;
+    display: flex;
+    align-items: center;
+    padding-left: 35px;
+    flex-direction: row;
+
+    p {
+      margin-left: 10px;
+      @include body-medium;
+      color: white;
+    }
+  }
+
+
+}
+
+.noticeContainer {
+  margin-top: 90px;
+  width: 100%;
+  max-width: 1200px;
+
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.title {
+  @include title-large();
+  color: #0a0a0a;
+  margin: 0;
+}
+
+.addButton {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  
+  &:hover {
+    background-color: #0056b3;
+  }
+}
+
+.searchSection {
+  margin-bottom: 20px;
+}
+
+.searchBox {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+
+.searchLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #495057;
+  white-space: nowrap;
+}
+
+.searchInput {
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  flex: 1;
+  
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+  
+  &::placeholder {
+    color: #999;
+  }
+}
+
+.searchButton {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #5a6268;
+  }
+}
+
+.tableWrapper {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.noticeTable {
+  width: 100%;
+  border-collapse: collapse;
+  
+  th {
+    background-color: #f8f9fa;
+    padding: 12px 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 1px solid #dee2e6;
+    text-align: center;
+
+    &:first-child {
+      width: 8%;
+    }
+    
+    &:nth-child(2) {
+      width: 50%;
+      text-align: left;
+    }
+    
+    &:nth-child(3) {
+      width: 15%;
+    }
+    
+    &:nth-child(4) {
+      width: 12%;
+    }
+    
+    &:nth-child(5) {
+      width: 15%;
+    }
+  }
+  
+  td {
+    padding: 12px 8px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    color: #495057;
+    text-align: center;
+    
+    &:nth-child(2) {
+      text-align: left;
+      font-weight: 500;
+    }
+  }
+  
+  tbody tr {    
+    &:hover {
+      background-color: #f8f9fa;
+    }
+    
+    &:last-child td {
+      border-bottom: none;
+    }
+  }
+}
+
+.editButton {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #0056b3;
+  }
+}
+
+.bulkActions {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.deleteButton {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #c82333;
+  }
+}
+
+.paginationWrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+// 기존 스타일들 정리
+.titleCell {
+  font-weight: 500;
+}
+
+.tableRow {
+  &:hover {
+    background-color: #f8f9fa;
+  }
+}

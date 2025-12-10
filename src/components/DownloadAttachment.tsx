@@ -30,15 +30,23 @@ export function DownloadAttachment(params: DownloadAttachment.Params): React.Rea
         ...DownloadAttachment.Defaults,
         ...params,
     };
-    const handleDownload=()=> {
-        const fileName = options.title
-
-        const link = document.createElement("a");
-        link.href = options.path;
-        link.download = fileName; // 확장자 포함해서 다운로드
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    const handleDownload = async () => {
+        try {
+            // 백엔드 다운로드 API를 통해 파일 다운로드
+            const downloadUrl = `/api/download?path=${encodeURIComponent(options.path)}&name=${encodeURIComponent(options.title)}`;
+            
+            // 새 창에서 다운로드 시작
+            const link = document.createElement("a");
+            link.href = downloadUrl;
+            link.download = options.title;
+            link.target = "_blank";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('다운로드 에러:', error);
+            alert('파일 다운로드에 실패했습니다.');
+        }
     }
     return (
         <div className={Styles.attachmentList}>

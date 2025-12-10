@@ -32,7 +32,7 @@ export default function ProductDetailPage() {
         const fetchProductDetail = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`http://localhost:3001/api/naver/product/${productId}`, {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/naver/product/${productId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

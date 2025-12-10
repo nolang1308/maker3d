@@ -3,10 +3,10 @@ import cors from 'cors';
 import axios from 'axios';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 10000; // Render는 보통 10000 포트 사용
 import bcrypt from 'bcrypt';
-const clientId = "5msFCeD8NjQ9y68KU8whcb";
-const clientSecret = "$2a$04$MXlFbXn9eAC0t3gUIj/rD.";
+const clientId = process.env.NAVER_CLIENT_ID || "5msFCeD8NjQ9y68KU8whcb";
+const clientSecret = process.env.NAVER_CLIENT_SECRET || "$2a$04$MXlFbXn9eAC0t3gUIj/rD.";
 
 // 토큰 캐싱용 변수들
 let cachedToken = null;
@@ -65,7 +65,23 @@ async function getAccessToken() {
   }
 }
 
-app.use(cors());
+// CORS 설정 (개발환경과 프로덕션 환경 모두 허용)
+app.use(cors({
+  origin: function (origin, callback) {
+    // 개발환경이나 Vercel 도메인 허용
+    if (!origin || 
+        origin.includes('localhost') || 
+        origin.includes('vercel.app') ||
+        origin.includes('render.com')) {
+      callback(null, true);
+    } else {
+      callback(null, true); // 일단 모든 origin 허용 (테스트용)
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 app.get('/', (req, res) => {

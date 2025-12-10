@@ -1,0 +1,86 @@
+@use 'sass:color';
+@import '../../../styles/style-system';
+
+.container {
+
+  width: 100%;
+  display: flex;
+
+  justify-content: center;
+  flex-direction: row;
+  align-items: center;
+
+
+
+  .ManagerSignatureBar {
+    position: fixed;
+    top: 75px; // 상단 바 높이에 맞게 조정
+
+    width: 100%;
+    height: 44px;
+    background-color: #333333;
+    display: flex;
+    align-items: center;
+    padding-left: 35px;
+    flex-direction: row;
+
+    p {
+      margin-left: 10px;
+      @include body-medium;
+      color: white;
+    }
+  }
+  .menuBar{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 45px;
+    padding-left: 20px;
+    padding-right: 20px;
+    width:280px;
+    height: 100vh;
+    background-color: #1D1D1F;
+    gap: 28px;
+    .logoIcon {
+      margin-top:28px;
+      width: 185px;
+      height: 20px;
+      object-fit: contain;
+    }
+    .orderBtn{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 48px;
+      border-radius: 10px;
+      background-color: #007AFF;
+      @include title-small();
+      color: #F5F5F7;
+      cursor: pointer;
+    }
+    .completeBtn{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 48px;
+      border-radius: 10px;
+      background-color: #34C759;
+      @include title-small();
+      color: #F5F5F7;
+      cursor: pointer;
+
+
+    }
+  }
+  .mainWrapper{
+    padding-top: 45px;
+    background-color: #2f2f5a;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+  }
+
+
+}
