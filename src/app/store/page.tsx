@@ -45,6 +45,8 @@ export default function StorePage() {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
+
     // 샘플 광고 이미지들 (실제로는 서버에서 받아온 데이터)
     const advertisements = [
         {
@@ -82,7 +84,7 @@ export default function StorePage() {
             setLoading(true);
             try {
                 // 1. 토큰 발행
-                const tokenResponse = await fetch('http://localhost:3001/api/naver/token', {
+                const tokenResponse = await fetch(`${BACKEND_URL}/api/naver/token`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -92,7 +94,7 @@ export default function StorePage() {
                 // console.log('토큰 발행 성공:', tokenData);
 
                 // 2. 상품 목록 가져오기
-                const productsResponse = await fetch('http://localhost:3001/api/naver/product/all', {
+                const productsResponse = await fetch(`${BACKEND_URL}/api/naver/product/all`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

@@ -13,6 +13,8 @@ export default function ProductDetailPage() {
     const router = useRouter();
     const productId = params.id as string;
 
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
+
     const [quantity, setQuantity] = useState(1);
     const [selectedOption, setSelectedOption] = useState('');
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -105,7 +107,7 @@ export default function ProductDetailPage() {
         const fetchProductFromAll = async (currentProductId: string) => {
             try {
                 console.log('=== product/all API로 전체 상품 목록 조회 시작 ===');
-                const response = await fetch('http://localhost:3001/api/naver/product/all', {
+                const response = await fetch(`${BACKEND_URL}/api/naver/product/all`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
