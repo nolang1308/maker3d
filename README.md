@@ -1,5 +1,7 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+**MAKER3D** - 3D 프린팅 전문 웹 플랫폼
+
 ## Getting Started
 
 First, run the development server:
