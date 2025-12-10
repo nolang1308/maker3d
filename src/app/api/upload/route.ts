@@ -55,10 +55,25 @@ export async function POST(request: NextRequest) {
       
       if (!bucketExists) {
         const bucketName = process.env.GOOGLE_CLOUD_BUCKET_NAME || 'maker3d-attachments';
-        return NextResponse.json(
-          { error: `버킷 '${bucketName}'이 존재하지 않습니다.` },
-          { status: 500 }
-        );
+        console.log(`버킷 '${bucketName}'이 존재하지 않아 생성을 시도합니다...`);
+        
+        try {
+          // 버킷 자동 생성
+          await bucket.create({
+            location: 'US', // 또는 원하는 리전
+            storageClass: 'STANDARD'
+          });
+          console.log(`버킷 '${bucketName}' 생성 완료`);
+        } catch (createError) {
+          console.error('버킷 생성 실패:', createError);
+          return NextResponse.json(
+            { 
+              error: `버킷 '${bucketName}'이 존재하지 않으며 생성에도 실패했습니다.`,
+              details: 'Google Cloud Console에서 수동으로 버킷을 생성해주세요.'
+            },
+            { status: 500 }
+          );
+        }
       }
     } catch (bucketError) {
       console.error('Bucket access error:', bucketError);
