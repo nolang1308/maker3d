@@ -217,22 +217,48 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const filePath = searchParams.get('filePath');
 
+    console.log('Individual file deletion request for:', filePath);
+
     if (!filePath) {
+      console.error('Missing filePath parameter');
       return NextResponse.json(
         { error: '파일 경로가 누락되었습니다.' },
         { status: 400 }
       );
     }
 
+    // GCS 파일 객체 생성
     const file = bucket.file(filePath);
-    await file.delete();
+    
+    // 파일 존재 확인
+    const [exists] = await file.exists();
+    if (!exists) {
+      console.log('File not found for deletion:', filePath);
+      return NextResponse.json(
+        { 
+          success: true, // 파일이 없어도 성공으로 처리 
+          message: '파일이 이미 존재하지 않습니다.'
+        }
+      );
+    }
 
-    return NextResponse.json({ success: true });
+    console.log('Deleting file:', filePath);
+    await file.delete();
+    console.log('File deleted successfully:', filePath);
+
+    return NextResponse.json({ 
+      success: true,
+      message: '파일이 삭제되었습니다.'
+    });
 
   } catch (error) {
     console.error('파일 삭제 API 에러:', error);
+    console.error('Error stack:', (error as Error).stack);
     return NextResponse.json(
-      { error: '파일 삭제에 실패했습니다.' },
+      { 
+        error: '파일 삭제에 실패했습니다.',
+        details: (error as Error).message 
+      },
       { status: 500 }
     );
   }

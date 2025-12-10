@@ -277,18 +277,31 @@ export async function updateNotice(id: string, updates: Partial<Notice>): Promis
 // 공지사항 삭제
 export async function deleteNotice(id: string): Promise<boolean> {
   try {
-    // 백엔드 API를 통해 첨부파일들 먼저 삭제
-    try {
-      const deleteResponse = await fetch(`/api/upload/folder?noticeId=${id}`, {
-        method: 'DELETE',
+    // 먼저 공지사항 정보를 가져와서 첨부파일 목록 확인
+    const notice = await getNotice(id);
+    
+    // 첨부파일이 있다면 개별적으로 삭제 시도
+    if (notice && notice.attachments && notice.attachments.length > 0) {
+      console.log(`Attempting to delete ${notice.attachments.length} attachments for notice ${id}`);
+      
+      const deletePromises = notice.attachments.map(async (attachment) => {
+        try {
+          const deleteResponse = await fetch(`/api/upload?filePath=${encodeURIComponent(attachment.url)}`, {
+            method: 'DELETE'
+          });
+          
+          if (!deleteResponse.ok) {
+            console.error(`첨부파일 ${attachment.name} 삭제 실패`);
+          } else {
+            console.log(`첨부파일 ${attachment.name} 삭제 성공`);
+          }
+        } catch (fileError) {
+          console.error(`첨부파일 ${attachment.name} 삭제 에러:`, fileError);
+        }
       });
       
-      if (!deleteResponse.ok) {
-        console.error('첨부파일 삭제 실패, 계속 진행합니다.');
-      }
-    } catch (fileError) {
-      console.error('첨부파일 삭제 에러:', fileError);
-      // 파일 삭제 실패해도 공지사항 삭제는 계속 진행
+      // 모든 첨부파일 삭제를 시도하지만 실패해도 진행
+      await Promise.allSettled(deletePromises);
     }
     
     // Firestore 문서 삭제
