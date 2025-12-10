@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
       console.log('Bucket exists:', bucketExists);
       
       if (!bucketExists) {
+        const bucketName = process.env.GOOGLE_CLOUD_BUCKET_NAME || 'maker3d-attachments';
         return NextResponse.json(
           { error: `버킷 '${bucketName}'이 존재하지 않습니다.` },
           { status: 500 }
