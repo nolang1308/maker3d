@@ -88,6 +88,28 @@ app.get('/', (req, res) => {
   res.json({ message: 'Backend server is running!' });
 });
 
+// 서버 IP 확인 API
+app.get('/api/server-info', async (req, res) => {
+  try {
+    // 외부 서비스를 통해 서버의 공인 IP 확인
+    const ipResponse = await axios.get('https://api.ipify.org?format=json');
+    const serverIP = ipResponse.data.ip;
+    
+    res.json({
+      success: true,
+      serverIP: serverIP,
+      timestamp: new Date().toISOString(),
+      message: '이 IP를 네이버 커머스 API 허용 목록에 추가해주세요'
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      error: 'IP 확인 실패',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
