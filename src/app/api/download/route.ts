@@ -82,53 +82,19 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log('File exists, starting download:', filePath);
+    console.log('File exists, generating signed URL:', filePath);
 
-    // 파일 메타데이터 가져오기
-    const [metadata] = await file.getMetadata();
-    const contentType = metadata.contentType || 'application/octet-stream';
-    const fileSize = metadata.size;
-    const originalName = metadata.metadata?.originalName || fileName || 'download';
-
-    console.log('File metadata:', { contentType, fileSize, originalName });
-
-    // 파일 스트림 생성
-    const stream = file.createReadStream();
-    
-    // ReadableStream으로 변환
-    const readableStream = new ReadableStream({
-      start(controller) {
-        stream.on('data', (chunk: Buffer) => {
-          controller.enqueue(new Uint8Array(chunk));
-        });
-        
-        stream.on('end', () => {
-          controller.close();
-        });
-        
-        stream.on('error', (error: Error) => {
-          console.error('Stream error:', error);
-          controller.error(error);
-        });
-      },
+    // Signed URL 생성 (1시간 유효)
+    const [signedUrl] = await file.getSignedUrl({
+      action: 'read',
+      expires: Date.now() + (60 * 60 * 1000), // 1시간
+      responseDisposition: `attachment; filename="${encodeURIComponent(fileName)}"`,
     });
 
-    // 파일명을 URL 인코딩하되 한글은 그대로 유지
-    const encodedFileName = encodeURIComponent(originalName);
+    console.log('Signed URL generated successfully');
 
-    // 파일 다운로드 응답 생성
-    const response = new NextResponse(readableStream, {
-      status: 200,
-      headers: {
-        'Content-Type': contentType,
-        'Content-Disposition': `attachment; filename*=UTF-8''${encodedFileName}`,
-        'Content-Length': fileSize ? fileSize.toString() : '0',
-        'Cache-Control': 'private, no-cache',
-      },
-    });
-
-    console.log('Download response created successfully for:', originalName);
-    return response;
+    // 리다이렉트 응답으로 Signed URL로 이동
+    return NextResponse.redirect(signedUrl, 302);
 
   } catch (error) {
     console.error('파일 다운로드 API 에러:', error);
