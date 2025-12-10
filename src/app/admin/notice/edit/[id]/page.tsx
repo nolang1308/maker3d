@@ -29,7 +29,7 @@ export default function EditPage(): React.ReactElement {
     const [initialLoading, setInitialLoading] = useState(true);
 
     const MAX_FILES = 10;
-    const MAX_SIZE = 20 * 1024 * 1024; // 20MB
+    const MAX_SIZE = 4 * 1024 * 1024; // 4MB (Vercel 제한 고려)
 
     // 게시글 데이터 로드
     useEffect(() => {

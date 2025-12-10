@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Google Cloud Storage external package 설정
+  serverExternalPackages: ['@google-cloud/storage'],
 };
 
 export default nextConfig;

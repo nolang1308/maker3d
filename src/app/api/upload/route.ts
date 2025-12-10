@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Storage } from '@google-cloud/storage';
 
+// API Route 설정 - 파일 업로드를 위한 크기 제한 증가
+export const maxDuration = 60; // 60초 타임아웃
+export const runtime = 'nodejs';
+
 // Google Cloud Storage 설정
 let storage: Storage;
 let bucket: any;
@@ -124,15 +128,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 파일 크기 검증 (20MB 제한)
-    const MAX_SIZE = 20 * 1024 * 1024;
+    // 파일 크기 검증 (개별 파일 4MB, 총합 4MB 제한 - Vercel 제한 고려)
+    const MAX_SIZE = 4 * 1024 * 1024;
+    const MAX_TOTAL_SIZE = 4 * 1024 * 1024;
+    
+    let totalSize = 0;
     for (const file of files) {
       if (file.size > MAX_SIZE) {
         return NextResponse.json(
-          { error: `파일 ${file.name}이 크기 제한(20MB)을 초과했습니다.` },
+          { error: `파일 ${file.name}이 크기 제한(4MB)을 초과했습니다.` },
           { status: 400 }
         );
       }
+      totalSize += file.size;
+    }
+    
+    if (totalSize > MAX_TOTAL_SIZE) {
+      return NextResponse.json(
+        { error: `전체 파일 크기가 제한(4MB)을 초과했습니다. 현재: ${Math.round(totalSize / 1024 / 1024 * 100) / 100}MB` },
+        { status: 400 }
+      );
     }
 
     const uploadResults = [];

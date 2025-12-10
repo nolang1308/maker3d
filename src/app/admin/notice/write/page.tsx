@@ -34,7 +34,7 @@ export default function Page(): React.ReactElement {
     }, [user, router]);
 
     const MAX_FILES = 10;
-    const MAX_SIZE = 20 * 1024 * 1024; // 20MB
+    const MAX_SIZE = 4 * 1024 * 1024; // 4MB (Vercel 제한 고려)
 
     const handleFileUpload = (newFiles: FileList) => {
         const fileArray = Array.from(newFiles);

@@ -160,6 +160,15 @@ app.get('/api/test-gcs', async (req, res) => {
   }
 });
 
+// 파일 업로드 API (GCS)
+app.post('/api/upload', async (req, res) => {
+  res.json({
+    success: false,
+    message: 'GCS 파일 업로드는 프론트엔드에서 처리됩니다. Vercel 환경변수를 확인하세요.',
+    note: 'GOOGLE_APPLICATION_CREDENTIALS_JSON을 Vercel에 설정해주세요.'
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
