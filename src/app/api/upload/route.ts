@@ -25,7 +25,7 @@ try {
     });
   }
 
-  const bucketName = process.env.GOOGLE_CLOUD_BUCKET_NAME || 'maker3d-attachments';
+  const bucketName = process.env.GOOGLE_CLOUD_BUCKET_NAME || 'maker3d';
   bucket = storage.bucket(bucketName);
   console.log('GCS initialized successfully');
 } catch (error) {
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       console.log('Bucket exists:', bucketExists);
       
       if (!bucketExists) {
-        const bucketName = process.env.GOOGLE_CLOUD_BUCKET_NAME || 'maker3d-attachments';
+        const bucketName = process.env.GOOGLE_CLOUD_BUCKET_NAME || 'maker3d';
         console.log(`버킷 '${bucketName}'이 존재하지 않아 생성을 시도합니다...`);
         
         try {
