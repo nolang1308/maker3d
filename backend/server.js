@@ -131,6 +131,35 @@ app.get('/api/server-info', async (req, res) => {
   }
 });
 
+// GCS 연결 테스트 API
+app.get('/api/test-gcs', async (req, res) => {
+  try {
+    // 간단한 GCS 연결 테스트
+    const response = await axios.get('https://www.googleapis.com/storage/v1/b', {
+      params: {
+        project: process.env.GOOGLE_CLOUD_PROJECT_ID
+      },
+      headers: {
+        'Authorization': `Bearer ${process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON ? 'test' : 'missing'}`
+      }
+    });
+    
+    res.json({
+      success: true,
+      message: 'GCS 기본 연결 테스트 완료',
+      buckets: response.data
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      error: 'GCS 연결 실패',
+      details: error.message,
+      projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+      hasCredentials: !!process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
