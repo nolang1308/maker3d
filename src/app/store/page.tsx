@@ -48,7 +48,6 @@ export default function StorePage() {
     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
     
     // 디버깅용 - 환경변수 확인
-    console.log('프론트엔드에서 사용 중인 BACKEND_URL:', BACKEND_URL);
 
     // 샘플 광고 이미지들 (실제로는 서버에서 받아온 데이터)
     const advertisements = [
