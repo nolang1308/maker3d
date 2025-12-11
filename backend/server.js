@@ -1,12 +1,18 @@
 import express from 'express';
 import cors from 'cors';
 import axios from 'axios';
+import dotenv from 'dotenv';
+
+// 로컬 개발환경에서는 .env.local 파일 로드
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: '.env.local' });
+}
 
 const app = express();
 const PORT = process.env.PORT || 10000; // Render는 보통 10000 포트 사용
 import bcrypt from 'bcrypt';
-const clientId = process.env.NAVER_CLIENT_ID || "5msFCeD8NjQ9y68KU8whcb";
-const clientSecret = process.env.NAVER_CLIENT_SECRET || "$2a$04$MXlFbXn9eAC0t3gUIj/rD.";
+const clientId = process.env.NAVER_CLIENT_ID;
+const clientSecret = process.env.NAVER_CLIENT_SECRET;
 
 // 토큰 캐싱용 변수들
 let cachedToken = null;
