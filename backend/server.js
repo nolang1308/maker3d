@@ -2,6 +2,15 @@ import express from 'express';
 import cors from 'cors';
 import axios from 'axios';
 import dotenv from 'dotenv';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { getPrintTime } from './prusaClicer.js';
+
+// ES module에서 __dirname 구현
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // 로컬 개발환경에서는 .env.local 파일 로드
 if (process.env.NODE_ENV !== 'production') {
@@ -75,8 +84,8 @@ async function getAccessToken() {
 app.use(cors({
   origin: function (origin, callback) {
     // 개발환경이나 Vercel 도메인 허용
-    if (!origin || 
-        origin.includes('localhost') || 
+    if (!origin ||
+        origin.includes('localhost') ||
         origin.includes('vercel.app') ||
         origin.includes('render.com')) {
       callback(null, true);
@@ -89,6 +98,32 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
+
+// Multer 설정 (STL 파일 업로드)
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/octet-stream' || file.originalname.endsWith('.stl')) {
+      cb(null, true);
+    } else {
+      cb(new Error('STL 파일만 업로드 가능합니다.'), false);
+    }
+  }
+});
 
 app.get('/', async (req, res) => {
   try {
@@ -173,6 +208,43 @@ app.post('/api/upload', async (req, res) => {
     message: 'GCS 파일 업로드는 프론트엔드에서 처리됩니다. Vercel 환경변수를 확인하세요.',
     note: 'GOOGLE_APPLICATION_CREDENTIALS_JSON을 Vercel에 설정해주세요.'
   });
+});
+
+// STL 파일 업로드 및 프린팅 시간 계산 API
+app.post('/api/upload-stl', upload.single('stlFile'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'STL 파일이 업로드되지 않았습니다.' });
+    }
+
+    const filePath = req.file.path;
+    console.log('STL 파일 업로드됨:', filePath);
+
+    // PrusaSlicer로 프린팅 시간 계산
+    const printTime = await getPrintTime(filePath);
+
+    // 업로드된 STL 파일 삭제 (처리 완료 후)
+    fs.unlinkSync(filePath);
+
+    res.json({
+      success: true,
+      printTime: printTime,
+      originalName: req.file.originalname
+    });
+
+  } catch (error) {
+    console.error('Error processing STL file:', error);
+
+    // 오류 발생 시 업로드된 파일 삭제
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+
+    res.status(500).json({
+      error: 'STL 파일 처리 중 오류가 발생했습니다.',
+      details: error.message
+    });
+  }
 });
 
 app.listen(PORT, () => {
