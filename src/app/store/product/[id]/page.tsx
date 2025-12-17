@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import MiniItemComponent from '@/components/MiniItemComponent';
 import ReviewComponent from '@/components/ReviewComponent';
+import { requestNaverPay, PaymentData } from '@/utils/naverPay';
 
 
 export default function ProductDetailPage() {
@@ -28,6 +29,7 @@ export default function ProductDetailPage() {
     const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
     const [thumbnailStartIndex, setThumbnailStartIndex] = useState(0);
     const [categoryId, setCategoryId] = useState('');
+    const [isPaymentLoading, setIsPaymentLoading] = useState(false);
 
     // 상품 데이터 가져오기
     useEffect(() => {
@@ -213,13 +215,30 @@ export default function ProductDetailPage() {
         // 실제로는 장바구니 API 호출
     };
 
-    const handleBuyNow = () => {
-        console.log('바로 구매:', {
-            productId,
-            quantity,
-            selectedOption
-        });
-        // 실제로는 주문 페이지로 이동
+    const handleBuyNow = async () => {
+        if (!product) {
+            alert('상품 정보를 불러오는 중입니다.');
+            return;
+        }
+
+        setIsPaymentLoading(true);
+
+        try {
+            const paymentData: PaymentData = {
+                productId,
+                productName: product.name,
+                totalPayAmount: product.finalPrice * quantity,
+                quantity,
+                selectedOption
+            };
+
+            await requestNaverPay(paymentData);
+        } catch (error) {
+            console.error('결제 오류:', error);
+            alert('결제 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+        } finally {
+            setIsPaymentLoading(false);
+        }
     };
 
     // 썸네일 네비게이션 함수들
@@ -509,7 +528,13 @@ export default function ProductDetailPage() {
                                     <span className={styles.smallText}>네이버포인트 적립액</span>
                                     <span className={styles.smallText}>네이버페이</span>
                                 </div>
-                                <button className={styles.payButton}>PAY 구매</button>
+                                <button 
+                                    className={styles.payButton}
+                                    onClick={handleBuyNow}
+                                    disabled={isPaymentLoading}
+                                >
+                                    {isPaymentLoading ? '결제 준비 중...' : 'PAY 구매'}
+                                </button>
                                 <button className={styles.wishButton}>
                                     <span>찜</span>
                                 </button>

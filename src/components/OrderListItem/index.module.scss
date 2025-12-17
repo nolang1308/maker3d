@@ -1,0 +1,244 @@
+@import '../../styles/style-system';
+
+.orderItem {
+  width: 100%;
+  background-color: #FFFFFF;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  height: 100px;
+  padding: 20px 24px;
+  border: 1px solid #E5E5EA;
+  margin-bottom: 8px;
+  position: relative;
+  .statusColorBar{
+    position:  absolute;
+    width: 4px;
+    height: 50px;
+    background-color: #007AFF;
+    border-radius: 100px;
+    left: 15px;
+
+  }
+
+  // 주문번호 컬럼
+  .orderNumberColumn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: flex-start;
+    margin-left: 10px;
+
+    .orderNumber {
+      @include button-medium();
+      color: #1D1D1F;
+      margin: 0;
+    }
+
+    .elapsedTime {
+      @include label-medium();
+      color: #86868B;
+      margin: 0;
+    }
+
+    .completedText {
+      @include label-medium();
+      color: #34C759;
+      margin: 0;
+      font-weight: 600;
+    }
+  }
+
+  // 고객 정보 컬럼
+  .customerColumn {
+    flex: 1.2;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-start;
+
+    .customerName {
+      @include body-small();
+      color: #1D1D1F;
+      margin: 0;
+    }
+
+    .customerPhone {
+      @include label-large();
+      color: #86868B;
+      margin: 0;
+    }
+
+    .customerEmail {
+      @include label-large();
+      color: #007AFF;
+      margin: 0;
+    }
+  }
+
+  // 파일 컬럼
+  .fileColumn {
+    flex: 1;
+    display: flex;
+    justify-content: flex-start;
+
+    .fileChip {
+      min-width: 140px;
+      display: flex;
+      height: 32px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      background-color: #F5F5F7;
+      padding: 7px 14px 7px 14px;
+
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      .fileCount {
+        @include label-large();
+        color: #1D1D1F;
+        margin: 0;
+      }
+
+      .downloadBtn {
+        color: #007AFF;
+        @include label-large();
+        text-decoration: underline;
+        background: none;
+        border: none;
+        cursor: pointer;
+
+        &:hover {
+          color: #0056CC;
+        }
+      }
+
+      &:hover {
+        background-color: #E5E5EA;
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+    }
+  }
+
+  // 결제 금액 컬럼
+  .paymentColumn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+
+    .paymentAmount {
+      @include title-medium();
+      color: #1D1D1F;
+      margin: 0;
+    }
+
+    .paymentStatus {
+      @include label-medium();
+      color: #34C759;
+      margin: 0;
+    }
+  }
+
+  // 주문 시간 컬럼
+  .timeColumn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+
+    .orderDate {
+      @include label-large();
+      color: #1D1D1F;
+      margin: 0;
+    }
+
+    .orderTime {
+      @include label-large();
+      color: #86868B;
+      margin: 0;
+    }
+  }
+
+  // 작업 상태 컬럼
+  .workColumn {
+    flex: 1;
+    display: flex;
+    justify-content: flex-start;
+
+    .workStatus {
+      width: 100px;
+      height: 36px;
+      border-radius: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      @include label-large();
+      
+      // 처리시작 - 파란색
+      &.statusStart {
+        background-color: #007AFF;
+        color: #FFFFFF;
+      }
+
+      // 처리중 - 주황색  
+      &.statusInProgress {
+        background-color: #FF9500;
+        color: #FFFFFF;
+      }
+
+      // 배송완료 - 초록색
+      &.statusCompleted {
+        background-color: #34C759;
+        color: #FFFFFF;
+      }
+    }
+  }
+
+  // 취소 버튼 컬럼
+  .actionColumn {
+    flex: 0.5;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+
+    .cancelBtn {
+      width: 60px;
+      height: 32px;
+      border-radius: 100px;
+      border: 1px solid #FF3B30;
+      background-color: #FFFFFF;
+      color: #FF3B30;
+      @include label-large();
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: #FF3B30;
+        color: #FFFFFF;
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+
+  //// 호버 효과
+  //&:hover {
+  //  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  //  transform: translateY(-1px);
+  //  transition: all 0.2s ease;
+  //}
+}
