@@ -15,8 +15,6 @@ interface FileItem {
 }
 
 export default function QuotePage() {
-    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
-    
     const [quantity, setQuantity] = useState(1);
     const [isEditing, setIsEditing] = useState(false);
     const [material, setMaterial] = useState('');
@@ -78,7 +76,8 @@ export default function QuotePage() {
             const formData = new FormData();
             formData.append('stlFile', file);
             
-            const response = await fetch(`${BACKEND_URL}/api/upload-stl`, {
+            // Next.js API Route를 통해 프록시로 백엔드 호출 (HTTPS 보안 문제 해결)
+            const response = await fetch('/api/upload-stl', {
                 method: 'POST',
                 body: formData
             });
