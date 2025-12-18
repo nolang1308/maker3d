@@ -35,7 +35,7 @@ export default function NoticePage() {
 
     // 페이지별 칩 설정
     const orderChips = ['전체', '대기중', '처리중'];
-    const deliveryChips = ['전체', '배송완료'];
+    const deliveryChips = ['전체', '처리완료'];
     
     const chips = currentPage === 'order' ? orderChips : deliveryChips;
 
@@ -74,7 +74,7 @@ export default function NoticePage() {
                     fileUrls: data.fileUrls || [],
                     paymentAmount: data.totalPrice || 0,
                     paymentStatus: paymentStatusText,
-                    orderDate: data.orderDate ? data.orderDate.split(' ')[0].replace(/-/g, '.') : '',
+                    orderDate: data.orderDate ? data.orderDate.split(' ')[0] : '',
                     orderTime: data.orderTime || '',
                     workStatus: statusNumber
                 });
@@ -96,7 +96,7 @@ export default function NoticePage() {
                 return 0; // 처리시작
             case '처리중':
                 return 1; // 처리중
-            case '배송완료':
+            case '처리완료':
                 return 2; // 배송완료
             case '전체':
             default:
@@ -113,8 +113,8 @@ export default function NoticePage() {
             };
         } else {
             return {
-                title: '배송 완료 주문',
-                subtitle: '성공적으로 배송 완료된 주문 내역을 관리합니다.'
+                title: '처리 완료 주문',
+                subtitle: '성공적으로 출력이 완료된 주문 내역을 관리합니다.'
             };
         }
     };
@@ -148,7 +148,7 @@ export default function NoticePage() {
     // 오늘 주문 개수 계산 (취소된 주문 제외)
     const getTodayOrderCount = () => {
         const today = new Date();
-        const todayStr = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         return orders.filter(order => order.orderDate === todayStr).length;
     };
 
@@ -241,7 +241,7 @@ export default function NoticePage() {
                     className={`${styles.completeBtn} ${currentPage === 'delivery' ? styles.active : ''}`}
                     onClick={() => handlePageChange('delivery')}
                 >
-                    배송 완료
+                    처리 완료
                 </div>
 
             </div>

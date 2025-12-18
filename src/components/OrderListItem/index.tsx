@@ -35,12 +35,13 @@ export default function OrderListItem({
 
     // 주문 시간으로부터 경과 시간 계산
     const getElapsedTime = () => {
-        const orderDateTime = new Date(`${orderDate} ${orderTime}`);
+        // ISO 8601 형식으로 파싱 (더 안전함)
+        const orderDateTime = new Date(`${orderDate}T${orderTime}`);
         const now = new Date();
         const diffMs = now.getTime() - orderDateTime.getTime();
         const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
         const diffDays = Math.floor(diffHours / 24);
-        
+
         if (diffDays > 0) {
             return `${diffDays}일 전`;
         } else if (diffHours > 0) {
@@ -58,7 +59,7 @@ export default function OrderListItem({
             case 1:
                 return { text: '처리중', className: styles.statusInProgress };
             case 2:
-                return { text: '배송완료', className: styles.statusCompleted };
+                return { text: '처리완료', className: styles.statusCompleted };
             default:
                 return { text: '처리시작', className: styles.statusStart };
         }
@@ -159,7 +160,7 @@ export default function OrderListItem({
 
             {/* 주문 시간 컬럼 */}
             <div className={styles.timeColumn}>
-                <p className={styles.orderDate}>{orderDate}</p>
+                <p className={styles.orderDate}>{orderDate.replace(/-/g, '.')}</p>
                 <p className={styles.orderTime}>{orderTime}</p>
             </div>
 

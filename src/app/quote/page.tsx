@@ -228,8 +228,15 @@ export default function QuotePage() {
 
             // 3. 주문 정보 준비
             const now = new Date();
-            const orderDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
-            const orderTime = now.toTimeString().split(' ')[0]; // HH:MM:SS
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+
+            const orderDate = `${year}-${month}-${day}`; // YYYY-MM-DD (로컬 시간)
+            const orderTime = `${hours}:${minutes}:${seconds}`; // HH:MM:SS (로컬 시간)
 
             const orderData: OrderData = {
                 customerName: customerInfo.name,

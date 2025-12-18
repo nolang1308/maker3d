@@ -145,8 +145,8 @@ export default function StorePage() {
                         };
                     });
 
-                    // MD 추천 상품 (처음 3개)
-                    setMdRecommendedProducts(transformedProducts.slice(0, 3));
+                    // MD 추천 상품 (처음 6개)
+                    setMdRecommendedProducts(transformedProducts.slice(0, 6));
                     
                     // 인기 상품 (처음 16개)
                     setPopularProducts(transformedProducts.slice(0, 16));
@@ -254,24 +254,6 @@ export default function StorePage() {
                 </div>
                 <div className={styles.itemWrapper}>
                     <div className={styles.topItem}>
-                        <div className={styles.bestReviewWrapper}>
-                            <div className={styles.title}>
-                                ✨ 베스트 리뷰
-                            </div>
-                            <div className={styles.reviewList}>
-                                {[1, 2, 3, 4, 5, 6, 7, 8].map((index) => (
-                                    <div key={index} className={styles.reviewItem}>
-                                        <Image
-                                            src={index <= 1 ? '/exampleItem.png' : `/exampleItem.png`}
-                                            alt={`리뷰 이미지 ${index}`}
-                                            width={125}
-                                            height={125}
-                                            className={styles.reviewImage}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
                         <div className={styles.mdItem}>
                             <div className={styles.title}>
                                 🏆 MD 추천 제품
@@ -279,7 +261,7 @@ export default function StorePage() {
                             <div className={styles.mdItemWrapper}>
                                 {loading ? (
                                     // 로딩 스켈레톤
-                                    Array.from({ length: 3 }, (_, index) => (
+                                    Array.from({ length: 6 }, (_, index) => (
                                         <div key={index} className={styles.loadingSkeleton}>
                                             <div className={styles.skeletonImage}></div>
                                             <div className={styles.skeletonText}></div>

@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { getPrintTime } from './prusaClicer.js';
+import archiver from 'archiver';
 
 // ES module에서 __dirname 구현
 const __filename = fileURLToPath(import.meta.url);
@@ -97,9 +98,10 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+app.use(express.json({ limit: '500mb' }));
+app.use(express.urlencoded({ limit: '500mb', extended: true }));
 
-// Multer 설정 (STL 파일 업로드)
+// Multer 설정 (STL 파일 업로드 - 임시 저장용)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = path.join(__dirname, 'uploads');
@@ -116,6 +118,33 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/octet-stream' || file.originalname.endsWith('.stl')) {
+      cb(null, true);
+    } else {
+      cb(new Error('STL 파일만 업로드 가능합니다.'), false);
+    }
+  }
+});
+
+// Multer 설정 (주문 파일 저장용) - 동적으로 처리
+const uploadOrder = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      // multer는 파일을 먼저 처리하기 전에 body를 파싱하지 못할 수 있음
+      // 따라서 임시로 temp 폴더에 저장 후 나중에 이동
+      const tempDir = path.join(__dirname, 'temp');
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      cb(null, tempDir);
+    },
+    filename: (req, file, cb) => {
+      // 고유한 임시 파일명
+      const uniqueName = Date.now() + '-' + file.originalname;
+      cb(null, uniqueName);
+    }
+  }),
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'application/octet-stream' || file.originalname.endsWith('.stl')) {
       cb(null, true);
@@ -211,6 +240,33 @@ app.post('/api/upload', async (req, res) => {
 });
 
 // STL 파일 업로드 및 프린팅 시간 계산 API
+// 소재별 기본 가격 (원/시간)
+const MATERIAL_PRICES = {
+  '광경화성 레진': 15000,
+  'PLA': 8000,
+  'ABS': 10000,
+  'PETG': 12000,
+  'TPU': 18000
+};
+
+// 색상별 추가 비용 (원)
+const COLOR_PRICES = {
+  'G40-JG': 5000,
+  '화이트': 0,
+  '블랙': 2000,
+  '그레이': 1000,
+  '투명': 3000
+};
+
+// 시간 문자열을 시간(숫자)로 변환하는 함수
+function parseTimeToHours(timeString) {
+  const hours = timeString.match(/(\d+)h/)?.[1] || '0';
+  const minutes = timeString.match(/(\d+)m/)?.[1] || '0';
+  const seconds = timeString.match(/(\d+)s/)?.[1] || '0';
+
+  return parseInt(hours) + parseInt(minutes) / 60 + parseInt(seconds) / 3600;
+}
+
 app.post('/api/upload-stl', upload.single('stlFile'), async (req, res) => {
   try {
     if (!req.file) {
@@ -218,10 +274,31 @@ app.post('/api/upload-stl', upload.single('stlFile'), async (req, res) => {
     }
 
     const filePath = req.file.path;
+    const { material, color } = req.body;
+
     console.log('STL 파일 업로드됨:', filePath);
+    console.log('견적 정보:', { material, color });
 
     // PrusaSlicer로 프린팅 시간 계산
     const printTime = await getPrintTime(filePath);
+    console.log('프린팅 시간:', printTime);
+
+    // 가격 계산 (개당 가격)
+    const printHours = parseTimeToHours(printTime);
+    const materialPrice = MATERIAL_PRICES[material] || 10000;
+    const colorPrice = COLOR_PRICES[color] || 0;
+
+    // 개당 가격 = (프린팅 시간 * 소재 시간당 가격) + 색상 추가 비용 + 기본 재료비
+    const baseMaterialCost = 20000; // 기본 재료비
+    const estimatedPrice = Math.round((printHours * materialPrice) + colorPrice + baseMaterialCost);
+
+    console.log('가격 계산:', {
+      printHours: printHours.toFixed(2),
+      materialPrice,
+      colorPrice,
+      baseMaterialCost,
+      estimatedPrice
+    });
 
     // 업로드된 STL 파일 삭제 (처리 완료 후)
     fs.unlinkSync(filePath);
@@ -229,7 +306,13 @@ app.post('/api/upload-stl', upload.single('stlFile'), async (req, res) => {
     res.json({
       success: true,
       printTime: printTime,
-      originalName: req.file.originalname
+      estimatedPrice: estimatedPrice,
+      originalName: req.file.originalname,
+      calculation: {
+        printHours: printHours.toFixed(2),
+        material: material,
+        color: color
+      }
     });
 
   } catch (error) {
@@ -242,6 +325,280 @@ app.post('/api/upload-stl', upload.single('stlFile'), async (req, res) => {
 
     res.status(500).json({
       error: 'STL 파일 처리 중 오류가 발생했습니다.',
+      details: error.message
+    });
+  }
+});
+
+// 주문 파일 저장 API
+app.post('/api/upload-order-files', uploadOrder.array('files', 10), async (req, res) => {
+  try {
+    const { orderNumber } = req.body;
+
+    console.log('주문 파일 업로드 요청 받음:', {
+      orderNumber,
+      filesCount: req.files?.length,
+      body: req.body
+    });
+
+    if (!orderNumber) {
+      return res.status(400).json({
+        success: false,
+        error: '주문번호가 필요합니다.'
+      });
+    }
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: '파일이 업로드되지 않았습니다.'
+      });
+    }
+
+    // 주문 폴더 생성
+    const orderDir = path.join(__dirname, 'orders', orderNumber);
+    if (!fs.existsSync(orderDir)) {
+      fs.mkdirSync(orderDir, { recursive: true });
+    }
+
+    // 임시 폴더에서 주문 폴더로 파일 이동
+    const filePaths = [];
+    for (const file of req.files) {
+      const tempPath = file.path;
+      const originalName = file.originalname;
+      const newPath = path.join(orderDir, originalName);
+
+      // 파일 이동
+      fs.renameSync(tempPath, newPath);
+
+      // 상대 경로 저장
+      filePaths.push(`/orders/${orderNumber}/${originalName}`);
+    }
+
+    console.log(`주문 ${orderNumber} 파일 저장 완료:`, filePaths);
+
+    res.json({
+      success: true,
+      orderNumber: orderNumber,
+      filePaths: filePaths,
+      fileCount: req.files.length
+    });
+
+  } catch (error) {
+    console.error('주문 파일 저장 오류:', error);
+
+    // 오류 발생 시 임시 파일 삭제
+    if (req.files) {
+      req.files.forEach(file => {
+        if (fs.existsSync(file.path)) {
+          fs.unlinkSync(file.path);
+        }
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      error: '파일 저장 중 오류가 발생했습니다.',
+      details: error.message
+    });
+  }
+});
+
+// ============================================
+// 자유게시판 파일 업로드/다운로드/삭제 API
+// ============================================
+
+// Multer 설정 (자유게시판 파일 업로드용)
+const uploadFreeNotice = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      const tempDir = path.join(__dirname, 'temp');
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      cb(null, tempDir);
+    },
+    filename: (req, file, cb) => {
+      const timestamp = Date.now();
+      const randomId = Math.random().toString(36).substring(7);
+      const fileExtension = path.extname(file.originalname);
+      const baseName = path.basename(file.originalname, fileExtension);
+      const fileName = `${timestamp}_${randomId}_${baseName}${fileExtension}`;
+      cb(null, fileName);
+    }
+  }),
+  limits: {
+    fileSize: Infinity // 파일 크기 제한 없음
+  }
+});
+
+// 자유게시판 파일 업로드 API
+app.post('/api/upload-freenotice-files', uploadFreeNotice.array('files', 10), async (req, res) => {
+  try {
+    const { postId } = req.body;
+
+    console.log('자유게시판 파일 업로드 요청:', {
+      postId,
+      filesCount: req.files?.length
+    });
+
+    if (!postId) {
+      // postId 없으면 업로드된 파일 삭제
+      if (req.files) {
+        req.files.forEach(file => {
+          if (fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+          }
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        error: '게시글 ID가 필요합니다.'
+      });
+    }
+
+    if (!req.files || req.files.length === 0) {
+      return res.json({
+        success: true,
+        files: [],
+        message: '업로드할 파일이 없습니다.'
+      });
+    }
+
+    // freenoticeboard 폴더 생성
+    const postDir = path.join(__dirname, 'freenoticeboard', postId);
+    if (!fs.existsSync(postDir)) {
+      fs.mkdirSync(postDir, { recursive: true });
+    }
+
+    // 임시 폴더에서 freenoticeboard 폴더로 파일 이동
+    const uploadedFiles = [];
+    for (const file of req.files) {
+      const tempPath = file.path;
+      const newPath = path.join(postDir, file.filename);
+
+      // 파일 이동
+      fs.renameSync(tempPath, newPath);
+
+      uploadedFiles.push({
+        name: file.originalname,
+        url: `/api/download-freenotice-file/${postId}/${file.filename}`,
+        size: file.size
+      });
+    }
+
+    console.log(`게시글 ${postId} 파일 업로드 완료:`, uploadedFiles);
+
+    res.json({
+      success: true,
+      files: uploadedFiles
+    });
+
+  } catch (error) {
+    console.error('자유게시판 파일 업로드 오류:', error);
+
+    // 오류 발생 시 임시 파일 삭제
+    if (req.files) {
+      req.files.forEach(file => {
+        if (fs.existsSync(file.path)) {
+          fs.unlinkSync(file.path);
+        }
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      error: '파일 업로드 중 오류가 발생했습니다.',
+      details: error.message
+    });
+  }
+});
+
+// 자유게시판 파일 다운로드 API
+app.get('/api/download-freenotice-file/:postId/:filename', (req, res) => {
+  try {
+    const { postId, filename } = req.params;
+    const filePath = path.join(__dirname, 'freenoticeboard', postId, filename);
+
+    console.log('자유게시판 파일 다운로드 요청:', filePath);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({
+        success: false,
+        error: '파일을 찾을 수 없습니다.'
+      });
+    }
+
+    // 파일명에서 타임스탬프와 랜덤ID 제거하여 원본 파일명 복원
+    const parts = filename.split('_');
+    let originalName = filename;
+    if (parts.length >= 3) {
+      originalName = parts.slice(2).join('_');
+    }
+
+    res.download(filePath, originalName, (err) => {
+      if (err) {
+        console.error('파일 다운로드 오류:', err);
+        if (!res.headersSent) {
+          res.status(500).json({
+            success: false,
+            error: '파일 다운로드 중 오류가 발생했습니다.'
+          });
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('파일 다운로드 오류:', error);
+    res.status(500).json({
+      success: false,
+      error: '파일 다운로드 중 오류가 발생했습니다.',
+      details: error.message
+    });
+  }
+});
+
+// 자유게시판 파일 삭제 API
+app.delete('/api/delete-freenotice-file', async (req, res) => {
+  try {
+    const { fileUrl } = req.query;
+
+    if (!fileUrl) {
+      return res.status(400).json({
+        success: false,
+        error: '파일 URL이 필요합니다.'
+      });
+    }
+
+    // URL에서 postId와 filename 추출
+    const urlParts = fileUrl.split('/');
+    const filename = urlParts[urlParts.length - 1];
+    const postId = urlParts[urlParts.length - 2];
+
+    const filePath = path.join(__dirname, 'freenoticeboard', postId, filename);
+
+    console.log('자유게시판 파일 삭제 요청:', filePath);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({
+        success: false,
+        error: '파일을 찾을 수 없습니다.'
+      });
+    }
+
+    fs.unlinkSync(filePath);
+    console.log('파일 삭제 완료:', filePath);
+
+    res.json({
+      success: true,
+      message: '파일이 삭제되었습니다.'
+    });
+
+  } catch (error) {
+    console.error('파일 삭제 오류:', error);
+    res.status(500).json({
+      success: false,
+      error: '파일 삭제 중 오류가 발생했습니다.',
       details: error.message
     });
   }
@@ -361,13 +718,13 @@ app.post('/api/naver/token', async (req, res) => {
 app.get('/api/proxy/image', async (req, res) => {
   try {
     const imageUrl = req.query.url;
-    
+
     if (!imageUrl) {
       return res.status(400).json({ error: 'URL parameter is required' });
     }
 
     console.log('이미지 프록시 요청:', imageUrl);
-    
+
     const imageResponse = await axios.get(imageUrl, {
       responseType: 'stream',
       headers: {
@@ -375,16 +732,451 @@ app.get('/api/proxy/image', async (req, res) => {
         'Referer': 'https://smartstore.naver.com/'
       }
     });
-    
+
     // 원본 이미지의 Content-Type 유지
     res.set('Content-Type', imageResponse.headers['content-type']);
     res.set('Cache-Control', 'public, max-age=86400'); // 24시간 캐시
-    
+
     imageResponse.data.pipe(res);
-    
+
   } catch (error) {
     console.log('이미지 프록시 오류:', error.message);
     res.status(500).json({ error: 'Failed to proxy image' });
+  }
+});
+
+// 주문 파일 다운로드 API (ZIP 압축)
+app.get('/api/download-order-files/:orderNumber', async (req, res) => {
+  try {
+    const { orderNumber } = req.params;
+    const orderDir = path.join(__dirname, 'orders', orderNumber);
+
+    console.log('파일 다운로드 요청:', orderNumber);
+
+    // 주문 폴더 존재 여부 확인
+    if (!fs.existsSync(orderDir)) {
+      return res.status(404).json({
+        success: false,
+        error: '주문 파일을 찾을 수 없습니다.'
+      });
+    }
+
+    // 폴더 내 파일 목록 조회
+    const files = fs.readdirSync(orderDir);
+
+    if (files.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: '다운로드할 파일이 없습니다.'
+      });
+    }
+
+    // ZIP 파일명 설정
+    const zipFileName = `${orderNumber}.zip`;
+
+    // 응답 헤더 설정
+    res.attachment(zipFileName);
+    res.set('Content-Type', 'application/zip');
+
+    // archiver를 사용하여 ZIP 생성
+    const archive = archiver('zip', {
+      zlib: { level: 9 } // 최대 압축
+    });
+
+    // 에러 처리
+    archive.on('error', (err) => {
+      console.error('ZIP 생성 오류:', err);
+      res.status(500).json({
+        success: false,
+        error: 'ZIP 파일 생성 중 오류가 발생했습니다.'
+      });
+    });
+
+    // 스트림 연결
+    archive.pipe(res);
+
+    // 폴더의 모든 파일을 ZIP에 추가
+    files.forEach(file => {
+      const filePath = path.join(orderDir, file);
+      archive.file(filePath, { name: file });
+    });
+
+    // ZIP 생성 완료
+    await archive.finalize();
+
+    console.log(`주문 ${orderNumber} 파일 다운로드 완료 (${files.length}개 파일)`);
+
+  } catch (error) {
+    console.error('파일 다운로드 오류:', error);
+    res.status(500).json({
+      success: false,
+      error: '파일 다운로드 중 오류가 발생했습니다.',
+      details: error.message
+    });
+  }
+});
+
+// ============================================
+// 포트폴리오 이미지 업로드 API
+// ============================================
+
+// Multer 설정 (포트폴리오 이미지 업로드용)
+const uploadPortfolio = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      const portfolioDir = path.join(__dirname, 'portfolio');
+      if (!fs.existsSync(portfolioDir)) {
+        fs.mkdirSync(portfolioDir, { recursive: true });
+      }
+      cb(null, portfolioDir);
+    },
+    filename: (req, file, cb) => {
+      const timestamp = Date.now();
+      const randomId = Math.random().toString(36).substring(7);
+      const fileExtension = path.extname(file.originalname);
+      const baseName = path.basename(file.originalname, fileExtension);
+      const fileName = `${timestamp}_${randomId}_${baseName}${fileExtension}`;
+      cb(null, fileName);
+    }
+  }),
+  limits: {
+    fileSize: Infinity // 파일 크기 제한 없음
+  },
+  fileFilter: (req, file, cb) => {
+    // 이미지 파일만 허용
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('이미지 파일만 업로드 가능합니다.'), false);
+    }
+  }
+});
+
+// 포트폴리오 이미지 업로드 API
+app.post('/api/upload-portfolio-image', uploadPortfolio.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: '이미지 파일이 업로드되지 않았습니다.'
+      });
+    }
+
+    const imageUrl = `/api/portfolio-image/${req.file.filename}`;
+
+    console.log('포트폴리오 이미지 업로드 완료:', imageUrl);
+
+    res.json({
+      success: true,
+      imageUrl: imageUrl,
+      fileName: req.file.filename,
+      originalName: req.file.originalname,
+      size: req.file.size
+    });
+
+  } catch (error) {
+    console.error('포트폴리오 이미지 업로드 오류:', error);
+
+    // 오류 발생 시 업로드된 파일 삭제
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+
+    res.status(500).json({
+      success: false,
+      error: '이미지 업로드 중 오류가 발생했습니다.',
+      details: error.message
+    });
+  }
+});
+
+// 포트폴리오 이미지 다운로드/조회 API
+app.get('/api/portfolio-image/:filename', async (req, res) => {
+  try {
+    const { filename } = req.params;
+    const filePath = path.join(__dirname, 'portfolio', filename);
+
+    console.log('포트폴리오 이미지 요청:', filePath);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({
+        success: false,
+        error: '이미지를 찾을 수 없습니다.'
+      });
+    }
+
+    // 이미지 전송
+    res.sendFile(filePath);
+
+  } catch (error) {
+    console.error('이미지 전송 오류:', error);
+    res.status(500).json({
+      success: false,
+      error: '이미지 전송 중 오류가 발생했습니다.',
+      details: error.message
+    });
+  }
+});
+
+// 포트폴리오 이미지 삭제 API
+app.delete('/api/delete-portfolio-image', async (req, res) => {
+  try {
+    const { imageUrl } = req.query;
+
+    console.log('포트폴리오 이미지 삭제 요청:', imageUrl);
+
+    if (!imageUrl) {
+      return res.status(400).json({
+        success: false,
+        error: '이미지 경로가 필요합니다.'
+      });
+    }
+
+    // imageUrl 형식: /api/portfolio-image/filename
+    const filename = imageUrl.split('/').pop();
+    const filePath = path.join(__dirname, 'portfolio', filename);
+
+    console.log('실제 파일 경로:', filePath);
+
+    if (!fs.existsSync(filePath)) {
+      console.log('파일이 존재하지 않음:', filePath);
+      return res.json({
+        success: true,
+        message: '파일이 이미 존재하지 않습니다.'
+      });
+    }
+
+    // 파일 삭제
+    fs.unlinkSync(filePath);
+    console.log('파일 삭제 완료:', filename);
+
+    res.json({
+      success: true,
+      message: '이미지가 삭제되었습니다.'
+    });
+
+  } catch (error) {
+    console.error('이미지 삭제 오류:', error);
+    res.status(500).json({
+      success: false,
+      error: '이미지 삭제 중 오류가 발생했습니다.',
+      details: error.message
+    });
+  }
+});
+
+// ============================================
+// 공지사항 파일 업로드/다운로드/삭제 API
+// ============================================
+
+// Multer 설정 (공지사항 파일 업로드용) - 임시 폴더 사용
+const uploadNotice = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      // 먼저 temp 폴더에 저장
+      const tempDir = path.join(__dirname, 'temp');
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      cb(null, tempDir);
+    },
+    filename: (req, file, cb) => {
+      // 타임스탬프와 랜덤값을 추가하여 중복 방지
+      const timestamp = Date.now();
+      const randomId = Math.random().toString(36).substring(7);
+      const fileExtension = path.extname(file.originalname);
+      const baseName = path.basename(file.originalname, fileExtension);
+      const fileName = `${timestamp}_${randomId}_${baseName}${fileExtension}`;
+      cb(null, fileName);
+    }
+  }),
+  limits: {
+    fileSize: Infinity // 파일 크기 제한 없음
+  }
+});
+
+// 공지사항 파일 업로드 API
+app.post('/api/upload-notice-files', uploadNotice.array('files', 10), async (req, res) => {
+  try {
+    const { noticeId } = req.body;
+
+    console.log('공지사항 파일 업로드 요청:', {
+      noticeId,
+      filesCount: req.files?.length,
+      body: req.body
+    });
+
+    if (!noticeId) {
+      // noticeId 없으면 업로드된 파일 삭제
+      if (req.files) {
+        req.files.forEach(file => {
+          if (fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+          }
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        error: '공지사항 ID가 필요합니다.'
+      });
+    }
+
+    if (!req.files || req.files.length === 0) {
+      return res.json({
+        success: true,
+        files: [],
+        message: '업로드할 파일이 없습니다.'
+      });
+    }
+
+    // notices 폴더 생성
+    const noticeDir = path.join(__dirname, 'notices', noticeId);
+    if (!fs.existsSync(noticeDir)) {
+      fs.mkdirSync(noticeDir, { recursive: true });
+    }
+
+    // 임시 폴더에서 notices 폴더로 파일 이동
+    const uploadedFiles = [];
+    for (const file of req.files) {
+      const tempPath = file.path;
+      const newPath = path.join(noticeDir, file.filename);
+
+      // 파일 이동
+      fs.renameSync(tempPath, newPath);
+
+      uploadedFiles.push({
+        name: file.originalname,
+        url: `/api/download-notice-file/${noticeId}/${file.filename}`,
+        size: file.size,
+        type: file.mimetype
+      });
+    }
+
+    console.log(`공지사항 ${noticeId} 파일 업로드 완료:`, uploadedFiles.length, '개');
+
+    res.json({
+      success: true,
+      files: uploadedFiles,
+      message: `${uploadedFiles.length}개 파일이 성공적으로 업로드되었습니다.`
+    });
+
+  } catch (error) {
+    console.error('공지사항 파일 업로드 오류:', error);
+
+    // 오류 발생 시 업로드된 파일 삭제
+    if (req.files) {
+      req.files.forEach(file => {
+        if (fs.existsSync(file.path)) {
+          fs.unlinkSync(file.path);
+        }
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      error: '파일 업로드 중 오류가 발생했습니다.',
+      details: error.message
+    });
+  }
+});
+
+// 공지사항 파일 다운로드 API
+app.get('/api/download-notice-file/:noticeId/:filename', async (req, res) => {
+  try {
+    const { noticeId, filename } = req.params;
+    const filePath = path.join(__dirname, 'notices', noticeId, filename);
+
+    console.log('공지사항 파일 다운로드 요청:', filePath);
+
+    // 파일 존재 여부 확인
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({
+        success: false,
+        error: '파일을 찾을 수 없습니다.'
+      });
+    }
+
+    // 파일 다운로드
+    res.download(filePath, (err) => {
+      if (err) {
+        console.error('파일 다운로드 오류:', err);
+        if (!res.headersSent) {
+          res.status(500).json({
+            success: false,
+            error: '파일 다운로드 중 오류가 발생했습니다.'
+          });
+        }
+      } else {
+        console.log(`파일 다운로드 완료: ${filename}`);
+      }
+    });
+
+  } catch (error) {
+    console.error('파일 다운로드 오류:', error);
+    res.status(500).json({
+      success: false,
+      error: '파일 다운로드 중 오류가 발생했습니다.',
+      details: error.message
+    });
+  }
+});
+
+// 공지사항 파일 삭제 API
+app.delete('/api/delete-notice-file', async (req, res) => {
+  try {
+    const { filePath } = req.query;
+
+    console.log('공지사항 파일 삭제 요청:', filePath);
+
+    if (!filePath) {
+      return res.status(400).json({
+        success: false,
+        error: '파일 경로가 필요합니다.'
+      });
+    }
+
+    // filePath 형식: /api/download-notice-file/noticeId/filename
+    // 실제 경로로 변환: backend/notices/noticeId/filename
+    const pathParts = filePath.split('/');
+    const noticeId = pathParts[pathParts.length - 2];
+    const filename = pathParts[pathParts.length - 1];
+    const actualPath = path.join(__dirname, 'notices', noticeId, filename);
+
+    console.log('실제 파일 경로:', actualPath);
+
+    // 파일 존재 여부 확인
+    if (!fs.existsSync(actualPath)) {
+      console.log('파일이 존재하지 않음:', actualPath);
+      return res.json({
+        success: true,
+        message: '파일이 이미 존재하지 않습니다.'
+      });
+    }
+
+    // 파일 삭제
+    fs.unlinkSync(actualPath);
+    console.log('파일 삭제 완료:', filename);
+
+    // 폴더가 비어있으면 폴더도 삭제
+    const noticeDir = path.join(__dirname, 'notices', noticeId);
+    const remainingFiles = fs.readdirSync(noticeDir);
+    if (remainingFiles.length === 0) {
+      fs.rmdirSync(noticeDir);
+      console.log('빈 폴더 삭제:', noticeId);
+    }
+
+    res.json({
+      success: true,
+      message: '파일이 삭제되었습니다.'
+    });
+
+  } catch (error) {
+    console.error('파일 삭제 오류:', error);
+    res.status(500).json({
+      success: false,
+      error: '파일 삭제 중 오류가 발생했습니다.',
+      details: error.message
+    });
   }
 });
 

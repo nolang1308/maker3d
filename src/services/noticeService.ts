@@ -205,10 +205,10 @@ export async function createNotice(
         
         if (validFiles.length > 0) {
           console.log('Preparing to upload files in createNotice:', validFiles.length);
-          
+
           // 직접 백엔드로 호출 (Vercel 제한 우회)
           const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
-          const uploadResponse = await fetch(`${backendUrl}/api/upload`, {
+          const uploadResponse = await fetch(`${backendUrl}/api/upload-notice-files`, {
             method: 'POST',
             body: (() => {
               const formData = new FormData();

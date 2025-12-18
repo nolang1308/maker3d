@@ -41,11 +41,6 @@ const Header = () => {
                         </div>
                     </div>
                     <Link href="/contact" className={styles.navItem}>고객문의</Link>
-                    {userRole === 'admin' && (
-                        <Link href="/admin/order" className={styles.navItem} style={{ color: '#FF6B00', fontWeight: '600' }}>
-                            관리자
-                        </Link>
-                    )}
                 </nav>
 
                 <div className={styles.authButtons}>
@@ -74,6 +69,18 @@ const Header = () => {
                             <span className={styles.userAction}>·</span>
                             <Link href="/signup" className={styles.userAction}>회원가입</Link>
                         </>
+                    )}
+                    {userRole === 'admin' && (
+                        <div className={styles.dropdown}>
+                            <Link href="/admin/order" className={styles.navItem} style={{ color: '#FF6B00', fontWeight: '600' }}>
+                                관리자페이지
+                            </Link>
+                            <div className={styles.dropdownMenu}>
+                                <Link href="/admin/order" className={styles.dropdownItem}>주문관리</Link>
+                                <Link href="/admin/portfolio" className={styles.dropdownItem}>포트폴리오</Link>
+                                <Link href="/admin/notice" className={styles.dropdownItem}>공지사항</Link>
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>
