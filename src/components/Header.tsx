@@ -4,9 +4,11 @@ import styles from './Header.module.scss';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
+import { useState } from 'react';
 
 const Header = () => {
     const { user, userRole, logout } = useAuth();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const handleLogout = async () => {
         try {
@@ -16,9 +18,24 @@ const Header = () => {
             console.error('로그아웃 에러:', error);
         }
     };
+
+    const toggleMobileMenu = () => {
+        setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
+
+    const closeMobileMenu = () => {
+        setIsMobileMenuOpen(false);
+    };
+
     return (
-        <header className={styles.header}>
-            <div className={styles.container}>
+        <>
+            {/* 오버레이 */}
+            {isMobileMenuOpen && (
+                <div className={styles.overlay} onClick={closeMobileMenu}></div>
+            )}
+
+            <header className={styles.header}>
+                <div className={styles.container}>
                 {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
                 <a href="/" className={styles.logo}>
                     <Image
@@ -83,8 +100,84 @@ const Header = () => {
                         </div>
                     )}
                 </div>
+
+                {/* 햄버거 버튼 */}
+                <button className={styles.hamburger} onClick={toggleMobileMenu}>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+
+            {/* 모바일 사이드 메뉴 */}
+            <div className={`${styles.mobileMenu} ${isMobileMenuOpen ? styles.open : ''}`}>
+                <div className={styles.mobileMenuHeader}>
+                    <button className={styles.closeButton} onClick={closeMobileMenu}>
+                        ✕
+                    </button>
+                </div>
+
+                <nav className={styles.mobileNavigation}>
+                    <Link href="/intro" className={styles.mobileNavItem} onClick={closeMobileMenu}>소개</Link>
+                    <Link href="/portfolio" className={styles.mobileNavItem} onClick={closeMobileMenu}>포트폴리오</Link>
+
+                    <div className={styles.mobileDropdown}>
+                        <span className={styles.mobileNavItem}>공지사항</span>
+                        <div className={styles.mobileDropdownContent}>
+                            <Link href="/notice" className={styles.mobileDropdownItem} onClick={closeMobileMenu}>공지사항</Link>
+                            <Link href="/freenoticeboard" className={styles.mobileDropdownItem} onClick={closeMobileMenu}>자유게시판</Link>
+                        </div>
+                    </div>
+
+                    <Link href="/contact" className={styles.mobileNavItem} onClick={closeMobileMenu}>고객문의</Link>
+
+                    <div className={styles.divider}></div>
+
+                    <Link href="/quote" className={styles.mobileNavItem} onClick={closeMobileMenu}>실시간 견적 확인</Link>
+                    <Link href="/store" className={styles.mobileNavItem} onClick={closeMobileMenu}>스토어</Link>
+
+                    <div className={styles.divider}></div>
+
+                    {user ? (
+                        <>
+                            <Link href="/mypage" className={styles.mobileNavItem} onClick={closeMobileMenu}>
+                                {user.email?.split('@')[0]}님
+                            </Link>
+                            <button
+                                onClick={() => {
+                                    handleLogout();
+                                    closeMobileMenu();
+                                }}
+                                className={styles.mobileNavItem}
+                                style={{ background: 'none', border: 'none', color: 'white', textAlign: 'left', width: '100%' }}
+                            >
+                                로그아웃
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <Link href="/login" className={styles.mobileNavItem} onClick={closeMobileMenu}>로그인</Link>
+                            <Link href="/signup" className={styles.mobileNavItem} onClick={closeMobileMenu}>회원가입</Link>
+                        </>
+                    )}
+
+                    {userRole === 'admin' && (
+                        <>
+                            <div className={styles.divider}></div>
+                            <div className={styles.mobileDropdown}>
+                                <span className={styles.mobileNavItem} style={{ color: '#FF6B00', fontWeight: '600' }}>관리자페이지</span>
+                                <div className={styles.mobileDropdownContent}>
+                                    <Link href="/admin/order" className={styles.mobileDropdownItem} onClick={closeMobileMenu}>주문관리</Link>
+                                    <Link href="/admin/portfolio" className={styles.mobileDropdownItem} onClick={closeMobileMenu}>포트폴리오</Link>
+                                    <Link href="/admin/notice" className={styles.mobileDropdownItem} onClick={closeMobileMenu}>공지사항</Link>
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </nav>
             </div>
         </header>
+        </>
     );
 };
 

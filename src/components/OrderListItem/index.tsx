@@ -13,8 +13,9 @@ interface OrderListItemProps {
     paymentStatus: string;
     orderDate: string;
     orderTime: string;
-    workStatus: number; // 0: 처리시작, 1: 처리중, 2: 배송완료
+    workStatus: number; // 0: 처리시작, 1: 처리중, 2: 처리완료
     onStartProcessing?: () => void;
+    onCompleteProcessing?: () => void;
     onCancelOrder?: () => void;
 }
 
@@ -30,6 +31,7 @@ export default function OrderListItem({
     orderTime,
     workStatus,
     onStartProcessing,
+    onCompleteProcessing,
     onCancelOrder
 }: OrderListItemProps) {
 
@@ -113,10 +115,12 @@ export default function OrderListItem({
         }
     };
 
-    // 처리시작 버튼 클릭 핸들러
+    // 작업 상태 버튼 클릭 핸들러
     const handleStatusClick = () => {
         if (workStatus === 0 && onStartProcessing) {
             onStartProcessing();
+        } else if (workStatus === 1 && onCompleteProcessing) {
+            onCompleteProcessing();
         }
     };
 
@@ -167,7 +171,7 @@ export default function OrderListItem({
             {/* 작업 상태 컬럼 */}
             <div className={styles.workColumn}>
                 <div
-                    className={`${styles.workStatus} ${statusInfo.className} ${workStatus === 0 ? styles.clickable : ''}`}
+                    className={`${styles.workStatus} ${statusInfo.className} ${(workStatus === 0 || workStatus === 1) ? styles.clickable : ''}`}
                     onClick={handleStatusClick}
                 >
                     {statusInfo.text}

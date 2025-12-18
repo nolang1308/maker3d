@@ -32,6 +32,8 @@ export default function NoticePage() {
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
     const [cancelOrder, setCancelOrder] = useState<Order | null>(null);
+    const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+    const [completeOrder, setCompleteOrder] = useState<Order | null>(null);
 
     // 페이지별 칩 설정
     const orderChips = ['전체', '대기중', '처리중'];
@@ -217,6 +219,36 @@ export default function NoticePage() {
         setCancelOrder(null);
     };
 
+    // 처리완료 버튼 클릭 핸들러
+    const handleCompleteOrder = (order: Order) => {
+        setCompleteOrder(order);
+        setIsCompleteModalOpen(true);
+    };
+
+    // 처리완료 확인 핸들러
+    const handleConfirmComplete = async () => {
+        if (!completeOrder) return;
+
+        try {
+            const orderRef = doc(db, 'orders', completeOrder.orderNumber);
+            await updateDoc(orderRef, {
+                workStatus: 'completed'
+            });
+
+            setIsCompleteModalOpen(false);
+            setCompleteOrder(null);
+        } catch (error) {
+            console.error('주문 완료 처리 오류:', error);
+            alert('주문 완료 처리에 실패했습니다.');
+        }
+    };
+
+    // 처리완료 모달 닫기 핸들러
+    const handleCompleteModalClose = () => {
+        setIsCompleteModalOpen(false);
+        setCompleteOrder(null);
+    };
+
     return (
         <div className={styles.container}>
             <div className={styles.ManagerSignatureBar}>
@@ -310,6 +342,7 @@ export default function NoticePage() {
                                 orderTime={order.orderTime}
                                 workStatus={order.workStatus}
                                 onStartProcessing={() => handleStartProcessing(order)}
+                                onCompleteProcessing={() => handleCompleteOrder(order)}
                                 onCancelOrder={() => handleCancelOrder(order)}
                             />
                         ))
@@ -346,6 +379,21 @@ export default function NoticePage() {
                 onCancel={handleCancelModalClose}
                 confirmButtonText="취소하기"
                 confirmButtonColor="danger"
+            />
+
+            {/* 처리완료 확인 모달 */}
+            <ConfirmModal
+                isOpen={isCompleteModalOpen}
+                title="주문 완료 확인"
+                message="해당 주문을 완료 처리하시겠습니까?"
+                orderNumber={completeOrder?.orderNumber || ''}
+                customerName={completeOrder?.customerName || ''}
+                phoneNumber={completeOrder?.phoneNumber || ''}
+                email={completeOrder?.email || ''}
+                onConfirm={handleConfirmComplete}
+                onCancel={handleCompleteModalClose}
+                confirmButtonText="완료 처리"
+                confirmButtonColor="primary"
             />
 
         </div>
