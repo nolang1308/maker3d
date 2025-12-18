@@ -1,0 +1,56 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // posts 컬렉션
+    match /posts/{postId} {
+      // 읽기: 모든 사용자 허용
+      allow read: if true;
+
+      // 생성: 로그인된 사용자만 허용
+      allow create: if request.auth != null;
+
+      // 수정/삭제: 모든 사용자 허용 (비밀번호는 클라이언트에서 확인)
+      allow update, delete: if true;
+    }
+
+    // notices 컬렉션
+    match /notices/{noticeId} {
+      // 읽기: 모든 사용자 허용
+      allow read: if true;
+
+      // 생성: 로그인된 사용자만 허용
+      allow create: if request.auth != null;
+
+      // 수정/삭제: 모든 사용자 허용 (비밀번호는 클라이언트에서 확인)
+      allow update, delete: if true;
+    }
+
+    // orders 컬렉션 - 주문 정보
+    match /orders/{orderId} {
+      // 읽기: 인증된 사용자만 허용
+      allow read: if request.auth != null;
+
+      // 생성: 인증된 사용자만 주문 생성 가능
+      allow create: if request.auth != null;
+
+      // 수정: 인증된 사용자만 허용 (관리자가 주문 상태 변경)
+      allow update: if request.auth != null;
+
+      // 삭제: 인증된 사용자만 허용
+      allow delete: if request.auth != null;
+    }
+
+    // portfolios 컬렉션 - 포트폴리오
+    match /portfolios/{portfolioId} {
+      // 읽기: 모든 사용자 허용
+      allow read: if true;
+
+      // 생성: 로그인된 사용자만 허용
+      allow create: if request.auth != null;
+
+      // 수정/삭제: 로그인된 사용자만 허용
+      allow update, delete: if request.auth != null;
+    }
+  }
+}

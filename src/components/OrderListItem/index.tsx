@@ -14,6 +14,8 @@ interface OrderListItemProps {
     orderDate: string;
     orderTime: string;
     workStatus: number; // 0: 처리시작, 1: 처리중, 2: 배송완료
+    onStartProcessing?: () => void;
+    onCancelOrder?: () => void;
 }
 
 export default function OrderListItem({
@@ -26,7 +28,9 @@ export default function OrderListItem({
     paymentStatus,
     orderDate,
     orderTime,
-    workStatus
+    workStatus,
+    onStartProcessing,
+    onCancelOrder
 }: OrderListItemProps) {
 
     // 주문 시간으로부터 경과 시간 계산
@@ -68,15 +72,51 @@ export default function OrderListItem({
     };
 
     // 파일 다운로드 핸들러
-    const handleDownload = () => {
-        // 파일 다운로드 로직
-        console.log('Download files:', fileUrls);
+    const handleDownload = async () => {
+        try {
+            // 다운로드 API 호출
+            const response = await fetch(`/api/download-order-files?orderNumber=${encodeURIComponent(orderNumber)}`);
+
+            if (!response.ok) {
+                const error = await response.json();
+                alert(error.error || '파일 다운로드에 실패했습니다.');
+                return;
+            }
+
+            // Blob으로 변환
+            const blob = await response.blob();
+
+            // 다운로드 링크 생성
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${orderNumber}.zip`;
+            document.body.appendChild(a);
+            a.click();
+
+            // 정리
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            console.log('파일 다운로드 완료:', orderNumber);
+        } catch (error) {
+            console.error('파일 다운로드 오류:', error);
+            alert('파일 다운로드 중 오류가 발생했습니다.');
+        }
     };
 
     // 취소 핸들러
     const handleCancel = () => {
-        // 주문 취소 로직
-        console.log('Cancel order:', orderNumber);
+        if (onCancelOrder) {
+            onCancelOrder();
+        }
+    };
+
+    // 처리시작 버튼 클릭 핸들러
+    const handleStatusClick = () => {
+        if (workStatus === 0 && onStartProcessing) {
+            onStartProcessing();
+        }
     };
 
     return (
@@ -125,7 +165,10 @@ export default function OrderListItem({
 
             {/* 작업 상태 컬럼 */}
             <div className={styles.workColumn}>
-                <div className={`${styles.workStatus} ${statusInfo.className}`}>
+                <div
+                    className={`${styles.workStatus} ${statusInfo.className} ${workStatus === 0 ? styles.clickable : ''}`}
+                    onClick={handleStatusClick}
+                >
                     {statusInfo.text}
                 </div>
             </div>

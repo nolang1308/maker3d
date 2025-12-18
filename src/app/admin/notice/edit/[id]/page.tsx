@@ -29,7 +29,7 @@ export default function EditPage(): React.ReactElement {
     const [initialLoading, setInitialLoading] = useState(true);
 
     const MAX_FILES = 10;
-    const MAX_SIZE = 4 * 1024 * 1024; // 4MB (Vercel 제한 고려)
+    // 파일 크기 제한 없음
 
     // 게시글 데이터 로드
     useEffect(() => {
@@ -96,7 +96,7 @@ export default function EditPage(): React.ReactElement {
                     name: file.name,
                     size: file.size,
                     file,
-                    isOverSize: file.size > MAX_SIZE,
+                    isOverSize: false, // 파일 크기 제한 없음
                     id: `new_${Date.now()}_${Math.random()}`,
                     isExisting: false
                 };
@@ -472,8 +472,7 @@ export default function EditPage(): React.ReactElement {
                                         </div>
                                         <div className={Styles.errorMessage}>
                                             <span className={Styles.errorIcon}>⚠</span>
-                                            등록 가능한 파일의 용량을 초과하였습니다. 
-                                            {formatFileSize(MAX_SIZE)} 미만의 파일만 등록할 수 있습니다.
+                                            파일 업로드 중 오류가 발생했습니다.
                                         </div>
                                     </>
                                 ) : (

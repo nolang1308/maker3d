@@ -200,7 +200,17 @@ export default function PostDetailPage() {
                 <div className={styles.info2}>
                     <div className={styles.infoType}>첨부파일</div>
                     <div className={styles.attachmentContainer}>
-                        <div className={styles.noAttachment}>첨부파일이 존재하지 않음</div>
+                        {post.attachments && post.attachments.length > 0 ? (
+                            post.attachments.map((file, index) => (
+                                <DownloadAttachment
+                                    key={index}
+                                    title={file.name}
+                                    path={file.url}
+                                />
+                            ))
+                        ) : (
+                            <div className={styles.noAttachment}>첨부파일이 존재하지 않음</div>
+                        )}
                     </div>
                 </div>
 

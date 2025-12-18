@@ -36,7 +36,7 @@ export default function ProductDetailPage() {
         const fetchProductDetail = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/naver/product/${productId}`, {
+                const response = await fetch(`${BACKEND_URL}/api/naver/product/${productId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -239,6 +239,11 @@ export default function ProductDetailPage() {
         } finally {
             setIsPaymentLoading(false);
         }
+    };
+
+    const handleGoToSmartStore = () => {
+        const smartStoreUrl = `https://smartstore.naver.com/maker-3d/products/${productId}`;
+        window.open(smartStoreUrl, '_blank', 'noopener,noreferrer');
     };
 
     // 썸네일 네비게이션 함수들
@@ -497,68 +502,79 @@ export default function ProductDetailPage() {
                             </div>
                         </div>
 
-                        {/* 옵션 선택 */}
-                        <div className={styles.optionSection}>
-                            <div className={styles.priceRow}>
-                                <span className={styles.optionLabel}>{product.optionLabel}</span>
-                                <select
-                                    className={styles.optionSelect}
-                                    value={selectedOption}
-                                    onChange={(e) => setSelectedOption(e.target.value)}
-                                >
-                                    {product.options.map((option: any) => (
-                                        <option key={option} value={option}>- {option} -</option>
-                                    ))}
-                                </select>
+                        {/*/!* 옵션 선택 *!/*/}
+                        {/*<div className={styles.optionSection}>*/}
+                        {/*    <div className={styles.priceRow}>*/}
+                        {/*        <span className={styles.optionLabel}>{product.optionLabel}</span>*/}
+                        {/*        <select*/}
+                        {/*            className={styles.optionSelect}*/}
+                        {/*            value={selectedOption}*/}
+                        {/*            onChange={(e) => setSelectedOption(e.target.value)}*/}
+                        {/*        >*/}
+                        {/*            {product.options.map((option: any) => (*/}
+                        {/*                <option key={option} value={option}>- {option} -</option>*/}
+                        {/*            ))}*/}
+                        {/*        </select>*/}
+                        {/*    </div>*/}
+                        {/*</div>*/}
+                        <div className={styles.moveToSmartStoreWrapper}>
+                            <div
+                                className={styles.moveToSmartStore}
+                                onClick={handleGoToSmartStore}
+                            >
+                                구매하러가기
                             </div>
+
+
+
                         </div>
 
                         {/* 총 상품금액 */}
-                        <div className={styles.totalSection}>
-                            <span className={styles.totalLabel}>총 상품금액(수량): </span>
-                            <span className={styles.totalQuantity}>{quantity}</span>
-                            <span className={styles.totalUnit}>(개)</span>
-                        </div>
+                        {/*<div className={styles.totalSection}>*/}
+                        {/*    <span className={styles.totalLabel}>총 상품금액(수량): </span>*/}
+                        {/*    <span className={styles.totalQuantity}>{quantity}</span>*/}
+                        {/*    <span className={styles.totalUnit}>(개)</span>*/}
+                        {/*</div>*/}
 
-                        {/* 구매 버튼 영역 */}
-                        <div className={styles.actionSection}>
-                            <div className={styles.paymentMethods}>
-                                <div className={styles.naver}>
-                                    <span>NAVER</span>
-                                    <span className={styles.smallText}>네이버포인트 적립액</span>
-                                    <span className={styles.smallText}>네이버페이</span>
-                                </div>
-                                <button 
-                                    className={styles.payButton}
-                                    onClick={handleBuyNow}
-                                    disabled={isPaymentLoading}
-                                >
-                                    {isPaymentLoading ? '결제 준비 중...' : 'PAY 구매'}
-                                </button>
-                                <button className={styles.wishButton}>
-                                    <span>찜</span>
-                                </button>
-                            </div>
-                            
-                            <div className={styles.quantityAndCart}>
-                                <span>수량</span>
-                                <div className={styles.quantityControl}>
-                                    <button 
-                                        className={styles.quantityBtn}
-                                        onClick={() => handleQuantityChange(-1)}
-                                    >
-                                        -
-                                    </button>
-                                    <span className={styles.quantityValue}>{quantity}</span>
-                                    <button 
-                                        className={styles.quantityBtn}
-                                        onClick={() => handleQuantityChange(1)}
-                                    >
-                                        +
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                        {/*/!* 구매 버튼 영역 *!/*/}
+                        {/*<div className={styles.actionSection}>*/}
+                        {/*    <div className={styles.paymentMethods}>*/}
+                        {/*        <div className={styles.naver}>*/}
+                        {/*            <span>NAVER</span>*/}
+                        {/*            <span className={styles.smallText}>네이버포인트 적립액</span>*/}
+                        {/*            <span className={styles.smallText}>네이버페이</span>*/}
+                        {/*        </div>*/}
+                        {/*        <button */}
+                        {/*            className={styles.payButton}*/}
+                        {/*            onClick={handleBuyNow}*/}
+                        {/*            disabled={isPaymentLoading}*/}
+                        {/*        >*/}
+                        {/*            {isPaymentLoading ? '결제 준비 중...' : 'PAY 구매'}*/}
+                        {/*        </button>*/}
+                        {/*        <button className={styles.wishButton}>*/}
+                        {/*            <span>찜</span>*/}
+                        {/*        </button>*/}
+                        {/*    </div>*/}
+                        {/*    */}
+                        {/*    <div className={styles.quantityAndCart}>*/}
+                        {/*        <span>수량</span>*/}
+                        {/*        <div className={styles.quantityControl}>*/}
+                        {/*            <button */}
+                        {/*                className={styles.quantityBtn}*/}
+                        {/*                onClick={() => handleQuantityChange(-1)}*/}
+                        {/*            >*/}
+                        {/*                -*/}
+                        {/*            </button>*/}
+                        {/*            <span className={styles.quantityValue}>{quantity}</span>*/}
+                        {/*            <button */}
+                        {/*                className={styles.quantityBtn}*/}
+                        {/*                onClick={() => handleQuantityChange(1)}*/}
+                        {/*            >*/}
+                        {/*                +*/}
+                        {/*            </button>*/}
+                        {/*        </div>*/}
+                        {/*    </div>*/}
+                        {/*</div>*/}
                     </div>
                 </div>
                 <div className={styles.categoryWrapper}>

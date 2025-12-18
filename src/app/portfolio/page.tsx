@@ -2,41 +2,35 @@
 
 import styles from './page.module.scss';
 import Image from "next/image";
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import PortfolioCard from "@/components/PortfolioCard";
 import Pagination from "@/components/Pagination";
+import { getPortfolios, Portfolio } from "@/services/portfolioService";
 
 
 export default function PortfolioPage() {
     const [selectedChip, setSelectedChip] = useState('전체');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 15; // 3x5 그리드
+    const [portfolioData, setPortfolioData] = useState<Portfolio[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    // 포트폴리오 데이터
-    const portfolioData = [
-        {id: 0, title: "피규어 3D 프린팅 작업", imageUrl: "/mainPhoto.png", date: "2024.11.01", category: "피규어", writer: "관리자"},
-        {id: 1, title: "맞춤형 부품 제작", imageUrl: "/mainPhoto2.svg", date: "2024.10.28", category: "부품", writer: "관리자"},
-        {id: 2, title: "외주 개발 프로젝트", imageUrl: "/mainPhoto4.png", date: "2024.10.25", category: "외주 개발", writer: "관리자"},
-        {id: 3, title: "피규어 모델링", imageUrl: "/mainPhoto5.png", date: "2024.10.20", category: "피규어", writer: "관리자"},
-        {id: 4, title: "프로토타입 제작", imageUrl: "/mainPhoto.png", date: "2024.10.15", category: "부품", writer: "관리자"},
-        {id: 5, title: "맞춤 디자인", imageUrl: "/mainPhoto2.svg", date: "2024.10.10", category: "외주 개발", writer: "관리자"},
-        {id: 6, title: "기계 부품 제작", imageUrl: "/mainPhoto4.png", date: "2024.10.05", category: "부품", writer: "관리자"},
-        {id: 7, title: "건축 모형", imageUrl: "/mainPhoto5.png", date: "2024.09.30", category: "피규어", writer: "관리자"},
-        {id: 8, title: "의료용 모델", imageUrl: "/mainPhoto.png", date: "2024.09.25", category: "부품", writer: "관리자"},
-        {id: 9, title: "교육용 모형", imageUrl: "/mainPhoto2.svg", date: "2024.09.20", category: "피규어", writer: "관리자"},
-        {id: 10, title: "예술 작품", imageUrl: "/mainPhoto4.png", date: "2024.09.15", category: "피규어", writer: "관리자"},
-        {id: 11, title: "산업용 부품", imageUrl: "/mainPhoto5.png", date: "2024.09.10", category: "부품", writer: "관리자"},
-        {id: 12, title: "장난감 제작", imageUrl: "/mainPhoto.png", date: "2024.09.05", category: "피규어", writer: "관리자"},
-        {id: 13, title: "액세서리 제작", imageUrl: "/mainPhoto2.svg", date: "2024.08.30", category: "부품", writer: "관리자"},
-        {id: 14, title: "맞춤형 케이스", imageUrl: "/mainPhoto4.png", date: "2024.08.25", category: "외주 개발", writer: "관리자"},
-        {id: 15, title: "맞춤형 케이스", imageUrl: "/mainPhoto4.png", date: "2024.08.25", category: "외주 개발", writer: "관리자"},
-        {id: 16, title: "맞춤형 케이스", imageUrl: "/mainPhoto4.png", date: "2024.08.25", category: "외주 개발", writer: "관리자"},
-        {id: 17, title: "맞춤형 케이스", imageUrl: "/mainPhoto4.png", date: "2024.08.25", category: "외주 개발", writer: "관리자"},
-        {id: 18, title: "맞춤형 케이스", imageUrl: "/mainPhoto4.png", date: "2024.08.25", category: "외주 개발", writer: "관리자"},
-        {id: 19, title: "액세서리 제작", imageUrl: "/mainPhoto2.svg", date: "2024.08.30", category: "부품", writer: "관리자"},
-        {id: 20, title: "피규어 3D 프린팅 작업", imageUrl: "/mainPhoto.png", date: "2024.11.01", category: "피규어", writer: "관리자"},
+    // Firebase에서 포트폴리오 데이터 로드
+    useEffect(() => {
+        const loadPortfolios = async () => {
+            try {
+                setLoading(true);
+                const result = await getPortfolios(100);
+                setPortfolioData(result.portfolios);
+            } catch (error) {
+                console.error('포트폴리오 로드 에러:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    ];
+        loadPortfolios();
+    }, []);
 
     // 필터링된 데이터
     const filteredData = selectedChip === '전체'
@@ -52,6 +46,15 @@ export default function PortfolioPage() {
     const handleChipChange = (chip: string) => {
         setSelectedChip(chip);
         setCurrentPage(1);
+    };
+
+    // 날짜 포맷 함수
+    const formatDate = (date: Date) => {
+        return new Date(date).toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).replace(/\. /g, '.').replace(/\.$/, '');
     };
 
     return (
@@ -95,17 +98,23 @@ export default function PortfolioPage() {
 
 
                 </div>
-                <div className={styles.portfolioGrid}>
-                    {currentItems.map((item, index) => (
-                        <PortfolioCard
-                            key={`${item.title}-${index}`}
-                            id={item.id}
-                            title={item.title}
-                            imageUrl={item.imageUrl}
-                            date={item.date}
-                        />
-                    ))}
-                </div>
+                {loading ? (
+                    <div className={styles.portfolioGrid}>
+                        <p>로딩 중...</p>
+                    </div>
+                ) : (
+                    <div className={styles.portfolioGrid}>
+                        {currentItems.map((item) => (
+                            <PortfolioCard
+                                key={item.id}
+                                id={item.id}
+                                title={item.title}
+                                imageUrl={`${process.env.NEXT_PUBLIC_BACKEND_URL}${item.imageUrl}`}
+                                date={formatDate(item.createdAt)}
+                            />
+                        ))}
+                    </div>
+                )}
 
                 {totalPages > 1 && (
                     <Pagination

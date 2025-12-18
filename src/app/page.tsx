@@ -4,6 +4,7 @@ import styles from './page.module.scss';
 import Image from 'next/image';
 import {useState} from 'react';
 import ReviewCard from "@/components/ReviewCard";
+import Link from 'next/link';
 
 export default function Home() {
     const [activeButton, setActiveButton] = useState<number>(1);
@@ -91,7 +92,7 @@ export default function Home() {
                     className={styles.logoIcon}
                 />
                 <div className={styles.buttonWrapper}>
-                    <div className={styles.storeButton}>
+                    <Link href="/store" className={styles.storeButton}>
                         <Image
                             src="/store.svg"
                             alt="MAKER 3D Logo"
@@ -99,8 +100,8 @@ export default function Home() {
                             height={22}
                         />
                         <p className={styles.storeButtonText}>스토어</p>
-                    </div>
-                    <div className={styles.checkQuoteButton}>
+                    </Link>
+                    <Link href="/quote" className={styles.checkQuoteButton}>
                         <Image
                             src="/checkQuote.svg"
                             alt="MAKER 3D Logo"
@@ -108,7 +109,7 @@ export default function Home() {
                             height={22}
                         />
                         <p className={styles.storeButtonText}>실시간 견적확인</p>
-                    </div>
+                    </Link>
 
                     <div className={styles.kakaoRequestButton}>
                         <Image
@@ -191,9 +192,9 @@ export default function Home() {
                     <p className={styles.imageSubTitle}>
                         최신 3D프린터 장비로 출력속도 3배 향상! 고정밀의 출력물을 받아보세요!
                     </p>
-                    <div className={styles.goToStore}>
+                    <Link href="/store" className={styles.goToStore}>
                         <p className={styles.storeButtonText}>스토어 바로가기</p>
-                    </div>
+                    </Link>
                 </div>
                 <Image
                     src="/mainPhoto2.svg"

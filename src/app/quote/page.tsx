@@ -2,8 +2,12 @@
 
 import styles from './page.module.scss';
 import Image from "next/image";
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
+import {useRouter} from 'next/navigation';
+import {useAuth} from '@/contexts/AuthContext';
 import STLViewer from '../../components/STLViewer';
+import OrderModal, { CustomerInfo } from '@/components/OrderModal';
+import { generateOrderNumber, uploadSTLFiles, saveOrder, OrderData } from '@/utils/orderUtils';
 
 interface FileItem {
     id: number;
@@ -12,9 +16,12 @@ interface FileItem {
     color: string;
     quantity: number;
     price: number;
+    file: File;
 }
 
 export default function QuotePage() {
+    const router = useRouter();
+    const { user, loading } = useAuth();
     const [quantity, setQuantity] = useState(1);
     const [isEditing, setIsEditing] = useState(false);
     const [material, setMaterial] = useState('');
@@ -26,6 +33,16 @@ export default function QuotePage() {
     const [estimatedPrice, setEstimatedPrice] = useState(0);
     const [printTime, setPrintTime] = useState<string>('');
     const [isDragOver, setIsDragOver] = useState(false);
+    const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+    const [isProcessingOrder, setIsProcessingOrder] = useState(false);
+
+    // 로그인 체크
+    useEffect(() => {
+        if (!loading && !user) {
+            alert('로그인이 필요한 서비스입니다.');
+            router.push('/login');
+        }
+    }, [user, loading, router]);
 
     const increaseQuantity = () => {
         setQuantity(prev => prev + 1);
@@ -59,54 +76,61 @@ export default function QuotePage() {
             const files = Array.from(e.target.files);
             setUploadedFiles(files);
             setCurrentPreviewFile(files[0]);
-            
-            // STL 파일인 경우 자동으로 견적 계산
-            if (files[0].name.toLowerCase().endsWith('.stl')) {
-                await calculateEstimate(files[0]);
-            }
+            // 자동 견적 계산 제거 - 견적내기 버튼 클릭 시에만 계산
         }
     };
 
-    const calculateEstimate = async (file: File) => {
+    const calculateEstimate = async () => {
+        // 유효성 검사
+        if (uploadedFiles.length === 0) {
+            alert('STL 파일을 먼저 업로드해주세요.');
+            return;
+        }
+        if (!material) {
+            alert('소재를 선택해주세요.');
+            return;
+        }
+        if (!color) {
+            alert('색상을 선택해주세요.');
+            return;
+        }
+
         setIsCalculating(true);
         setEstimatedPrice(0);
-        
+        setPrintTime('');
+
         try {
-            // PrusaSlicer 백엔드 API 호출
+            const file = uploadedFiles[0];
+
+            // PrusaSlicer 백엔드 API 호출 (소재, 색상만 포함)
             const formData = new FormData();
             formData.append('stlFile', file);
-            
-            // Next.js API Route를 통해 프록시로 백엔드 호출 (HTTPS 보안 문제 해결)
-            const response = await fetch('/api/upload-stl', {
+            formData.append('material', material);
+            formData.append('color', color);
+
+            console.log('견적 계산 요청:', { material, color });
+
+            // 직접 백엔드로 호출 (Vercel 제한 우회)
+            const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
+            const response = await fetch(`${backendUrl}/api/upload-stl`, {
                 method: 'POST',
                 body: formData
             });
-            
+
             const result = await response.json();
-            
+
             if (result.success) {
                 console.log('PrusaSlicer 출력 시간:', result.printTime);
+                console.log('계산된 가격:', result.estimatedPrice);
                 setPrintTime(result.printTime);
-                
-                // 출력 시간을 기반으로 견적 계산 (예시)
-                // 실제로는 시간, 재료비, 전력비 등을 고려한 계산 로직 필요
-                const estimatedHours = parseTimeToHours(result.printTime);
-                const hourlyRate = 10000; // 시간당 10,000원 가정
-                const materialCost = 20000; // 재료비 20,000원 가정
-                const calculatedPrice = Math.round((estimatedHours * hourlyRate) + materialCost);
-                
-                setEstimatedPrice(calculatedPrice);
+                setEstimatedPrice(result.estimatedPrice);
             } else {
-                console.error('PrusaSlicer 오류:', result.error);
-                // 오류 시 기본 가격 설정
-                const fallbackPrice = Math.floor(Math.random() * 200000) + 50000;
-                setEstimatedPrice(fallbackPrice);
+                console.error('견적 계산 오류:', result.error);
+                alert('견적 계산에 실패했습니다. 다시 시도해주세요.');
             }
         } catch (error) {
             console.error('네트워크 오류:', error);
-            // 네트워크 오류 시 기본 가격 설정
-            const fallbackPrice = Math.floor(Math.random() * 200000) + 50000;
-            setEstimatedPrice(fallbackPrice);
+            alert('견적 계산 중 오류가 발생했습니다. 다시 시도해주세요.');
         } finally {
             setIsCalculating(false);
         }
@@ -135,14 +159,14 @@ export default function QuotePage() {
     const handleDrop = async (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragOver(false);
-        
+
         const files = Array.from(e.dataTransfer.files);
         const stlFiles = files.filter(file => file.name.toLowerCase().endsWith('.stl'));
-        
+
         if (stlFiles.length > 0) {
             setUploadedFiles(stlFiles);
             setCurrentPreviewFile(stlFiles[0]);
-            await calculateEstimate(stlFiles[0]);
+            // 자동 견적 계산 제거 - 견적내기 버튼 클릭 시에만 계산
         } else {
             alert('STL 파일만 업로드 가능합니다.');
         }
@@ -156,7 +180,8 @@ export default function QuotePage() {
                 material,
                 color,
                 quantity,
-                price: estimatedPrice || Math.floor(Math.random() * 200000) + 50000
+                price: estimatedPrice || Math.floor(Math.random() * 200000) + 50000,
+                file: file
             }));
 
             setFileItems(prev => [...prev, ...newItems]);
@@ -178,6 +203,78 @@ export default function QuotePage() {
         }
     };
 
+    // 견적 주문하기 버튼 클릭
+    const handleOrderClick = () => {
+        if (fileItems.length === 0) {
+            alert('주문할 파일을 먼저 추가해주세요.');
+            return;
+        }
+        setIsOrderModalOpen(true);
+    };
+
+    // 주문 제출 처리
+    const handleOrderSubmit = async (customerInfo: CustomerInfo) => {
+        setIsProcessingOrder(true);
+
+        try {
+            // 1. 주문번호 생성
+            const orderNumber = await generateOrderNumber();
+            console.log('생성된 주문번호:', orderNumber);
+
+            // 2. STL 파일들을 Firebase Storage에 업로드
+            const files = fileItems.map(item => item.file);
+            const fileUrls = await uploadSTLFiles(files, orderNumber);
+            console.log('파일 업로드 완료:', fileUrls);
+
+            // 3. 주문 정보 준비
+            const now = new Date();
+            const orderDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
+            const orderTime = now.toTimeString().split(' ')[0]; // HH:MM:SS
+
+            const orderData: OrderData = {
+                customerName: customerInfo.name,
+                phoneNumber: customerInfo.phoneNumber,
+                email: customerInfo.email,
+                fileUrls: fileUrls,
+                files: fileItems.map((item, index) => ({
+                    fileName: item.fileName,
+                    material: item.material,
+                    color: item.color,
+                    quantity: item.quantity,
+                    price: item.price
+                })),
+                totalPrice: fileItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                paymentStatus: 'pending',
+                orderDate: `${orderDate} ${orderTime}`,
+                orderTime: orderTime,
+                workStatus: 'pending'
+            };
+
+            // 4. Firestore에 주문 저장
+            await saveOrder(orderNumber, orderData);
+
+            // 5. 성공 처리
+            alert(`주문이 완료되었습니다!\n주문번호: ${orderNumber}`);
+            setIsOrderModalOpen(false);
+
+            // 폼 초기화
+            setFileItems([]);
+            setMaterial('');
+            setColor('');
+            setQuantity(1);
+            setUploadedFiles([]);
+            setCurrentPreviewFile(null);
+            setEstimatedPrice(0);
+            setPrintTime('');
+
+        } catch (error) {
+            console.error('주문 처리 오류:', error);
+            alert('주문 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+        } finally {
+            setIsProcessingOrder(false);
+        }
+    };
+
     const removeFileItem = (id: number) => {
         setFileItems(prev => prev.filter(item => item.id !== id));
     };
@@ -187,6 +284,17 @@ export default function QuotePage() {
             item.id === id ? {...item, quantity: newQuantity} : item
         ));
     };
+
+    // 로딩 중이거나 로그인하지 않은 경우 아무것도 렌더링하지 않음
+    if (loading || !user) {
+        return (
+            <div className={styles.container}>
+                <div className={styles.innerContainer}>
+                    <p style={{ textAlign: 'center', marginTop: '100px' }}>로딩 중...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
 
@@ -296,49 +404,19 @@ export default function QuotePage() {
                                 <option value="투명">투명</option>
                             </select>
                         </div>
-                        <div className={styles.divider}></div>
-                        <div className={styles.quantitySection}>
-                            <div className={styles.quantityLabel}>
-                                <span>수량 <span style={{color: '#FF4040', marginLeft: '2px'}}>*</span></span>
-                            </div>
-                            <div className={styles.quantityControl}>
-                                <button
-                                    className={styles.quantityBtn}
-                                    onClick={decreaseQuantity}
-                                    type="button"
-                                >
-                                    -
-                                </button>
-                                {isEditing ? (
-                                    <input
-                                        type="number"
-                                        value={quantity}
-                                        onChange={handleQuantityChange}
-                                        onBlur={handleQuantityBlur}
-                                        onKeyPress={handleKeyPress}
-                                        className={styles.quantityInput}
-                                        autoFocus
-                                        min="1"
-                                    />
-                                ) : (
-                                    <span
-                                        className={styles.quantityValue}
-                                        onClick={handleQuantityClick}
-                                    >
-                                        {quantity}
-                                    </span>
-                                )}
-                                <button
-                                    className={styles.quantityBtn}
-                                    onClick={increaseQuantity}
-                                    type="button"
-                                >
-                                    +
-                                </button>
-                            </div>
-                        </div>
                         <div className={styles.infoText}>
                             <p>솔리드 데이터 일 경우, 예상견적이 높게 산출됩니다.</p>
+                        </div>
+                        <div className={styles.divider}></div>
+                        <div
+                            className={styles.calculateBtn}
+                            onClick={calculateEstimate}
+                            style={{
+                                cursor: isCalculating ? 'not-allowed' : 'pointer',
+                                opacity: isCalculating ? 0.6 : 1
+                            }}
+                        >
+                            {isCalculating ? '계산 중...' : '견적내기'}
                         </div>
                         <div className={styles.divider}></div>
                         <div className={styles.priceWrapper}>
@@ -415,17 +493,23 @@ export default function QuotePage() {
                     <div className={styles.lastPriceWrapper}>
                         <div>
                             <p className={styles.lastPriceTitle}>최종 견적 요약</p>
-                            <p className={styles.lastPriceInfo}>총 2개 파일</p>
-                            <p className={styles.lastPriceInfo}>총 부피: 210.7 mm³</p>
+                            <p className={styles.lastPriceInfo}>총 {fileItems.length}개 파일</p>
+                            <p className={styles.lastPriceInfo}>총 수량: {fileItems.reduce((sum, item) => sum + item.quantity, 0)}개</p>
                         </div>
                         <div style={{display: 'flex', alignItems: 'flex-end', flexDirection: 'column'}}>
                             <p className={styles.lastPriceInfo}>예상 견적(VAT 포함)</p>
-                            <p className={styles.lastPrice}>₩ 0</p>
+                            <p className={styles.lastPrice}>₩ {fileItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()}</p>
 
                         </div>
                     </div>
                     <div className={styles.orderWrapper}>
-                        <div className={styles.order}>견적 주문 하기</div>
+                        <div
+                            className={styles.order}
+                            onClick={handleOrderClick}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            견적 주문 하기
+                        </div>
                     </div>
                     <div className={styles.cautionWrapper}>
                         <div className={styles.cautionTitle}>
@@ -451,6 +535,15 @@ export default function QuotePage() {
 
 
             </div>
+
+            {/* 주문 정보 입력 모달 */}
+            <OrderModal
+                isOpen={isOrderModalOpen}
+                onClose={() => setIsOrderModalOpen(false)}
+                onSubmit={handleOrderSubmit}
+                totalPrice={fileItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)}
+                fileCount={fileItems.length}
+            />
         </div>
     );
 }

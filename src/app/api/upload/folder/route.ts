@@ -47,6 +47,68 @@ try {
   console.error('GCS initialization error for folder operations:', error);
 }
 
+// 파일 업로드 API (포트폴리오 이미지 등)
+export async function POST(request: NextRequest) {
+  try {
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
+    const type = formData.get('type') as string; // 'portfolio', 'notice' 등
+
+    console.log('File upload request:', { fileName: file?.name, type });
+
+    if (!file) {
+      return NextResponse.json(
+        { error: '파일이 업로드되지 않았습니다.' },
+        { status: 400 }
+      );
+    }
+
+    // 파일 버퍼로 변환
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    // 파일명 생성 (타임스탬프 + 원본 파일명)
+    const timestamp = Date.now();
+    const fileName = `${timestamp}_${file.name}`;
+    const folder = type || 'uploads';
+    const destination = `${folder}/${fileName}`;
+
+    console.log('Uploading to GCS:', destination);
+
+    // GCS에 파일 업로드
+    const gcsFile = bucket.file(destination);
+    await gcsFile.save(buffer, {
+      metadata: {
+        contentType: file.type,
+      },
+      public: true, // 공개 읽기 허용
+    });
+
+    // 공개 URL 생성
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${destination}`;
+
+    console.log('Upload successful:', publicUrl);
+
+    return NextResponse.json({
+      success: true,
+      url: publicUrl,
+      fileName: fileName,
+      destination: destination
+    });
+
+  } catch (error) {
+    console.error('파일 업로드 API 에러:', error);
+    console.error('Error stack:', (error as Error).stack);
+    return NextResponse.json(
+      {
+        error: '파일 업로드에 실패했습니다.',
+        details: (error as Error).message
+      },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

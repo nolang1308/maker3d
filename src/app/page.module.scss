@@ -49,6 +49,16 @@
         align-items: center;
         box-shadow: 0 2px 30px rgba(0, 0, 0, 0.25);
         cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+
+        &:visited {
+          color: inherit;
+        }
+
+        &:hover {
+          color: inherit;
+        }
 
         @media (max-width: 1024px) {
           width: 100%;
@@ -72,6 +82,16 @@
         align-items: center;
         box-shadow: 0 2px 30px rgba(0, 0, 0, 0.25);
         cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+
+        &:visited {
+          color: inherit;
+        }
+
+        &:hover {
+          color: inherit;
+        }
 
         @media (max-width: 1024px) {
           width: 100%;
@@ -305,17 +325,24 @@
         top: 528px;
         left: 93px;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        
-        @media (max-width: 1024px) {
-          width: 140px;
-          height: 50px;
-          top: 250px;
-          left: 24px;
+        text-decoration: none;
+        color: inherit;
+
+        &:visited {
+          color: inherit;
         }
 
         &:hover {
           transform: scale(1.05);
           box-shadow: 0 4px 40px rgba(36, 147, 216, 0.4);
+          color: inherit;
+        }
+
+        @media (max-width: 1024px) {
+          width: 140px;
+          height: 50px;
+          top: 250px;
+          left: 24px;
         }
 
         .storeButtonText {

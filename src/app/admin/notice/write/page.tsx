@@ -34,25 +34,24 @@ export default function Page(): React.ReactElement {
     }, [user, router]);
 
     const MAX_FILES = 10;
-    const MAX_SIZE = 4 * 1024 * 1024; // 4MB (Vercel 제한 고려)
 
     const handleFileUpload = (newFiles: FileList) => {
         const fileArray = Array.from(newFiles);
         const validFiles: any[] = [];
-        
+
         fileArray.forEach(file => {
             if (files.length + validFiles.length < MAX_FILES) {
                 const fileData = {
                     name: file.name,
                     size: file.size,
                     file,
-                    isOverSize: file.size > MAX_SIZE,
+                    isOverSize: false, // 크기 제한 없음
                     id: Date.now() + Math.random()
                 };
                 validFiles.push(fileData);
             }
         });
-        
+
         setFiles(prev => [...prev, ...validFiles]);
     };
 
@@ -293,8 +292,7 @@ export default function Page(): React.ReactElement {
                                         </div>
                                         <div className={Styles.errorMessage}>
                                             <span className={Styles.errorIcon}>⚠</span>
-                                            등록 가능한 파일의 용량을 초과하였습니다. 
-                                            {formatFileSize(MAX_SIZE)} 미만의 파일만 등록할 수 있습니다.
+                                            파일 업로드 중 오류가 발생했습니다.
                                         </div>
                                     </>
                                 ) : (

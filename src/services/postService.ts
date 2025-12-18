@@ -188,6 +188,7 @@ export interface PostFormData {
   category?: string;
   password?: string;
   tags?: string[];
+  files?: File[];
 }
 
 // 게시글 생성
@@ -197,6 +198,7 @@ export async function createPost(
   authorName: string
 ): Promise<Post> {
   try {
+    // 먼저 게시글 문서를 생성
     const newPostData = {
       title: formData.title,
       content: formData.content,
@@ -213,9 +215,51 @@ export async function createPost(
     };
 
     const docRef = await addDoc(collection(db, 'posts'), newPostData);
-    
+    const postId = docRef.id;
+
+    console.log('게시글 생성 완료, ID:', postId);
+
+    // 파일이 있으면 업로드
+    let attachments: { name: string; url: string; size: number }[] = [];
+    if (formData.files && formData.files.length > 0) {
+      try {
+        console.log('파일 업로드 시작:', formData.files.length, '개');
+
+        const uploadFormData = new FormData();
+        uploadFormData.append('postId', postId);
+
+        formData.files.forEach(file => {
+          uploadFormData.append('files', file);
+        });
+
+        // 직접 백엔드로 호출 (Vercel 제한 우회)
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
+        const uploadResponse = await fetch(`${backendUrl}/api/upload-freenotice-files`, {
+          method: 'POST',
+          body: uploadFormData
+        });
+
+        if (uploadResponse.ok) {
+          const uploadResult = await uploadResponse.json();
+          attachments = uploadResult.files || [];
+          console.log('파일 업로드 성공:', attachments);
+
+          // Firestore에 첨부파일 정보 업데이트
+          await updateDoc(doc(db, 'posts', postId), {
+            attachments: attachments
+          });
+        } else {
+          const errorData = await uploadResponse.json();
+          console.error('파일 업로드 실패:', errorData);
+        }
+      } catch (uploadError) {
+        console.error('파일 업로드 에러:', uploadError);
+        // 파일 업로드 실패해도 게시글은 생성되도록 함
+      }
+    }
+
     return {
-      id: docRef.id,
+      id: postId,
       title: formData.title,
       content: formData.content,
       author: authorName,
@@ -223,7 +267,7 @@ export async function createPost(
       category: formData.category || 'write',
       password: formData.password,
       tags: formData.tags || [],
-      attachments: [],
+      attachments: attachments,
       createdAt: new Date(),
       updatedAt: new Date(),
       views: 0,

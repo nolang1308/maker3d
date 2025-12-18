@@ -17,7 +17,9 @@ export async function uploadNoticeFiles(
       formData.append('files', file);
     });
 
-    const response = await fetch('/api/upload', {
+    // 직접 백엔드로 호출 (Vercel 제한 우회)
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
+    const response = await fetch(`${backendUrl}/api/upload`, {
       method: 'POST',
       body: formData,
     });

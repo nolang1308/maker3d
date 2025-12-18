@@ -185,14 +185,15 @@
       align-items: center;
       justify-content: center;
       @include label-large();
-      
+      transition: all 0.2s ease;
+
       // 처리시작 - 파란색
       &.statusStart {
         background-color: #007AFF;
         color: #FFFFFF;
       }
 
-      // 처리중 - 주황색  
+      // 처리중 - 주황색
       &.statusInProgress {
         background-color: #FF9500;
         color: #FFFFFF;
@@ -202,6 +203,21 @@
       &.statusCompleted {
         background-color: #34C759;
         color: #FFFFFF;
+      }
+
+      // 클릭 가능한 상태 (처리시작)
+      &.clickable {
+        cursor: pointer;
+
+        &:hover {
+          background-color: #0056CC;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+        }
+
+        &:active {
+          transform: scale(0.95);
+        }
       }
     }
   }

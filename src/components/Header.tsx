@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
 
 const Header = () => {
-    const { user, logout } = useAuth();
+    const { user, userRole, logout } = useAuth();
 
     const handleLogout = async () => {
         try {
@@ -41,6 +41,11 @@ const Header = () => {
                         </div>
                     </div>
                     <Link href="/contact" className={styles.navItem}>고객문의</Link>
+                    {userRole === 'admin' && (
+                        <Link href="/admin/order" className={styles.navItem} style={{ color: '#FF6B00', fontWeight: '600' }}>
+                            관리자
+                        </Link>
+                    )}
                 </nav>
 
                 <div className={styles.authButtons}>
@@ -51,11 +56,11 @@ const Header = () => {
                 <div className={styles.userActions}>
                     {user ? (
                         <>
-                            <span className={styles.userAction}>
+                            <Link href="/mypage" className={styles.userAction}>
                                 {user.email?.split('@')[0]}님
-                            </span>
+                            </Link>
                             <span className={styles.userAction}>·</span>
-                            <button 
+                            <button
                                 onClick={handleLogout}
                                 className={styles.userAction}
                                 style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}

@@ -30,7 +30,7 @@ export interface Notice {
   isPublic: boolean;
   attachments?: {
     name: string;
-    url: string; // GCS 내부 경로 (예: notices/abc123/1702123456_file.pdf)
+    url: string; // 로컬 다운로드 경로 (예: /api/download-notice-file/abc123/1702123456_file.pdf)
     size: number;
     type?: string; // MIME 타입
   }[];
@@ -206,8 +206,9 @@ export async function createNotice(
         if (validFiles.length > 0) {
           console.log('Preparing to upload files in createNotice:', validFiles.length);
           
-          // 백엔드 API를 통해 파일 업로드
-          const uploadResponse = await fetch('/api/upload', {
+          // 직접 백엔드로 호출 (Vercel 제한 우회)
+          const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
+          const uploadResponse = await fetch(`${backendUrl}/api/upload`, {
             method: 'POST',
             body: (() => {
               const formData = new FormData();

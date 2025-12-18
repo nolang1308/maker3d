@@ -126,18 +126,35 @@ export default function Page(): React.ReactElement {
             setLoading(true);
             setError('');
 
+            // 크기 초과 파일이 있는지 확인
+            const oversizeFiles = files.filter(f => f.isOverSize);
+            if (oversizeFiles.length > 0) {
+                setError('용량을 초과한 파일이 있습니다. 해당 파일을 삭제해주세요.');
+                setLoading(false);
+                return;
+            }
+
+            // File 객체만 추출
+            const validFiles = files.filter(f => !f.isOverSize).map(f => f.file);
+
             const postData: PostFormData = {
                 title: title.trim(),
                 content: markdown.trim(),
                 category: selectedCategory,
-                password: password
+                password: password,
+                files: validFiles.length > 0 ? validFiles : undefined
             };
+
+            console.log('게시글 저장 시작:', {
+                title: postData.title,
+                filesCount: validFiles.length
+            });
 
             const authorName = user.email?.split('@')[0] || '익명';
             await createPost(postData, user.email!, authorName);
 
             setSavedDialogOpen(true);
-            
+
             // 3초 후 목록으로 이동
             setTimeout(() => {
                 router.push('/freenoticeboard');

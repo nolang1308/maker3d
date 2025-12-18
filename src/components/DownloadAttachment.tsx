@@ -33,8 +33,10 @@ export function DownloadAttachment(params: DownloadAttachment.Params): React.Rea
     const handleDownload = async () => {
         try {
             // 백엔드 다운로드 API를 통해 파일 다운로드
-            const downloadUrl = `/api/download?path=${encodeURIComponent(options.path)}&name=${encodeURIComponent(options.title)}`;
-            
+            // options.path는 이미 /api/download-notice-file/noticeId/filename 형식
+            const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
+            const downloadUrl = `${BACKEND_URL}${options.path}`;
+
             // 새 창에서 다운로드 시작
             const link = document.createElement("a");
             link.href = downloadUrl;
