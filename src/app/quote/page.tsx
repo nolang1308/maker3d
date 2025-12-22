@@ -8,6 +8,8 @@ import {useAuth} from '@/contexts/AuthContext';
 import STLViewer from '../../components/STLViewer';
 import OrderModal, { CustomerInfo } from '@/components/OrderModal';
 import { generateOrderNumber, uploadSTLFiles, saveOrder, OrderData } from '@/utils/orderUtils';
+import { db } from '@/config/firebase';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
 interface FileItem {
     id: number;
@@ -43,6 +45,43 @@ export default function QuotePage() {
             router.push('/login');
         }
     }, [user, loading, router]);
+
+    // Firebase에서 저장된 견적 불러오기
+    useEffect(() => {
+        const loadSavedQuotes = async () => {
+            if (user) {
+                try {
+                    const quotesRef = doc(db, 'savedQuotes', user.uid);
+                    const quotesSnap = await getDoc(quotesRef);
+
+                    if (quotesSnap.exists()) {
+                        const data = quotesSnap.data();
+                        const savedQuotes = data.quotes || [];
+
+                        // Firebase 데이터를 FileItem 형식으로 변환 (file 객체는 null)
+                        const loadedItems: FileItem[] = savedQuotes.map((quote: any) => ({
+                            id: quote.id,
+                            fileName: quote.fileName,
+                            material: quote.material,
+                            color: quote.color,
+                            quantity: quote.quantity,
+                            price: quote.price,
+                            file: null as any // 파일은 저장되지 않았으므로 null
+                        }));
+
+                        setFileItems(loadedItems);
+                        console.log('저장된 견적을 불러왔습니다:', loadedItems.length, '개');
+                    }
+                } catch (error) {
+                    console.error('견적 불러오기 오류:', error);
+                }
+            }
+        };
+
+        if (!loading && user) {
+            loadSavedQuotes();
+        }
+    }, [user, loading]);
 
     const increaseQuantity = () => {
         setQuantity(prev => prev + 1);
@@ -172,7 +211,7 @@ export default function QuotePage() {
         }
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (uploadedFiles.length > 0 && material && color) {
             const newItems: FileItem[] = uploadedFiles.map((file, index) => ({
                 id: Date.now() + index,
@@ -184,7 +223,35 @@ export default function QuotePage() {
                 file: file
             }));
 
-            setFileItems(prev => [...prev, ...newItems]);
+            const updatedItems = [...fileItems, ...newItems];
+            setFileItems(updatedItems);
+
+            // Firebase에 저장 (File 객체 제외)
+            if (user) {
+                try {
+                    const quotesRef = doc(db, 'savedQuotes', user.uid);
+                    const savedQuotes = updatedItems.map(item => ({
+                        id: item.id,
+                        fileName: item.fileName,
+                        material: item.material,
+                        color: item.color,
+                        quantity: item.quantity,
+                        price: item.price,
+                        savedAt: new Date().toISOString()
+                    }));
+
+                    await setDoc(quotesRef, {
+                        userId: user.uid,
+                        quotes: savedQuotes,
+                        updatedAt: new Date().toISOString()
+                    });
+
+                    console.log('견적이 Firebase에 저장되었습니다.');
+                } catch (error) {
+                    console.error('Firebase 저장 오류:', error);
+                    alert('견적 저장 중 오류가 발생했습니다.');
+                }
+            }
 
             // 폼 초기화
             setMaterial('');
@@ -198,6 +265,8 @@ export default function QuotePage() {
             // 파일 input 초기화
             const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
             if (fileInput) fileInput.value = '';
+
+            alert('견적이 저장되었습니다!');
         } else {
             alert('파일을 업로드하고 소재, 색상을 선택해주세요.');
         }
@@ -274,6 +343,21 @@ export default function QuotePage() {
             setEstimatedPrice(0);
             setPrintTime('');
 
+            // Firebase에 저장된 견적 초기화
+            if (user) {
+                try {
+                    const quotesRef = doc(db, 'savedQuotes', user.uid);
+                    await setDoc(quotesRef, {
+                        userId: user.uid,
+                        quotes: [],
+                        updatedAt: new Date().toISOString()
+                    });
+                    console.log('주문 완료 후 저장된 견적이 초기화되었습니다.');
+                } catch (error) {
+                    console.error('Firebase 초기화 오류:', error);
+                }
+            }
+
         } catch (error) {
             console.error('주문 처리 오류:', error);
             alert('주문 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
@@ -282,14 +366,66 @@ export default function QuotePage() {
         }
     };
 
-    const removeFileItem = (id: number) => {
-        setFileItems(prev => prev.filter(item => item.id !== id));
+    const removeFileItem = async (id: number) => {
+        const updatedItems = fileItems.filter(item => item.id !== id);
+        setFileItems(updatedItems);
+
+        // Firebase에서도 삭제
+        if (user) {
+            try {
+                const quotesRef = doc(db, 'savedQuotes', user.uid);
+                const savedQuotes = updatedItems.map(item => ({
+                    id: item.id,
+                    fileName: item.fileName,
+                    material: item.material,
+                    color: item.color,
+                    quantity: item.quantity,
+                    price: item.price,
+                    savedAt: new Date().toISOString()
+                }));
+
+                await updateDoc(quotesRef, {
+                    quotes: savedQuotes,
+                    updatedAt: new Date().toISOString()
+                });
+
+                console.log('견적이 삭제되었습니다.');
+            } catch (error) {
+                console.error('Firebase 삭제 오류:', error);
+            }
+        }
     };
 
-    const updateQuantity = (id: number, newQuantity: number) => {
-        setFileItems(prev => prev.map(item =>
+    const updateQuantity = async (id: number, newQuantity: number) => {
+        const updatedItems = fileItems.map(item =>
             item.id === id ? {...item, quantity: newQuantity} : item
-        ));
+        );
+        setFileItems(updatedItems);
+
+        // Firebase 업데이트
+        if (user) {
+            try {
+                const quotesRef = doc(db, 'savedQuotes', user.uid);
+                const savedQuotes = updatedItems.map(item => ({
+                    id: item.id,
+                    fileName: item.fileName,
+                    material: item.material,
+                    color: item.color,
+                    quantity: item.quantity,
+                    price: item.price,
+                    savedAt: new Date().toISOString()
+                }));
+
+                await updateDoc(quotesRef, {
+                    quotes: savedQuotes,
+                    updatedAt: new Date().toISOString()
+                });
+
+                console.log('수량이 업데이트되었습니다.');
+            } catch (error) {
+                console.error('Firebase 업데이트 오류:', error);
+            }
+        }
     };
 
     // 로딩 중이거나 로그인하지 않은 경우 아무것도 렌더링하지 않음
@@ -415,16 +551,21 @@ export default function QuotePage() {
                             <p>솔리드 데이터 일 경우, 예상견적이 높게 산출됩니다.</p>
                         </div>
                         <div className={styles.divider}></div>
-                        <div
-                            className={styles.calculateBtn}
-                            onClick={calculateEstimate}
-                            style={{
-                                cursor: isCalculating ? 'not-allowed' : 'pointer',
-                                opacity: isCalculating ? 0.6 : 1
-                            }}
-                        >
-                            {isCalculating ? '계산 중...' : '견적내기'}
+                        <div className={styles.calculateBtnWrapper}>
+
+                            <div
+                                className={styles.calculateBtn}
+                                onClick={calculateEstimate}
+                                style={{
+                                    cursor: isCalculating ? 'not-allowed' : 'pointer',
+                                    opacity: isCalculating ? 0.6 : 1
+                                }}
+                            >
+                                {isCalculating ? '계산 중...' : '견적내기'}
+                            </div>
+
                         </div>
+
                         <div className={styles.divider}></div>
                         <div className={styles.priceWrapper}>
                             <p className={styles.title}>예상 견적</p>
