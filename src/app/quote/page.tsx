@@ -18,7 +18,8 @@ interface FileItem {
     color: string;
     quantity: number;
     price: number;
-    file: File;
+    file: File | null;
+    savedFilePath?: string; // 백엔드에 저장된 파일 경로
 }
 
 export default function QuotePage() {
@@ -58,7 +59,7 @@ export default function QuotePage() {
                         const data = quotesSnap.data();
                         const savedQuotes = data.quotes || [];
 
-                        // Firebase 데이터를 FileItem 형식으로 변환 (file 객체는 null)
+                        // Firebase 데이터를 FileItem 형식으로 변환 (savedFilePath 포함)
                         const loadedItems: FileItem[] = savedQuotes.map((quote: any) => ({
                             id: quote.id,
                             fileName: quote.fileName,
@@ -66,7 +67,8 @@ export default function QuotePage() {
                             color: quote.color,
                             quantity: quote.quantity,
                             price: quote.price,
-                            file: null as any // 파일은 저장되지 않았으므로 null
+                            file: null, // 파일은 백엔드에 저장되어 있음
+                            savedFilePath: quote.savedFilePath // 백엔드 파일 경로
                         }));
 
                         setFileItems(loadedItems);
@@ -213,22 +215,51 @@ export default function QuotePage() {
 
     const handleSave = async () => {
         if (uploadedFiles.length > 0 && material && color) {
-            const newItems: FileItem[] = uploadedFiles.map((file, index) => ({
-                id: Date.now() + index,
-                fileName: file.name,
-                material,
-                color,
-                quantity,
-                price: estimatedPrice || Math.floor(Math.random() * 200000) + 50000,
-                file: file
-            }));
+            try {
+                let savedFilePaths: string[] = [];
 
-            const updatedItems = [...fileItems, ...newItems];
-            setFileItems(updatedItems);
+                // 1. 파일을 백엔드로 업로드
+                if (user && uploadedFiles.length > 0) {
+                    const formData = new FormData();
+                    formData.append('userId', user.uid);
 
-            // Firebase에 저장 (File 객체 제외)
-            if (user) {
-                try {
+                    uploadedFiles.forEach((file) => {
+                        formData.append('files', file);
+                    });
+
+                    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
+                    const response = await fetch(`${backendUrl}/api/save-quote-files`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        savedFilePaths = result.filePaths;
+                        console.log('파일 백엔드 저장 완료:', savedFilePaths);
+                    } else {
+                        throw new Error(result.error || '파일 저장 실패');
+                    }
+                }
+
+                // 2. FileItem 생성 (savedFilePath 포함)
+                const newItems: FileItem[] = uploadedFiles.map((file, index) => ({
+                    id: Date.now() + index,
+                    fileName: file.name,
+                    material,
+                    color,
+                    quantity,
+                    price: estimatedPrice || Math.floor(Math.random() * 200000) + 50000,
+                    file: file,
+                    savedFilePath: savedFilePaths[index] || undefined
+                }));
+
+                const updatedItems = [...fileItems, ...newItems];
+                setFileItems(updatedItems);
+
+                // 3. Firebase에 저장 (File 객체 제외, savedFilePath 포함)
+                if (user) {
                     const quotesRef = doc(db, 'savedQuotes', user.uid);
                     const savedQuotes = updatedItems.map(item => ({
                         id: item.id,
@@ -237,6 +268,7 @@ export default function QuotePage() {
                         color: item.color,
                         quantity: item.quantity,
                         price: item.price,
+                        savedFilePath: item.savedFilePath,
                         savedAt: new Date().toISOString()
                     }));
 
@@ -247,26 +279,26 @@ export default function QuotePage() {
                     });
 
                     console.log('견적이 Firebase에 저장되었습니다.');
-                } catch (error) {
-                    console.error('Firebase 저장 오류:', error);
-                    alert('견적 저장 중 오류가 발생했습니다.');
                 }
+
+                // 폼 초기화
+                setMaterial('');
+                setColor('');
+                setQuantity(1);
+                setUploadedFiles([]);
+                setCurrentPreviewFile(null);
+                setEstimatedPrice(0);
+                setPrintTime('');
+
+                // 파일 input 초기화
+                const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+                if (fileInput) fileInput.value = '';
+
+                alert('견적이 저장되었습니다!');
+            } catch (error) {
+                console.error('견적 저장 오류:', error);
+                alert('견적 저장 중 오류가 발생했습니다.');
             }
-
-            // 폼 초기화
-            setMaterial('');
-            setColor('');
-            setQuantity(1);
-            setUploadedFiles([]);
-            setCurrentPreviewFile(null);
-            setEstimatedPrice(0);
-            setPrintTime('');
-
-            // 파일 input 초기화
-            const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-            if (fileInput) fileInput.value = '';
-
-            alert('견적이 저장되었습니다!');
         } else {
             alert('파일을 업로드하고 소재, 색상을 선택해주세요.');
         }
@@ -290,10 +322,47 @@ export default function QuotePage() {
             const orderNumber = await generateOrderNumber();
             console.log('생성된 주문번호:', orderNumber);
 
-            // 2. STL 파일들을 Firebase Storage에 업로드
-            const files = fileItems.map(item => item.file);
-            const fileUrls = await uploadSTLFiles(files, orderNumber);
-            console.log('파일 업로드 완료:', fileUrls);
+            // 2. STL 파일 처리 (저장된 파일 또는 새 파일)
+            let fileUrls: string[] = [];
+
+            // 저장된 파일이 있는지 확인
+            const hasSavedFiles = fileItems.some(item => item.savedFilePath);
+
+            if (hasSavedFiles && user) {
+                // 저장된 파일을 주문 폴더로 복사
+                const savedFilePaths = fileItems
+                    .filter(item => item.savedFilePath)
+                    .map(item => item.savedFilePath as string);
+
+                const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
+                const response = await fetch(`${backendUrl}/api/copy-saved-files-to-order`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId: user.uid,
+                        orderNumber: orderNumber,
+                        filePaths: savedFilePaths
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    fileUrls = result.filePaths;
+                    console.log('저장된 파일 복사 완료:', fileUrls);
+                } else {
+                    throw new Error(result.error || '저장된 파일 복사 실패');
+                }
+            } else {
+                // 새로 업로드된 파일 사용
+                const files = fileItems.map(item => item.file).filter((file): file is File => file !== null);
+                if (files.length > 0) {
+                    fileUrls = await uploadSTLFiles(files, orderNumber);
+                    console.log('파일 업로드 완료:', fileUrls);
+                }
+            }
 
             // 3. 주문 정보 준비
             const now = new Date();
@@ -381,6 +450,7 @@ export default function QuotePage() {
                     color: item.color,
                     quantity: item.quantity,
                     price: item.price,
+                    savedFilePath: item.savedFilePath,
                     savedAt: new Date().toISOString()
                 }));
 
@@ -413,6 +483,7 @@ export default function QuotePage() {
                     color: item.color,
                     quantity: item.quantity,
                     price: item.price,
+                    savedFilePath: item.savedFilePath,
                     savedAt: new Date().toISOString()
                 }));
 
