@@ -1,3 +1,5 @@
+@use 'sass:color';
+@import '../styles/style-system';
 .overlay {
   position: fixed;
   top: 0;
@@ -153,6 +155,8 @@
 
 .footer {
   display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 12px;
   padding: 24px;
   border-top: 1px solid #E5E7EB;
@@ -160,11 +164,10 @@
 
 .cancelBtn,
 .submitBtn {
-  flex: 1;
-  padding: 14px;
+  flex:1;
+  height: 50px;
+  @include button-large();
   border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   border: none;
