@@ -38,6 +38,7 @@ export default function QuotePage() {
     const [isDragOver, setIsDragOver] = useState(false);
     const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
     const [isProcessingOrder, setIsProcessingOrder] = useState(false);
+    const [hasCalculatedEstimate, setHasCalculatedEstimate] = useState(false); // 견적 계산 완료 상태
 
     // 로그인 체크 제거 - 견적 계산은 로그인 없이 가능
 
@@ -116,6 +117,7 @@ export default function QuotePage() {
             setFileItems([]);
             setEstimatedPrice(0);
             setPrintTime('');
+            setHasCalculatedEstimate(false); // 견적 계산 상태 초기화
 
             console.log('새 파일 업로드: 기존 저장된 견적이 초기화되었습니다.');
         }
@@ -165,6 +167,7 @@ export default function QuotePage() {
                 console.log('계산된 가격:', result.estimatedPrice);
                 setPrintTime(result.printTime);
                 setEstimatedPrice(result.estimatedPrice);
+                setHasCalculatedEstimate(true); // 견적 계산 완료 표시
             } else {
                 console.error('견적 계산 오류:', result.error);
                 alert('견적 계산에 실패했습니다. 다시 시도해주세요.');
@@ -207,7 +210,11 @@ export default function QuotePage() {
         if (stlFiles.length > 0) {
             setUploadedFiles(stlFiles);
             setCurrentPreviewFile(stlFiles[0]);
-            // 자동 견적 계산 제거 - 견적내기 버튼 클릭 시에만 계산
+            // 드래그 앤 드롭 시에도 견적 상태 초기화
+            setFileItems([]);
+            setEstimatedPrice(0);
+            setPrintTime('');
+            setHasCalculatedEstimate(false);
         } else {
             alert('STL 파일만 업로드 가능합니다.');
         }
@@ -218,6 +225,12 @@ export default function QuotePage() {
         if (!user) {
             alert('저장하기는 로그인이 필요한 서비스입니다.');
             router.push('/login');
+            return;
+        }
+
+        // 견적 계산 완료 확인
+        if (!hasCalculatedEstimate || estimatedPrice <= 0) {
+            alert('견적내기를 먼저 진행해주세요.');
             return;
         }
 
@@ -296,6 +309,7 @@ export default function QuotePage() {
                 setCurrentPreviewFile(null);
                 setEstimatedPrice(0);
                 setPrintTime('');
+                setHasCalculatedEstimate(false); // 저장 후 견적 상태 초기화
 
                 // 파일 input 초기화
                 const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
@@ -433,6 +447,7 @@ export default function QuotePage() {
             setCurrentPreviewFile(null);
             setEstimatedPrice(0);
             setPrintTime('');
+            setHasCalculatedEstimate(false); // 주문 완료 후 견적 상태 초기화
 
             // Firebase에 저장된 견적 초기화
             if (user) {
@@ -682,7 +697,16 @@ export default function QuotePage() {
                                 )}
                             </>
                         )}
-                        <div className={styles.saveBtn} onClick={handleSave}>저장</div>
+                        <div 
+                            className={`${styles.saveBtn} ${!hasCalculatedEstimate || estimatedPrice <= 0 ? styles.disabled : ''}`}
+                            onClick={handleSave}
+                            style={{
+                                cursor: (!hasCalculatedEstimate || estimatedPrice <= 0) ? 'not-allowed' : 'pointer',
+                                opacity: (!hasCalculatedEstimate || estimatedPrice <= 0) ? 0.5 : 1
+                            }}
+                        >
+                            저장
+                        </div>
 
 
                     </div>

@@ -17,6 +17,14 @@
     min-height: auto;
     padding: 15px;
 
+    @media (max-width: 768px) {
+      padding: 12px;
+    }
+
+    @media (max-width: 480px) {
+      padding: 8px;
+    }
+
     .titleWrapper {
       width: 100%;
       display: flex;
@@ -25,6 +33,14 @@
       align-items: center;
       margin-bottom: 48px;
       margin-top: 72px;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 20px;
+        margin-top: 40px;
+        margin-bottom: 30px;
+        text-align: center;
+      }
 
       p {
         @include display-large();
@@ -42,6 +58,14 @@
         color: #0a0a0a;
         @include body-medium();
         padding: 28px;
+
+        @media (max-width: 768px) {
+          width: 100%;
+          max-width: 300px;
+          height: 50px;
+          padding: 15px 20px;
+          font-size: 14px;
+        }
       }
 
     }
@@ -66,6 +90,12 @@
       border-radius: 10px;
       padding: 24px;
 
+      @media (max-width: 768px) {
+        margin-top: 40px;
+        padding: 16px;
+        min-height: 250px;
+      }
+
       .in {
         margin-top: 16px;
         @include label-large();
@@ -89,6 +119,15 @@
         justify-content: center;
         transition: all 0.3s ease;
         cursor: pointer;
+
+        @media (max-width: 768px) {
+          height: 150px;
+          padding: 16px;
+        }
+
+        @media (max-width: 480px) {
+          height: 120px;
+        }
 
         &.dragOver {
           border-color: #007AFF;
@@ -122,6 +161,13 @@
           cursor: pointer;
           transition: transform 0.3s ease, background-color 0.3s ease;
 
+          @media (max-width: 768px) {
+            width: 120px;
+            height: 40px;
+            font-size: 14px;
+            margin-top: 8px;
+          }
+
           &:hover {
             background-color: #2493D8;
             color: #ffffff;
@@ -143,27 +189,45 @@
 
     .selectOption {
       width: 100%;
-      height: 474px;
+      height: auto;
       margin-top: 42px;
       display: flex;
       flex-direction: row;
       justify-content: space-between;
-      @media (max-width: 1024px){
+      gap: 20px;
+      
+      @media (max-width: 1024px) {
         flex-direction: column;
-        display: flex;
-        gap: 15px;
-        align-items: center;
+        gap: 20px;
+        height: auto;
+      }
 
+      @media (max-width: 768px) {
+        margin-top: 30px;
+        gap: 16px;
       }
 
       .viewer {
         width: 668px;
-        height: 100%;
+        height: 474px;
         background-color: #f8f9fa;
         border-radius: 10px;
         position: relative;
         overflow: hidden;
         border: 1px solid #e9ecef;
+
+        @media (max-width: 1024px) {
+          width: 100%;
+          height: 400px;
+        }
+
+        @media (max-width: 768px) {
+          height: 300px;
+        }
+
+        @media (max-width: 480px) {
+          height: 250px;
+        }
 
         .stlViewer {
           width: 100%;
@@ -189,10 +253,21 @@
 
       .option {
         width: 500px;
-        height: 100%;
+        height: 474px;
         background-color: white;
         border-radius: 10px;
-        position: relative; // 저장 버튼의 기준점
+        position: relative;
+
+        @media (max-width: 1024px) {
+          width: 100%;
+          height: auto;
+          min-height: 400px;
+        }
+
+        @media (max-width: 768px) {
+          min-height: 350px;
+          padding-bottom: 60px;
+        }
 
         .optionTitle {
           @include title-small();
@@ -203,7 +278,7 @@
         }
 
         .divider {
-          width: 500px;
+          width: 100%;
           height: 1px;
           background-color: #f5f5f5;
         }
@@ -218,6 +293,16 @@
           @include button-small();
           color: #616161;
           padding: 16px;
+
+          @media (max-width: 768px) {
+            height: 50px;
+            padding: 12px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            height: auto;
+            min-height: 50px;
+          }
 
           .dropdown {
             width: 401px;
@@ -234,6 +319,13 @@
             background-position: right 12px center;
             background-repeat: no-repeat;
             background-size: 16px;
+
+            @media (max-width: 768px) {
+              width: 100%;
+              height: 40px;
+              font-size: 16px;
+              padding: 0 40px 0 16px;
+            }
 
             &:focus {
               border-color: #2493D8;
@@ -444,6 +536,7 @@
           display: flex;
           align-items: center;
           justify-content: center;
+          
           .calculateBtn{
             width: 80%;
             height: 50px;
@@ -457,6 +550,13 @@
             cursor: pointer;
             font-weight: bold;
             transition: background-color 0.2s;
+
+            @media (max-width: 768px) {
+              width: 90%;
+              height: 48px;
+              font-size: 16px;
+              touch-action: manipulation;
+            }
 
             &:hover {
               background-color: #2493D8;
@@ -486,6 +586,25 @@
           color: white;
           cursor: pointer;
 
+          @media (max-width: 768px) {
+            position: static;
+            width: 100%;
+            height: 44px;
+            margin-top: 20px;
+            margin-left: 0;
+            margin-right: 0;
+            font-size: 16px;
+          }
+
+          &.disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            
+            &:hover {
+              background-color: #cccccc;
+            }
+          }
+
           &:hover {
             background-color: #1a7bb8;
           }
@@ -506,9 +625,16 @@
       flex-direction: column;
       gap: 20px;
       margin-bottom: 155px;
+
+      @media (max-width: 768px) {
+        margin-top: 30px;
+        padding: 20px 16px;
+        margin-bottom: 80px;
+      }
       .lastPriceWrapper{
         width: 100%;
-        height: 140px;
+        height: auto;
+        min-height: 140px;
         background-color: #F2F2F2;
         border-radius: 10px;
         padding: 32px 106px 32px 106px;
@@ -516,6 +642,13 @@
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
+
+        @media (max-width: 768px) {
+          flex-direction: column;
+          padding: 24px 20px;
+          gap: 16px;
+          text-align: center;
+        }
         .lastPriceTitle{
           @include button-medium();
           color: #0a0a0a;
@@ -540,6 +673,12 @@
         gap: 15px;
         position: relative;
         border: 1px solid #E5E5EA;
+
+        @media (max-width: 768px) {
+          padding: 16px;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
 
         
         .filePreview {
@@ -586,6 +725,13 @@
           align-items: center;
           gap: 112px;
 
+          @media (max-width: 768px) {
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            align-items: flex-end;
+          }
+
           .filePrice {
             @include title-medium();
             color: #2493D8;
@@ -601,6 +747,11 @@
             width: 100px;
             height: 34px;
 
+            @media (max-width: 768px) {
+              height: 40px;
+              width: 120px;
+            }
+
             .controlBtn {
               width: 30px;
               height: 30px;
@@ -612,6 +763,12 @@
               cursor: pointer;
               font-size: 16px;
               color: #616161;
+
+              @media (max-width: 768px) {
+                width: 40px;
+                height: 38px;
+                font-size: 18px;
+              }
 
               &:hover {
                 background-color: #f5f5f5;
@@ -649,6 +806,12 @@
         height: 65px;
         display: flex;
         justify-content: end;
+
+        @media (max-width: 768px) {
+          justify-content: center;
+          margin-top: 20px;
+        }
+        
         .order{
           cursor: pointer;
           width: 251px;
@@ -660,13 +823,25 @@
           border-radius: 10px;
           @include title-small();
           color: #ffffff;
+
+          @media (max-width: 768px) {
+            width: 100%;
+            height: 50px;
+            font-size: 16px;
+          }
         }
       }
     .cautionWrapper{
       width:  100%;
-      height: 176px;
+      height: auto;
+      min-height: 176px;
       background-color: #FFF3CD;
       border-radius: 10px;
+
+      @media (max-width: 768px) {
+        margin-top: 20px;
+        padding-bottom: 16px;
+      }
 
       .cautionTitle{
         margin-top: 11px;
@@ -675,16 +850,34 @@
         flex-direction: row;
         @include button-medium();
         gap: 15px;
+
+        @media (max-width: 768px) {
+          margin-left: 16px;
+          font-size: 14px;
+        }
       }
       .cautionInfoWrapper{
         margin-top: 12px;
         display: flex;
         flex-direction: column;
         gap: 8px;
+        
+        @media (max-width: 768px) {
+          margin-left: 16px;
+          margin-right: 16px;
+        }
+        
         .cautionInfo{
           @include label-large();
           margin-left: 77px;
           position: relative;
+
+          @media (max-width: 768px) {
+            margin-left: 40px;
+            font-size: 12px;
+            line-height: 1.4;
+            padding-right: 16px;
+          }
           
           &::before {
             content: "•";
