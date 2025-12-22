@@ -23,9 +23,10 @@
     .logoIcon {
       width: 100%;
       height: auto;
+      margin-top: 115px;
 
       @media (max-width: 800px) {
-        margin-top: 80px !important;
+        margin-top: 60px;
       }
     }
 
@@ -463,6 +464,52 @@
         z-index: 10;
       }
     }
+
+    .mainPhoto2 {
+      width: 100%;
+      max-width: 1200px;
+      height: auto;
+      margin-top: 300px;
+
+      @media (max-width: 1024px) {
+        margin-top: 150px;
+      }
+
+      @media (max-width: 800px) {
+        margin-top: 100px;
+      }
+    }
+
+    .mainPhoto3 {
+      width: 100%;
+      max-width: 874px;
+      height: auto;
+      margin-top: 290px;
+
+      @media (max-width: 1024px) {
+        margin-top: 150px;
+      }
+
+      @media (max-width: 800px) {
+        margin-top: 100px;
+      }
+    }
+
+    .mainPhoto4 {
+      width: 100%;
+      max-width: 1198px;
+      height: auto;
+      margin-top: 202px;
+
+      @media (max-width: 1024px) {
+        margin-top: 120px;
+      }
+
+      @media (max-width: 800px) {
+        margin-top: 80px;
+      }
+    }
+
     .columnLine{
       width: 1px;
       height:160px;
@@ -681,6 +728,10 @@
 .modalContent {
   padding: 40px;
   text-align: center;
+
+  @media (max-width: 800px) {
+    padding: 24px;
+  }
 }
 
 .modalTitle {

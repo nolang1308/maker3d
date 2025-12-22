@@ -25,7 +25,7 @@ const ReviewCard = ({ review, name }: ReviewCardProps) => {
           alt="MAKER 3D Logo"
           width={95}
           height={75}
-          style={{position: 'absolute', top: '230px', left: '513px' }}
+          className={styles.reviewMark}
       />
         <div className={styles.profileImage}></div>
         <div className={styles.userName}>{formatName(name)} 고객님</div>
@@ -34,8 +34,7 @@ const ReviewCard = ({ review, name }: ReviewCardProps) => {
             alt="MAKER 3D Logo"
             width={96}
             height={16}
-            style={{position: 'absolute', top: '279px', left: '108px' }}
-
+            className={styles.starRating}
         />
     </div>
   );

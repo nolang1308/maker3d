@@ -1,0 +1,23 @@
+# Node modules
+node_modules/
+
+# 환경 변수
+.env
+.env.local
+.env.production
+
+# 업로드된 파일들
+uploads/
+orders/
+temp/
+notices/
+portfolio/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db

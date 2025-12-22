@@ -2,7 +2,7 @@
 
 import styles from './page.module.scss';
 import Image from 'next/image';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import ReviewCard from "@/components/ReviewCard";
 import Link from 'next/link';
 
@@ -10,6 +10,7 @@ export default function Home() {
     const [activeButton, setActiveButton] = useState<number>(1);
     const [currentReviewIndex, setCurrentReviewIndex] = useState<number>(0);
     const [showModal, setShowModal] = useState<boolean>(true);
+    const [cardWidth, setCardWidth] = useState<number>(672);
 
     const reviews = [
         {
@@ -29,6 +30,23 @@ export default function Home() {
             name: "최지우"
         }
     ];
+
+    useEffect(() => {
+        const updateCardWidth = () => {
+            if (window.innerWidth <= 1024) {
+                // Mobile/tablet: card width = viewport width - 80px, gap = 16px
+                const calculatedWidth = window.innerWidth - 80 + 16;
+                setCardWidth(Math.max(calculatedWidth, 280 + 16)); // minimum 280px card + 16px gap
+            } else {
+                // Desktop: card width = 648px, gap = 24px
+                setCardWidth(672);
+            }
+        };
+
+        updateCardWidth();
+        window.addEventListener('resize', updateCardWidth);
+        return () => window.removeEventListener('resize', updateCardWidth);
+    }, []);
 
     const handlePrevReview = () => {
         setCurrentReviewIndex(prev => 
@@ -88,7 +106,6 @@ export default function Home() {
                     alt="MAKER 3D Logo"
                     width={1600}
                     height={689}
-                    style={{marginTop: "115px"}}
                     className={styles.logoIcon}
                 />
                 <div className={styles.buttonWrapper}>
@@ -201,16 +218,14 @@ export default function Home() {
                     alt="MAKER 3D Logo"
                     width={1200}
                     height={790}
-                    style={{marginTop: 300}}
-
-
+                    className={styles.mainPhoto2}
                 />
                 <Image
                     src="/mainPhoto3.svg"
                     alt="MAKER 3D Logo"
                     width={874}
                     height={166}
-                    style={{marginTop: 290}}
+                    className={styles.mainPhoto3}
                 />
                 <div className={styles.columnLine}></div>
                 <div className={styles.boxWrapper}>
@@ -245,7 +260,7 @@ export default function Home() {
                     alt="MAKER 3D Logo"
                     width={1198}
                     height={863}
-                    style={{marginTop: 202}}
+                    className={styles.mainPhoto4}
                 />
 
                 <div className={styles.reviewWrapper}>
@@ -274,10 +289,10 @@ export default function Home() {
 
                 </div>
                 <div className={styles.reviewCardWrapper}>
-                    <div 
+                    <div
                         className={styles.reviewCardTrack}
                         style={{
-                            transform: `translateX(-${currentReviewIndex * 672}px)`
+                            transform: `translateX(-${currentReviewIndex * cardWidth}px)`
                         }}
                     >
                         {reviews.map((review, index) => (

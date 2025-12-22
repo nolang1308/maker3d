@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(npm install:*)",
+      "Bash(git restore:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: STL 파일 업로드 및 프린팅 시간 계산 기능 통합\n\n- backend 서버에 PrusaSlicer 로직 통합\n- /api/upload-stl 엔드포인트 추가\n- multer를 통한 STL 파일 업로드 처리\n- PrusaSlicer CLI로 출력 시간 자동 계산\n- 프론트엔드에서 실시간 견적 계산 가능\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(if not exist temp mkdir temp)",
+      "Bash(firebase deploy:*)",
+      "Bash(if not exist \"src\\\\app\\\\api\\\\upload-freenotice-files\" mkdir \"src\\\\app\\\\api\\\\upload-freenotice-files\")",
+      "Bash(npm run dev:*)"
+    ]
+  }
+}

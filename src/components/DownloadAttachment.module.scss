@@ -17,6 +17,13 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   margin-right: 12px;
+
+  @media (max-width: 800px) {
+    font-size: 12px;
+    padding: 6px 10px;
+    height: 30px;
+    margin-right: 8px;
+  }
 }
 
 
@@ -27,6 +34,11 @@
   flex-direction: row;
   align-items: center;
   margin-bottom: 8px;
+
+  @media (max-width: 800px) {
+    max-width: 100%;
+    margin-bottom: 6px;
+  }
 }
 
 .byte {
@@ -34,6 +46,10 @@
   @include body-small;
   color: #B81C7E;
 
+  @media (max-width: 800px) {
+    font-size: 12px;
+    margin-left: 12px;
+  }
 }
 
 .viewOriginal {
@@ -49,5 +65,11 @@
 
   &:hover {
     background-color: #1a7bb8;
+  }
+
+  @media (max-width: 800px) {
+    width: 70px;
+    height: 28px;
+    font-size: 12px;
   }
 }

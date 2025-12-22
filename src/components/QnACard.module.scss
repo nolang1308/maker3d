@@ -2,14 +2,13 @@
 @use 'sass:color';
 @import '../styles/style-system';
 .qnaCard {
+  width: 100%;
   margin-bottom: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
   min-height: 160px;
   height: auto;
   border-bottom: 1px solid #DDDDDD;
-
-
 }
 
 .questionSection {

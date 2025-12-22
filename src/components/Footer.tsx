@@ -25,6 +25,7 @@ const Footer = () => {
 
                     <div className={styles.contactInfo}>
                         <div className={styles.contactRow}>
+                            <span>상호명 : (주)비트텍</span>
                             <span>대표이사 : 장재영 | 주소 : 경상북도 구미시 수출대로 225-40, 2층   <span style={{marginLeft: 95}}></span>평일 8시 30분 ~ 19시 00분 | Mail : 3dstore@bittech3d.com</span>
                             <span>사업자번호 : 299-86-02451 | 통신판매번호 : 2023-경북구미-0868호</span>
                             <span style={{marginLeft: 20}}></span>Tel: 054-462 - 4140 | Fax: 054 - 463 - 4140

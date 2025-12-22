@@ -147,7 +147,7 @@ export default function OrderModal({
           <button
             className={styles.submitBtn}
             onClick={handleSubmit}
-            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+            style={{ background: '#00de5a' }}
           >
             <Image
               src="/btn_npaygr_paying.svg"

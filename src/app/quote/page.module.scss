@@ -15,6 +15,7 @@
     display: flex;
     flex-direction: column;
     min-height: auto;
+    padding: 15px;
 
     .titleWrapper {
       width: 100%;
@@ -147,6 +148,13 @@
       display: flex;
       flex-direction: row;
       justify-content: space-between;
+      @media (max-width: 1024px){
+        flex-direction: column;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+
+      }
 
       .viewer {
         width: 668px;
@@ -371,7 +379,7 @@
           .calculateBtn{
             width: 80%;
             height: 50px;
-            background-color: #FF6B00;
+            background-color: #2493D8;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -383,11 +391,11 @@
             transition: background-color 0.2s;
 
             &:hover {
-              background-color: #FF8520;
+              background-color: #2493D8;
             }
 
             &:active {
-              background-color: #E56000;
+              background-color: #2493D8;
             }
           }
 

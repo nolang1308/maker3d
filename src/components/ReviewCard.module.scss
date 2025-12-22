@@ -64,10 +64,39 @@
   top: 251px;
   left: 108px;
   color: #272343;
-  
+
   @media (max-width: 1024px) {
     top: 228px;
     left: 100px;
     font-size: 14px;
+  }
+}
+
+.reviewMark {
+  position: absolute;
+  top: 230px;
+  left: 513px;
+  width: 95px;
+  height: auto;
+
+  @media (max-width: 1024px) {
+    width: 60px;
+    top: 170px;
+    left: auto;
+    right: 20px;
+  }
+}
+
+.starRating {
+  position: absolute;
+  top: 279px;
+  left: 108px;
+  width: 96px;
+  height: auto;
+
+  @media (max-width: 1024px) {
+    width: 80px;
+    top: 250px;
+    left: 100px;
   }
 }

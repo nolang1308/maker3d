@@ -8,6 +8,7 @@
   background-color: #ffffff;
   padding-top: 90px;
   .contactContainer {
+    padding: 15px;
     width: 100%;
     max-width: 1200px;
     .title_1{
@@ -62,32 +63,39 @@
       border-radius: 12px;
       max-width: 713px;
       height: 106px;
-      margin-left: auto;
-      margin-right: auto;
+      .serviceHeader {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+      }
+
+      .serviceTitle {
+        @include title-large();
+        color: #222222;
+      }
+
+      .serviceTime {
+        @include title-large();
+        color: #2493D8;
+      }
+      @media (max-width: 1024px) {
+        flex-direction: column;
+        display: flex;
+        gap: 15px;
+    
+
+      }
+
+
     }
 
-    .serviceHeader {
-      display: flex;
-      align-items: baseline;
-      gap: 12px;
-    }
-
-    .serviceTitle {
-      @include title-large();
-      color: #222222;
-    }
-
-    .serviceTime {
-      @include title-large();
-      color: #2493D8;
-    }
 
     .serviceContent {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
 
-      @media (max-width: 768px) {
+      @media (max-width: 1024px) {
         flex-direction: column;
       }
     }
@@ -106,8 +114,9 @@
       gap: 16px;
       align-items: center;
 
-      @media (max-width: 768px) {
+      @media (max-width: 1024px) {
         justify-content: center;
+        margin-top:16px ;
       }
     }
 

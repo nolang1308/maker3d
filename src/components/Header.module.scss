@@ -104,11 +104,14 @@
   text-decoration: none;
   transition: color 0.3s ease;
   cursor: pointer;
-  
+
+
   &:hover {
     color: #00d4ff;
   }
 }
+
+
 
 .authButtons {
   display: flex;

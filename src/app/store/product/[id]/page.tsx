@@ -269,7 +269,7 @@ export default function ProductDetailPage() {
         { name: '관련상품', count: null },
         { name: '상세정보', count: null },
         { name: '쇼핑가이드', count: null },
-        { name: '상품후기', count: 7 }
+        // { name: '상품후기', count: 7 }
     ];
 
     // 정보 탭 목록
@@ -692,139 +692,139 @@ export default function ProductDetailPage() {
                     <div className={styles.line}></div>
                 </div>
 
-                <div className={styles.categoryWrapper}>
-                    {tabs.map((tab, index) => (
-                        <div key={`fourth-${tab.name}`} className={styles.tabGroup}>
-                            <div
-                                className={`${styles.tab} ${tab.name === '상품후기' ? styles.active : ''}`}
-                            >
-                                {tab.name}
-                                {tab.count && <span className={styles.count}>({tab.count})</span>}
-                            </div>
-                            {index < tabs.length - 1 && <div className={styles.separator}>|</div>}
-                        </div>
-                    ))}
-                </div>
+                {/*<div className={styles.categoryWrapper}>*/}
+                {/*    {tabs.map((tab, index) => (*/}
+                {/*        <div key={`fourth-${tab.name}`} className={styles.tabGroup}>*/}
+                {/*            <div*/}
+                {/*                className={`${styles.tab} ${tab.name === '상품후기' ? styles.active : ''}`}*/}
+                {/*            >*/}
+                {/*                {tab.name}*/}
+                {/*                {tab.count && <span className={styles.count}>({tab.count})</span>}*/}
+                {/*            </div>*/}
+                {/*            {index < tabs.length - 1 && <div className={styles.separator}>|</div>}*/}
+                {/*        </div>*/}
+                {/*    ))}*/}
+                {/*</div>*/}
 
-                <div className={styles.reviewSection}>
-                    <h2 className={styles.reviewTitle}>REVIEW (7)</h2>
-                    
-                    <div className={styles.reviewContent}>
-                        <div className={styles.reviewSummary}>
-                            <div className={styles.ratingDisplay}>
-                                <div className={styles.starIcon}>★</div>
-                                <div className={styles.ratingScore}>5.0</div>
-                            </div>
-                            <p className={styles.satisfactionText}>100%의 구매자가 상품을 좋아합니다.</p>
-                            <button className={styles.writeReviewBtn}>상품 리뷰 작성하기</button>
-                        </div>
-                        
-                        <div className={styles.ratingBreakdown}>
-                            <div className={styles.ratingRow}>
-                                <span className={styles.ratingLabel}>아주 좋아요</span>
-                                <div className={styles.progressBarContainer}>
-                                    <div className={styles.progressBar}>
-                                        <div className={`${styles.progressFill} ${styles.excellent}`} style={{width: '100%'}}></div>
-                                    </div>
-                                </div>
-                                <span className={styles.ratingCount}>7</span>
-                            </div>
-                            
-                            <div className={styles.ratingRow}>
-                                <span className={styles.ratingLabel}>맘에 들어요</span>
-                                <div className={styles.progressBarContainer}>
-                                    <div className={styles.progressBar}>
-                                        <div className={`${styles.progressFill} ${styles.good}`} style={{width: '0%'}}></div>
-                                    </div>
-                                </div>
-                                <span className={styles.ratingCount}>0</span>
-                            </div>
-                            
-                            <div className={styles.ratingRow}>
-                                <span className={styles.ratingLabel}>보통이에요</span>
-                                <div className={styles.progressBarContainer}>
-                                    <div className={styles.progressBar}>
-                                        <div className={`${styles.progressFill} ${styles.normal}`} style={{width: '0%'}}></div>
-                                    </div>
-                                </div>
-                                <span className={styles.ratingCount}>0</span>
-                            </div>
-                            
-                            <div className={styles.ratingRow}>
-                                <span className={styles.ratingLabel}>그냥 그래요</span>
-                                <div className={styles.progressBarContainer}>
-                                    <div className={styles.progressBar}>
-                                        <div className={`${styles.progressFill} ${styles.poor}`} style={{width: '0%'}}></div>
-                                    </div>
-                                </div>
-                                <span className={styles.ratingCount}>0</span>
-                            </div>
-                            
-                            <div className={styles.ratingRow}>
-                                <span className={styles.ratingLabel}>별로예요</span>
-                                <div className={styles.progressBarContainer}>
-                                    <div className={styles.progressBar}>
-                                        <div className={`${styles.progressFill} ${styles.bad}`} style={{width: '0%'}}></div>
-                                    </div>
-                                </div>
-                                <span className={styles.ratingCount}>0</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div className={styles.photoReviewWrapper}>
-                    <div className={styles.photoReviewWrapperTitle}>포토 ({PhotoReviewCount})</div>
-                    <div className={styles.photoReviewGrid}>
-                        {Array.from({length: PhotoReviewCount}, (_, index) => (
-                            <div key={index} className={styles.photoReviewItem}>
-                                <Image
-                                    src="/exampleItem.png"
-                                    alt={`포토 리뷰 ${index + 1}`}
-                                    width={172}
-                                    height={172}
-                                    className={styles.photoReviewImage}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                <div className={styles.reviewFilterWrapper}>
-                    <p 
-                        className={`${styles.filterOption} ${activeReviewFilter === '추천순' ? styles.active : ''}`}
-                        onClick={() => setActiveReviewFilter('추천순')}
-                    >
-                        추천순
-                    </p>
-                    <p 
-                        className={`${styles.filterOption} ${activeReviewFilter === '최신순' ? styles.active : ''}`}
-                        onClick={() => setActiveReviewFilter('최신순')}
-                    >
-                        최신순
-                    </p>
-                    <p 
-                        className={`${styles.filterOption} ${activeReviewFilter === '별점순' ? styles.active : ''}`}
-                        onClick={() => setActiveReviewFilter('별점순')}
-                    >
-                        별점순
-                    </p>
-                </div>
+                {/*<div className={styles.reviewSection}>*/}
+                {/*    <h2 className={styles.reviewTitle}>REVIEW (7)</h2>*/}
+                {/*    */}
+                {/*    <div className={styles.reviewContent}>*/}
+                {/*        <div className={styles.reviewSummary}>*/}
+                {/*            <div className={styles.ratingDisplay}>*/}
+                {/*                <div className={styles.starIcon}>★</div>*/}
+                {/*                <div className={styles.ratingScore}>5.0</div>*/}
+                {/*            </div>*/}
+                {/*            <p className={styles.satisfactionText}>100%의 구매자가 상품을 좋아합니다.</p>*/}
+                {/*            <button className={styles.writeReviewBtn}>상품 리뷰 작성하기</button>*/}
+                {/*        </div>*/}
+                {/*        */}
+                {/*        <div className={styles.ratingBreakdown}>*/}
+                {/*            <div className={styles.ratingRow}>*/}
+                {/*                <span className={styles.ratingLabel}>아주 좋아요</span>*/}
+                {/*                <div className={styles.progressBarContainer}>*/}
+                {/*                    <div className={styles.progressBar}>*/}
+                {/*                        <div className={`${styles.progressFill} ${styles.excellent}`} style={{width: '100%'}}></div>*/}
+                {/*                    </div>*/}
+                {/*                </div>*/}
+                {/*                <span className={styles.ratingCount}>7</span>*/}
+                {/*            </div>*/}
+                {/*            */}
+                {/*            <div className={styles.ratingRow}>*/}
+                {/*                <span className={styles.ratingLabel}>맘에 들어요</span>*/}
+                {/*                <div className={styles.progressBarContainer}>*/}
+                {/*                    <div className={styles.progressBar}>*/}
+                {/*                        <div className={`${styles.progressFill} ${styles.good}`} style={{width: '0%'}}></div>*/}
+                {/*                    </div>*/}
+                {/*                </div>*/}
+                {/*                <span className={styles.ratingCount}>0</span>*/}
+                {/*            </div>*/}
+                {/*            */}
+                {/*            <div className={styles.ratingRow}>*/}
+                {/*                <span className={styles.ratingLabel}>보통이에요</span>*/}
+                {/*                <div className={styles.progressBarContainer}>*/}
+                {/*                    <div className={styles.progressBar}>*/}
+                {/*                        <div className={`${styles.progressFill} ${styles.normal}`} style={{width: '0%'}}></div>*/}
+                {/*                    </div>*/}
+                {/*                </div>*/}
+                {/*                <span className={styles.ratingCount}>0</span>*/}
+                {/*            </div>*/}
+                {/*            */}
+                {/*            <div className={styles.ratingRow}>*/}
+                {/*                <span className={styles.ratingLabel}>그냥 그래요</span>*/}
+                {/*                <div className={styles.progressBarContainer}>*/}
+                {/*                    <div className={styles.progressBar}>*/}
+                {/*                        <div className={`${styles.progressFill} ${styles.poor}`} style={{width: '0%'}}></div>*/}
+                {/*                    </div>*/}
+                {/*                </div>*/}
+                {/*                <span className={styles.ratingCount}>0</span>*/}
+                {/*            </div>*/}
+                {/*            */}
+                {/*            <div className={styles.ratingRow}>*/}
+                {/*                <span className={styles.ratingLabel}>별로예요</span>*/}
+                {/*                <div className={styles.progressBarContainer}>*/}
+                {/*                    <div className={styles.progressBar}>*/}
+                {/*                        <div className={`${styles.progressFill} ${styles.bad}`} style={{width: '0%'}}></div>*/}
+                {/*                    </div>*/}
+                {/*                </div>*/}
+                {/*                <span className={styles.ratingCount}>0</span>*/}
+                {/*            </div>*/}
+                {/*        </div>*/}
+                {/*    </div>*/}
+                {/*</div>*/}
+                {/*<div className={styles.photoReviewWrapper}>*/}
+                {/*    <div className={styles.photoReviewWrapperTitle}>포토 ({PhotoReviewCount})</div>*/}
+                {/*    <div className={styles.photoReviewGrid}>*/}
+                {/*        {Array.from({length: PhotoReviewCount}, (_, index) => (*/}
+                {/*            <div key={index} className={styles.photoReviewItem}>*/}
+                {/*                <Image*/}
+                {/*                    src="/exampleItem.png"*/}
+                {/*                    alt={`포토 리뷰 ${index + 1}`}*/}
+                {/*                    width={172}*/}
+                {/*                    height={172}*/}
+                {/*                    className={styles.photoReviewImage}*/}
+                {/*                />*/}
+                {/*            </div>*/}
+                {/*        ))}*/}
+                {/*    </div>*/}
+                {/*</div>*/}
+                {/*<div className={styles.reviewFilterWrapper}>*/}
+                {/*    <p */}
+                {/*        className={`${styles.filterOption} ${activeReviewFilter === '추천순' ? styles.active : ''}`}*/}
+                {/*        onClick={() => setActiveReviewFilter('추천순')}*/}
+                {/*    >*/}
+                {/*        추천순*/}
+                {/*    </p>*/}
+                {/*    <p */}
+                {/*        className={`${styles.filterOption} ${activeReviewFilter === '최신순' ? styles.active : ''}`}*/}
+                {/*        onClick={() => setActiveReviewFilter('최신순')}*/}
+                {/*    >*/}
+                {/*        최신순*/}
+                {/*    </p>*/}
+                {/*    <p */}
+                {/*        className={`${styles.filterOption} ${activeReviewFilter === '별점순' ? styles.active : ''}`}*/}
+                {/*        onClick={() => setActiveReviewFilter('별점순')}*/}
+                {/*    >*/}
+                {/*        별점순*/}
+                {/*    </p>*/}
+                {/*</div>*/}
 
-                <div className={styles.reviewList}>
-                    {filteredReviews.map((review) => (
-                        <ReviewComponent
-                            key={review.id}
-                            id={review.id}
-                            rating={review.rating}
-                            name={review.name}
-                            content={review.content}
-                            date={review.date}
-                            images={review.images}
-                            isOwner={review.isOwner}
-                            onEdit={() => console.log('Edit review:', review.id)}
-                            onDelete={() => console.log('Delete review:', review.id)}
-                        />
-                    ))}
-                </div>
+                {/*<div className={styles.reviewList}>*/}
+                {/*    {filteredReviews.map((review) => (*/}
+                {/*        <ReviewComponent*/}
+                {/*            key={review.id}*/}
+                {/*            id={review.id}*/}
+                {/*            rating={review.rating}*/}
+                {/*            name={review.name}*/}
+                {/*            content={review.content}*/}
+                {/*            date={review.date}*/}
+                {/*            images={review.images}*/}
+                {/*            isOwner={review.isOwner}*/}
+                {/*            onEdit={() => console.log('Edit review:', review.id)}*/}
+                {/*            onDelete={() => console.log('Delete review:', review.id)}*/}
+                {/*        />*/}
+                {/*    ))}*/}
+                {/*</div>*/}
                 <div className={styles.lineWrapper}>
                     <div className={styles.line}></div>
                 </div>

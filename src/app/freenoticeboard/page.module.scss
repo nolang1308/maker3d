@@ -8,11 +8,19 @@
   background-color: #ffffff;
   padding-top: 90px;
 
+  @media (max-width: 800px) {
+    padding-top: 60px;
+  }
 }
 
 .noticeContainer {
   width: 100%;
   max-width: 1200px;
+  padding: 0 20px;
+
+  @media (max-width: 800px) {
+    padding: 0 15px;
+  }
 }
 
 .header {
@@ -21,11 +29,19 @@
   align-items: center;
   border-bottom: 1px solid #0a0a0a;
   padding-bottom: 10px;
+
+  @media (max-width: 800px) {
+    padding-bottom: 8px;
+  }
 }
 
 .title {
   @include title-large();
   color: #0a0a0a;
+
+  @media (max-width: 800px) {
+    font-size: 20px;
+  }
 }
 
 .writeButton {
@@ -41,9 +57,15 @@
   align-items: center;
   @include label-large();
   text-decoration: none;
-  
+
   &:hover {
     background-color: #333;
+  }
+
+  @media (max-width: 800px) {
+    width: 80px;
+    height: 28px;
+    font-size: 12px;
   }
 }
 
@@ -53,12 +75,16 @@
   border-left: none;
   border-right: none;
   overflow: hidden;
+
+  @media (max-width: 800px) {
+    overflow-x: auto;
+  }
 }
 
 .noticeTable {
   width: 100%;
   border-collapse: collapse;
-  
+
   th {
     padding: 7px 8px;
     @include body-small();
@@ -69,30 +95,49 @@
     &:first-child {
       width: 40%;
     }
-    
+
     &:nth-child(2) {
       width: 15%;
-
     }
-    
+
     &:nth-child(3) {
       width: 15%;
-
-
     }
-    
+
     &:nth-child(4) {
       width: 20%;
     }
+
+    @media (max-width: 800px) {
+      font-size: 12px;
+      padding: 6px 4px;
+
+      &:first-child {
+        width: 50%;
+      }
+
+      &:nth-child(2) {
+        display: none; // 글쓴이 숨김
+      }
+
+      &:nth-child(3) {
+        width: 30%;
+        font-size: 11px;
+      }
+
+      &:nth-child(4) {
+        width: 20%;
+      }
+    }
   }
-  
+
   td {
     padding: 7px 8px;
     border-bottom: 1px solid #f0f0f0;
     @include body-small();
     color: #595959;
     text-align: center;
-    
+
     &:first-child {
       text-align: left;
       color: #000000;
@@ -101,13 +146,26 @@
       text-overflow: ellipsis;
       max-width: 0;
     }
+
+    @media (max-width: 800px) {
+      font-size: 12px;
+      padding: 10px 4px;
+
+      &:nth-child(2) {
+        display: none; // 글쓴이 숨김
+      }
+
+      &:nth-child(3) {
+        font-size: 11px;
+      }
+    }
   }
-  
+
   tbody tr {
     &:hover {
       background-color: #f8f9fa;
     }
-    
+
     &:last-child td {
       border-bottom: none;
     }
@@ -144,6 +202,11 @@
   padding: 40px 20px;
   color: #666;
   font-style: italic;
+
+  @media (max-width: 800px) {
+    padding: 30px 15px;
+    font-size: 13px;
+  }
 }
 
 .bottomSection {
@@ -151,10 +214,19 @@
   flex-direction: column;
   align-items: center;
   gap: 20px;
+
+  @media (max-width: 800px) {
+    gap: 16px;
+  }
 }
 
 .searchForm {
   align-self: flex-end;
+
+  @media (max-width: 800px) {
+    align-self: center;
+    width: 100%;
+  }
 }
 
 .searchForm {
@@ -162,12 +234,22 @@
   gap: 10px;
   align-items: center;
   margin-top: 15px;
+
+  @media (max-width: 800px) {
+    margin-top: 12px;
+    justify-content: center;
+  }
 }
 
 .searchInputWrapper {
   position: relative;
   display: flex;
   align-items: center;
+
+  @media (max-width: 800px) {
+    flex: 1;
+    max-width: 200px;
+  }
 }
 
 .searchInput {
@@ -176,13 +258,18 @@
   width: 225px;
   height: 34px;
   font-size: 14px;
-  
+
   &:focus {
     outline: none;
   }
-  
+
   &::placeholder {
     color: #999;
+  }
+
+  @media (max-width: 800px) {
+    width: 100%;
+    font-size: 13px;
   }
 }
 

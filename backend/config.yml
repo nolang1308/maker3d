@@ -1,0 +1,7 @@
+tunnel: YOUR_TUNNEL_UUID
+credentials-file: C:\Users\rlaal\.cloudflared\YOUR_TUNNEL_UUID.json
+
+ingress:
+  - hostname: maker3d-backend.YOUR_DOMAIN.com
+    service: http://localhost:10000
+  - service: http_status:404

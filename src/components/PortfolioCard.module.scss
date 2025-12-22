@@ -2,16 +2,24 @@
 @import '../styles/style-system';
 
 .portfolioCard {
-  width: 380px;
+  width: 100%;
   height: 400px;
   background-color: #ffffff;
   border-radius: 4px;
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  
+
   &:hover {
     transform: translateY(-8px);
+  }
+
+  @media (max-width: 1024px) {
+    height: 380px;
+  }
+
+  @media (max-width: 800px) {
+    height: 360px;
   }
 }
 
@@ -21,6 +29,14 @@
   overflow: hidden;
   position: relative;
   background-color: #d9d9d9;
+
+  @media (max-width: 1024px) {
+    height: 250px;
+  }
+
+  @media (max-width: 800px) {
+    height: 240px;
+  }
 }
 
 .portfolioImage {
@@ -28,17 +44,28 @@
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
-  
+
   .portfolioCard:hover & {
     transform: scale(1.05);
   }
 }
 
 .contentWrapper {
-  height: 124px;
+  height: 132px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  padding: 0 16px 16px 16px;
+
+  @media (max-width: 1024px) {
+    height: 130px;
+    padding: 0 12px 12px 12px;
+  }
+
+  @media (max-width: 800px) {
+    height: 120px;
+    padding: 0 12px 12px 12px;
+  }
 }
 
 .title {
@@ -51,10 +78,20 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   text-overflow: ellipsis;
+
+  @media (max-width: 800px) {
+    margin-top: 16px;
+    font-size: 16px;
+    line-height: 1.3;
+  }
 }
 
 .date {
   @include body-small();
   color: #999999;
   margin: 0;
+
+  @media (max-width: 800px) {
+    font-size: 12px;
+  }
 }

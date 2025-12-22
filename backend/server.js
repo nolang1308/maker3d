@@ -330,6 +330,180 @@ app.post('/api/upload-stl', upload.single('stlFile'), async (req, res) => {
   }
 });
 
+// Multer 설정 (견적 파일 저장용)
+const uploadSavedQuote = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      const tempDir = path.join(__dirname, 'temp');
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      cb(null, tempDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueName = Date.now() + '-' + file.originalname;
+      cb(null, uniqueName);
+    }
+  }),
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/octet-stream' || file.originalname.endsWith('.stl')) {
+      cb(null, true);
+    } else {
+      cb(new Error('STL 파일만 업로드 가능합니다.'), false);
+    }
+  }
+});
+
+// 견적 파일 저장 API
+app.post('/api/save-quote-files', uploadSavedQuote.array('files', 20), async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    console.log('견적 파일 저장 요청:', {
+      userId,
+      filesCount: req.files?.length
+    });
+
+    if (!userId) {
+      // userId 없으면 업로드된 파일 삭제
+      if (req.files) {
+        req.files.forEach(file => {
+          if (fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+          }
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        error: '사용자 ID가 필요합니다.'
+      });
+    }
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: '파일이 업로드되지 않았습니다.'
+      });
+    }
+
+    // 사용자별 견적 저장 폴더 생성
+    const userQuoteDir = path.join(__dirname, 'saved-quotes', userId);
+
+    // 기존 폴더가 있으면 삭제 (새로 저장하므로)
+    if (fs.existsSync(userQuoteDir)) {
+      fs.rmSync(userQuoteDir, { recursive: true, force: true });
+    }
+
+    // 새 폴더 생성
+    fs.mkdirSync(userQuoteDir, { recursive: true });
+
+    // 임시 폴더에서 견적 저장 폴더로 파일 이동
+    const savedFilePaths = [];
+    for (const file of req.files) {
+      const tempPath = file.path;
+      // 타임스탬프 제거하고 원본 파일명 추출
+      const originalName = file.originalname;
+      const newPath = path.join(userQuoteDir, originalName);
+
+      // 파일 이동
+      fs.renameSync(tempPath, newPath);
+
+      // 백엔드 경로 저장
+      savedFilePaths.push(`/saved-quotes/${userId}/${originalName}`);
+    }
+
+    console.log(`사용자 ${userId} 견적 파일 저장 완료:`, savedFilePaths.length, '개');
+
+    res.json({
+      success: true,
+      userId: userId,
+      filePaths: savedFilePaths,
+      fileCount: req.files.length
+    });
+
+  } catch (error) {
+    console.error('견적 파일 저장 오류:', error);
+
+    // 오류 발생 시 임시 파일 삭제
+    if (req.files) {
+      req.files.forEach(file => {
+        if (fs.existsSync(file.path)) {
+          fs.unlinkSync(file.path);
+        }
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      error: '파일 저장 중 오류가 발생했습니다.',
+      details: error.message
+    });
+  }
+});
+
+// 저장된 견적 파일을 주문 폴더로 복사하는 API
+app.post('/api/copy-saved-files-to-order', async (req, res) => {
+  try {
+    const { userId, orderNumber, filePaths } = req.body;
+
+    console.log('저장된 파일 복사 요청:', {
+      userId,
+      orderNumber,
+      filePathsCount: filePaths?.length
+    });
+
+    if (!userId || !orderNumber || !filePaths || filePaths.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: '필수 파라미터가 누락되었습니다.'
+      });
+    }
+
+    // 주문 폴더 생성
+    const orderDir = path.join(__dirname, 'orders', orderNumber);
+    if (!fs.existsSync(orderDir)) {
+      fs.mkdirSync(orderDir, { recursive: true });
+    }
+
+    // 저장된 파일을 주문 폴더로 복사
+    const copiedFilePaths = [];
+    for (const filePath of filePaths) {
+      // filePath 형식: /saved-quotes/{userId}/{fileName}
+      const fileName = path.basename(filePath);
+      const sourcePath = path.join(__dirname, 'saved-quotes', userId, fileName);
+      const destPath = path.join(orderDir, fileName);
+
+      if (!fs.existsSync(sourcePath)) {
+        console.error('파일을 찾을 수 없음:', sourcePath);
+        continue;
+      }
+
+      // 파일 복사
+      fs.copyFileSync(sourcePath, destPath);
+
+      // 주문 폴더 경로 저장
+      copiedFilePaths.push(`/orders/${orderNumber}/${fileName}`);
+    }
+
+    console.log(`주문 ${orderNumber}로 파일 복사 완료:`, copiedFilePaths.length, '개');
+
+    res.json({
+      success: true,
+      orderNumber: orderNumber,
+      filePaths: copiedFilePaths,
+      fileCount: copiedFilePaths.length
+    });
+
+  } catch (error) {
+    console.error('파일 복사 오류:', error);
+    res.status(500).json({
+      success: false,
+      error: '파일 복사 중 오류가 발생했습니다.',
+      details: error.message
+    });
+  }
+});
+
 // 주문 파일 저장 API
 app.post('/api/upload-order-files', uploadOrder.array('files', 10), async (req, res) => {
   try {
