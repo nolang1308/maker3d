@@ -184,6 +184,7 @@
         height: 100%;
         background-color: white;
         border-radius: 10px;
+        position: relative; // 저장 버튼의 기준점
 
         .optionTitle {
           @include title-small();
@@ -395,6 +396,9 @@
 
 
         .saveBtn{
+          position: absolute;
+          bottom: 20px;
+          right: 20px;
           width: 100px;
           height: 40px;
           background-color: #2493D8;
@@ -405,8 +409,10 @@
           @include button-small();
           color: white;
           cursor: pointer;
-          margin-left:380px;
-          margin-top: 30px;
+
+          &:hover {
+            background-color: #1a7bb8;
+          }
         }
 
       }
