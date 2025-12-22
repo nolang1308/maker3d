@@ -29,6 +29,7 @@ export default function STLViewer({ file, className }: STLViewerProps) {
         // Three.js 동적 로딩
         const THREE = await import('three');
         const { STLLoader } = await import('three/examples/jsm/loaders/STLLoader.js');
+        const { OrbitControls } = await import('three/examples/jsm/controls/OrbitControls.js');
 
         const container = mountRef.current;
         if (!container) return;
@@ -54,8 +55,13 @@ export default function STLViewer({ file, className }: STLViewerProps) {
         renderer.setPixelRatio(window.devicePixelRatio);
         container.appendChild(renderer.domElement);
 
+        // 그리드 추가 (바닥)
+        const gridHelper = new THREE.GridHelper(10, 20, 0x888888, 0xcccccc);
+        gridHelper.position.y = -1; // 바닥 위치 조정
+        scene.add(gridHelper);
+
         // 조명 설정
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
         scene.add(ambientLight);
 
         const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -105,60 +111,21 @@ export default function STLViewer({ file, className }: STLViewerProps) {
         camera.position.set(3, 3, 3);
         camera.lookAt(0, 0, 0);
 
-        // 마우스 컨트롤 변수
-        let isMouseDown = false;
-        let mouseX = 0, mouseY = 0;
-        let targetRotationX = 0, targetRotationY = 0;
-        let currentRotationX = 0, currentRotationY = 0;
-
-        // 마우스 이벤트
-        const onMouseDown = (event: MouseEvent) => {
-          isMouseDown = true;
-          mouseX = event.clientX;
-          mouseY = event.clientY;
-        };
-
-        const onMouseMove = (event: MouseEvent) => {
-          if (!isMouseDown) return;
-          
-          const deltaX = event.clientX - mouseX;
-          const deltaY = event.clientY - mouseY;
-          
-          targetRotationY += deltaX * 0.01;
-          targetRotationX += deltaY * 0.01;
-          
-          mouseX = event.clientX;
-          mouseY = event.clientY;
-        };
-
-        const onMouseUp = () => {
-          isMouseDown = false;
-        };
-
-        const onWheel = (event: WheelEvent) => {
-          const scale = event.deltaY > 0 ? 1.1 : 0.9;
-          camera.position.multiplyScalar(scale);
-          camera.position.clampLength(1, 10);
-        };
-
-        // 이벤트 리스너 추가
-        container.addEventListener('mousedown', onMouseDown);
-        container.addEventListener('mousemove', onMouseMove);
-        container.addEventListener('mouseup', onMouseUp);
-        container.addEventListener('wheel', onWheel);
+        // OrbitControls 추가 (일반적인 3D 뷰어 컨트롤)
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; // 부드러운 감쇠 효과
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 1;
+        controls.maxDistance = 10;
+        controls.maxPolarAngle = Math.PI / 2; // 바닥 아래로 못가게
 
         // 애니메이션 루프
         const animate = () => {
           animationId = requestAnimationFrame(animate);
 
-          // 부드러운 회전
-          currentRotationX += (targetRotationX - currentRotationX) * 0.05;
-          currentRotationY += (targetRotationY - currentRotationY) * 0.05;
-
-          if (mesh) {
-            mesh.rotation.x = currentRotationX;
-            mesh.rotation.y = currentRotationY;
-          }
+          // OrbitControls 업데이트 (damping 효과를 위해)
+          controls.update();
 
           if (renderer && scene && camera) {
             renderer.render(scene, camera);
@@ -173,14 +140,11 @@ export default function STLViewer({ file, className }: STLViewerProps) {
           if (animationId) {
             cancelAnimationFrame(animationId);
           }
-          
-          if (container) {
-            container.removeEventListener('mousedown', onMouseDown);
-            container.removeEventListener('mousemove', onMouseMove);
-            container.removeEventListener('mouseup', onMouseUp);
-            container.removeEventListener('wheel', onWheel);
+
+          if (controls) {
+            controls.dispose();
           }
-          
+
           if (renderer) {
             renderer.dispose();
           }
@@ -222,14 +186,13 @@ export default function STLViewer({ file, className }: STLViewerProps) {
 
   return (
     <div className={className} style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <div 
+      <div
         ref={mountRef}
         style={{
           width: '100%',
           height: '100%',
           borderRadius: '10px',
-          overflow: 'hidden',
-          cursor: isLoaded ? 'grab' : 'default'
+          overflow: 'hidden'
         }}
       />
       
