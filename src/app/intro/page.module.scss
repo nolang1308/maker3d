@@ -58,10 +58,20 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    .introLogo{
+      width: 100%;
+      max-width: 1364px;
+      margin-top: 137px;
+
+      .logoImage {
+        width: 100%;
+        height: auto;
+      }
+    }
+
 
     .logoIcon {
-      width: 100%;
-      height: auto;
+
     }
 
     .come {
@@ -155,4 +165,58 @@
 
   }
 
+}
+
+// 반응형 디자인 - 모바일
+@media (max-width: 800px) {
+  .container {
+    .innerContainer {
+      padding: 0 20px;
+
+      .introLogo {
+        max-width: 100%;
+        margin-top: 80px;
+      }
+
+      .mapWrapper {
+        width: 100%;
+        height: 300px;
+      }
+
+      .addressWrapper {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        height: auto;
+        padding: 12px 0;
+
+        .address {
+          width: auto;
+          height: auto;
+        }
+      }
+
+      .boldLine,
+      .thinLine {
+        width: 100%;
+      }
+
+      .buttonWrapper {
+        width: 100%;
+        flex-direction: column;
+        height: auto;
+        gap: 20px;
+        margin-top: 40px;
+
+        .button {
+          width: 100%;
+        }
+      }
+
+      .come {
+        margin-top: 100px;
+      }
+    }
+  }
 }

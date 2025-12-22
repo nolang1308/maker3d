@@ -10,14 +10,16 @@ export default function IntroPage() {
     return (
         <div className={styles.container}>
             <div className={styles.innerContainer}>
-                <Image
-                    src="/introLogo.svg"
-                    alt="MAKER 3D Logo"
-                    width={1364}
-                    height={650}
-                    style={{marginTop: 137}}
+                <div className={styles.introLogo}>
+                    <Image
+                        src="/introLogo.svg"
+                        alt="MAKER 3D Logo"
+                        width={1364}
+                        height={650}
+                        className={styles.logoImage}
+                    />
+                </div>
 
-                />
                 <Image
                     src="/underArrow.svg"
                     alt="MAKER 3D Logo"
