@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import styles from './OrderModal.module.scss';
 
 interface OrderModalProps {
@@ -143,8 +144,17 @@ export default function OrderModal({
           <button className={styles.cancelBtn} onClick={onClose}>
             취소
           </button>
-          <button className={styles.submitBtn} onClick={handleSubmit}>
-            주문하기
+          <button
+            className={styles.submitBtn}
+            onClick={handleSubmit}
+            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+          >
+            <Image
+              src="/btn_npaygr_paying.svg"
+              alt="주문하기"
+              width={200}
+              height={50}
+            />
           </button>
         </div>
       </div>
