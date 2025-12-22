@@ -5,6 +5,7 @@ import Image from 'next/image';
 import {useState, useEffect} from 'react';
 import ReviewCard from "@/components/ReviewCard";
 import Link from 'next/link';
+import QuickMenu from '@/components/QuickMenu';
 
 export default function Home() {
     const [activeButton, setActiveButton] = useState<number>(1);
@@ -79,6 +80,7 @@ export default function Home() {
 
     return (
         <>
+            <QuickMenu />
             {showModal && (
                 <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
                     <div className={styles.modal} onClick={(e) => e.stopPropagation()}>

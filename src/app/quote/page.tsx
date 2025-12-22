@@ -39,13 +39,7 @@ export default function QuotePage() {
     const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
     const [isProcessingOrder, setIsProcessingOrder] = useState(false);
 
-    // 로그인 체크
-    useEffect(() => {
-        if (!loading && !user) {
-            alert('로그인이 필요한 서비스입니다.');
-            router.push('/login');
-        }
-    }, [user, loading, router]);
+    // 로그인 체크 제거 - 견적 계산은 로그인 없이 가능
 
     // Firebase에서 저장된 견적 불러오기
     useEffect(() => {
@@ -214,6 +208,13 @@ export default function QuotePage() {
     };
 
     const handleSave = async () => {
+        // 로그인 체크
+        if (!user) {
+            alert('저장하기는 로그인이 필요한 서비스입니다.');
+            router.push('/login');
+            return;
+        }
+
         if (uploadedFiles.length > 0 && material && color) {
             try {
                 let savedFilePaths: string[] = [];
@@ -306,6 +307,13 @@ export default function QuotePage() {
 
     // 견적 주문하기 버튼 클릭
     const handleOrderClick = () => {
+        // 로그인 체크
+        if (!user) {
+            alert('견적 주문하기는 로그인이 필요한 서비스입니다.');
+            router.push('/login');
+            return;
+        }
+
         if (fileItems.length === 0) {
             alert('주문할 파일을 먼저 추가해주세요.');
             return;
@@ -499,8 +507,8 @@ export default function QuotePage() {
         }
     };
 
-    // 로딩 중이거나 로그인하지 않은 경우 아무것도 렌더링하지 않음
-    if (loading || !user) {
+    // 로딩 중일 경우만 로딩 표시
+    if (loading) {
         return (
             <div className={styles.container}>
                 <div className={styles.innerContainer}>
@@ -643,7 +651,15 @@ export default function QuotePage() {
                             <p className={styles.vat}>(VAT 포함)</p>
                         </div>
                         {isCalculating ? (
-                            <p className={styles.price}>계산 중...</p>
+                            <div className={styles.loadingWrapper}>
+                                <div className={styles.loadingContent}>
+                                    <div className={styles.spinner}></div>
+                                    <span className={styles.loadingText}>견적을 계산하고 있습니다...</span>
+                                </div>
+                                <div className={styles.progressBar}>
+                                    <div className={styles.progressFill}></div>
+                                </div>
+                            </div>
                         ) : (
                             <>
                                 <p className={styles.price}>₩ {estimatedPrice.toLocaleString()}</p>
