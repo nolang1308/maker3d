@@ -387,7 +387,8 @@ export default function QuotePage() {
             const orderData: OrderData = {
                 customerName: customerInfo.name,
                 phoneNumber: customerInfo.phoneNumber,
-                email: customerInfo.email,
+                orderEmail: customerInfo.email, // 주문 시 입력한 이메일
+                userEmail: user?.email || '', // 로그인한 사용자의 계정 이메일
                 fileUrls: fileUrls,
                 files: fileItems.map((item, index) => ({
                     fileName: item.fileName,

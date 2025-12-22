@@ -87,7 +87,8 @@ export async function uploadSTLFiles(
 export interface OrderData {
   customerName: string;
   phoneNumber: string;
-  email: string;
+  orderEmail: string; // 주문 시 입력한 이메일
+  userEmail: string; // 로그인한 사용자의 계정 이메일
   fileUrls: string[];
   files: Array<{
     fileName: string;

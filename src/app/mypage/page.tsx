@@ -4,7 +4,166 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { User } from 'firebase/auth';
+import { db } from '@/config/firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import styles from './page.module.scss';
+
+interface Order {
+    orderNumber: string;
+    customerName: string;
+    phoneNumber: string;
+    orderEmail: string; // 주문 시 입력한 이메일
+    userEmail: string; // 로그인한 사용자의 계정 이메일
+    files: {
+        fileName: string;
+        material: string;
+        color: string;
+        quantity: number;
+        price: number;
+    }[];
+    totalPrice: number;
+    orderDate: string;
+    paymentStatus: string;
+    workStatus: string;
+}
+
+// 내가 요청한 견적 섹션 컴포넌트
+function OrdersSection({ userEmail }: { userEmail: string }) {
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                const ordersRef = collection(db, 'orders');
+                const q = query(
+                    ordersRef,
+                    where('userEmail', '==', userEmail)
+                );
+
+                const querySnapshot = await getDocs(q);
+                const ordersData: Order[] = [];
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    ordersData.push({
+                        orderNumber: doc.id,
+                        customerName: data.customerName,
+                        phoneNumber: data.phoneNumber,
+                        orderEmail: data.orderEmail,
+                        userEmail: data.userEmail,
+                        files: data.files || [],
+                        totalPrice: data.totalPrice,
+                        orderDate: data.orderDate,
+                        paymentStatus: data.paymentStatus,
+                        workStatus: data.workStatus
+                    });
+                });
+
+                // 클라이언트 사이드에서 정렬
+                ordersData.sort((a, b) => {
+                    const dateA = new Date(a.orderDate).getTime();
+                    const dateB = new Date(b.orderDate).getTime();
+                    return dateB - dateA; // 최신순
+                });
+
+                setOrders(ordersData);
+            } catch (error) {
+                console.error('주문 내역 불러오기 오류:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchOrders();
+    }, [userEmail]);
+
+    const getStatusText = (status: string) => {
+        switch (status) {
+            case 'pending': return '대기중';
+            case 'processing': return '처리중';
+            case 'completed': return '완료';
+            case 'cancelled': return '취소됨';
+            default: return status;
+        }
+    };
+
+    const getPaymentStatusText = (status: string) => {
+        switch (status) {
+            case 'pending': return '결제대기';
+            case 'paid': return '결제완료';
+            case 'cancelled': return '취소됨';
+            default: return status;
+        }
+    };
+
+    if (loading) {
+        return <div className={styles.loading}>주문 내역을 불러오는 중...</div>;
+    }
+
+    if (orders.length === 0) {
+        return (
+            <div className={styles.emptyState}>
+                <p>요청한 견적이 없습니다.</p>
+                <p className={styles.hint}>견적 페이지에서 견적을 요청해보세요!</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className={styles.ordersSection}>
+            {orders.map((order) => (
+                <div key={order.orderNumber} className={styles.orderCard}>
+                    <div className={styles.orderHeader}>
+                        <div className={styles.orderInfo}>
+                            <h3 className={styles.orderNumber}>주문번호: {order.orderNumber}</h3>
+                            <p className={styles.orderDate}>
+                                {new Date(order.orderDate).toLocaleString('ko-KR')}
+                            </p>
+                        </div>
+                        <div className={styles.statusBadges}>
+                            <span className={`${styles.badge} ${styles[order.workStatus]}`}>
+                                {getStatusText(order.workStatus)}
+                            </span>
+                            <span className={`${styles.badge} ${styles[order.paymentStatus]}`}>
+                                {getPaymentStatusText(order.paymentStatus)}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className={styles.orderDetails}>
+                        <div className={styles.customerInfo}>
+                            <p><strong>주문자:</strong> {order.customerName}</p>
+                            <p><strong>연락처:</strong> {order.phoneNumber}</p>
+                        </div>
+
+                        <div className={styles.filesList}>
+                            <h4>주문 파일</h4>
+                            {order.files.map((file, index) => (
+                                <div key={index} className={styles.fileItem}>
+                                    <div className={styles.fileInfo}>
+                                        <span className={styles.fileName}>{file.fileName}</span>
+                                        <span className={styles.fileDetails}>
+                                            {file.material} | {file.color} | 수량: {file.quantity}개
+                                        </span>
+                                    </div>
+                                    <span className={styles.filePrice}>
+                                        ₩{(file.price * file.quantity).toLocaleString()}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className={styles.totalPrice}>
+                            <strong>총 금액:</strong>
+                            <span>₩{order.totalPrice.toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
 
 // 개인정보 수정 섹션 컴포넌트
 function ProfileSection({
@@ -177,7 +336,7 @@ function ProfileSection({
 export default function MyPage() {
     const router = useRouter();
     const { user, loading: authLoading, updateUserPassword, updateUserProfile } = useAuth();
-    const [activeTab, setActiveTab] = useState<'cart' | 'profile'>('cart');
+    const [activeTab, setActiveTab] = useState<'orders' | 'profile'>('orders');
 
     // 로그인 체크
     useEffect(() => {
@@ -205,10 +364,10 @@ export default function MyPage() {
 
                 <div className={styles.tabs}>
                     <button
-                        className={`${styles.tab} ${activeTab === 'cart' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('cart')}
+                        className={`${styles.tab} ${activeTab === 'orders' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('orders')}
                     >
-                        장바구니
+                        내가 요청한 견적
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'profile' ? styles.active : ''}`}
@@ -219,10 +378,8 @@ export default function MyPage() {
                 </div>
 
                 <div className={styles.tabContent}>
-                    {activeTab === 'cart' && (
-                        <div className={styles.cartSection}>
-                            <p>장바구니 내용이 여기에 표시됩니다.</p>
-                        </div>
+                    {activeTab === 'orders' && (
+                        <OrdersSection userEmail={user.email || ''} />
                     )}
 
                     {activeTab === 'profile' && (

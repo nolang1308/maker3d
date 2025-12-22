@@ -15,26 +15,33 @@
   display: flex;
   align-items: flex-start;
   gap: 60px;
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    gap: 30px;
+    padding: 0 15px;
+  }
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: white;
-  font-weight: bold;
-  font-size: 1.4rem;
   flex-shrink: 0;
+
+  @media (max-width: 1024px) {
+    align-self: center;
+  }
 }
 
 .logoIcon {
   width: 185px;
   height: 20px;
   object-fit: contain;
-}
 
-.logoText {
-  color: white;
+  @media (max-width: 768px) {
+    width: 140px;
+    height: 15px;
+  }
 }
 
 .companyInfo {
@@ -42,73 +49,158 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+
+  @media (max-width: 1024px) {
+    width: 100%;
+  }
 }
 
-.infoSection {
+// 메인 콘텐츠 (좌우 분할)
+.mainContent {
   display: flex;
-  gap: 262px;
-  align-items: center;
+  justify-content: space-between;
+  gap: 60px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #333;
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    gap: 24px;
+  }
 }
 
-.sectionTitle {
-  color: #ccc;
-  font-size: 1rem;
-  font-weight: 500;
-  margin: 0;
+// 왼쪽 섹션 (링크 + 회사정보)
+.leftSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .links {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .link {
+      color: #ccc;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.2s;
+
+      &:hover {
+        color: #fff;
+      }
+
+      @media (max-width: 768px) {
+        font-size: 0.9rem;
+      }
+    }
+
+    .divider {
+      color: #666;
+      margin: 0 4px;
+    }
+  }
+
+  .infoDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .infoRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.9rem;
+      color: #888;
+      line-height: 1.6;
+
+      @media (max-width: 1024px) {
+        gap: 12px;
+      }
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 4px;
+        font-size: 0.85rem;
+      }
+
+      span {
+        @media (max-width: 768px) {
+          display: block;
+        }
+      }
+    }
+  }
 }
 
-.contactInfo {
+// 오른쪽 섹션 (고객센터 + 연락처)
+.rightSection {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
+  align-items: flex-end;
+  min-width: 350px;
 
-.contactRow {
-  display: flex;
-  gap: 20px;
-  font-size: 0.9rem;
-  color: #888;
-  flex-wrap: wrap;
-  
-  span {
-    white-space: nowrap;
+  @media (max-width: 1024px) {
+    align-items: flex-start;
+    min-width: auto;
+  }
+
+  .customerServiceTitle {
+    color: #ccc;
+    font-size: 1rem;
+    font-weight: 500;
+
+    @media (max-width: 768px) {
+      font-size: 0.9rem;
+    }
+  }
+
+  .contactDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.9rem;
+    color: #888;
+
+    @media (max-width: 768px) {
+      font-size: 0.85rem;
+    }
+
+    .contactRow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+
+        .divider {
+          display: none;
+        }
+      }
+
+      .divider {
+        color: #666;
+      }
+    }
   }
 }
-.contactRow_ {
-  gap: 20px;
-  color: #888;
-  @include label-large()
-}
 
-.phoneNumber {
-  color: #ccc !important;
-  font-weight: 500;
-}
-
+// 저작권
 .copyright {
   color: #666;
   font-size: 0.85rem;
   margin-top: 10px;
-}
+  padding-top: 16px;
+  border-top: 1px solid #1a1a1a;
 
-@media (max-width: 768px) {
-  .container {
-    flex-direction: column;
-    gap: 30px;
-  }
-  
-  .infoSection {
-    flex-direction: column;
-    gap: 20px;
-    align-items: flex-start;
-  }
-  
-  .contactRow {
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .logo {
-    align-self: center;
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    text-align: center;
   }
 }
