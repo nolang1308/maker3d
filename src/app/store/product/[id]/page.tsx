@@ -47,12 +47,12 @@ export default function ProductDetailPage() {
 
                 if (data.success && data.data) {
                     const naverProduct = data.data;
-                    console.log('상품 상세 응답:', data);
-                    //
-                    console.log('상품 상세 API 응답:', naverProduct);
-                    console.log('ㄴㄹㅇㄴㄹ:', naverProduct.originProduct.leafCategoryId);
+                    // console.log('상품 상세 응답:', data);
+                    // //
+                    // console.log('상품 상세 API 응답:', naverProduct);
+                    // console.log('ㄴㄹㅇㄴㄹ:', naverProduct.originProduct.leafCategoryId);
                     setCategoryId(naverProduct.originProduct.leafCategoryId);
-                    console.log('===============',categoryId)
+                    // console.log('===============',categoryId)
 
 
                     // 네이버 상품 상세 API 응답을 우리 형식으로 변환
@@ -108,7 +108,7 @@ export default function ProductDetailPage() {
 
         const fetchProductFromAll = async (currentProductId: string) => {
             try {
-                console.log('=== product/all API로 전체 상품 목록 조회 시작 ===');
+                // console.log('=== product/all API로 전체 상품 목록 조회 시작 ===');
                 const response = await fetch(`${BACKEND_URL}/api/naver/product/all`, {
                     method: 'POST',
                     headers: {
@@ -117,12 +117,12 @@ export default function ProductDetailPage() {
                 });
 
                 const data = await response.json();
-                console.log('product/all API 전체 응답:', data);
+                // console.log('product/all API 전체 응답:', data);
 
                 if (data.success && data.data.contents) {
-                    console.log('===== 전체 상품 목록 =====');
-                    console.log('상품 개수:', data.data.contents.length);
-                    console.log('전체 상품 상세 정보:', data.data.contents[0].channelProducts[0]);
+                    // console.log('===== 전체 상품 목록 =====');
+                    // console.log('상품 개수:', data.data.contents.length);
+                    // console.log('전체 상품 상세 정보:', data.data.contents[0].channelProducts[0]);
 
                     // 현재 상품을 제외한 모든 상품들을 관련 상품으로 설정
                     const relatedProducts = data.data.contents
@@ -150,9 +150,9 @@ export default function ProductDetailPage() {
                                 };
                             });
 
-                    console.log('===== 관련 상품들 (현재 상품 제외) =====');
-                    console.log('관련 상품 개수:', relatedProducts.length);
-                    console.log('관련 상품 상세 정보:', relatedProducts);
+                    // console.log('===== 관련 상품들 (현재 상품 제외) =====');
+                    // console.log('관련 상품 개수:', relatedProducts.length);
+                    // console.log('관련 상품 상세 정보:', relatedProducts);
 
                     setRelatedProducts(relatedProducts);
 
@@ -184,15 +184,15 @@ export default function ProductDetailPage() {
 
                         return matchingChannelProduct.discountedPrice;
                     } else {
-                        console.log('=== 현재 상품 ID와 매치되는 상품을 찾을 수 없습니다 ===');
-                        console.log('찾고 있는 상품 ID:', currentProductId);
-                        console.log('전체 상품의 ID들:', data.data.contents.map((content: any) => // eslint-disable-line @typescript-eslint/no-explicit-any
-                            content.channelProducts?.map((cp: any) => cp.channelProductNo) // eslint-disable-line @typescript-eslint/no-explicit-any
-                        ));
+                        // console.log('=== 현재 상품 ID와 매치되는 상품을 찾을 수 없습니다 ===');
+                        // console.log('찾고 있는 상품 ID:', currentProductId);
+                        // console.log('전체 상품의 ID들:', data.data.contents.map((content: any) => // eslint-disable-line @typescript-eslint/no-explicit-any
+                        //     content.channelProducts?.map((cp: any) => cp.channelProductNo) // eslint-disable-line @typescript-eslint/no-explicit-any
+                        // ));
                     }
                 }
             } catch (error) {
-                console.error('product/all API로 상품 조회 실패:', error);
+                console.error('API로 상품 조회 실패:', error);
             }
         };
 
@@ -206,40 +206,6 @@ export default function ProductDetailPage() {
         }
     };
 
-    const handleAddToCart = () => {
-        console.log('장바구니 추가:', {
-            productId,
-            quantity,
-            selectedOption
-        });
-        // 실제로는 장바구니 API 호출
-    };
-
-    const handleBuyNow = async () => {
-        if (!product) {
-            alert('상품 정보를 불러오는 중입니다.');
-            return;
-        }
-
-        setIsPaymentLoading(true);
-
-        try {
-            const paymentData: PaymentData = {
-                productId,
-                productName: product.name,
-                totalPayAmount: product.finalPrice * quantity,
-                quantity,
-                selectedOption
-            };
-
-            await requestNaverPay(paymentData);
-        } catch (error) {
-            console.error('결제 오류:', error);
-            alert('결제 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
-        } finally {
-            setIsPaymentLoading(false);
-        }
-    };
 
     const handleGoToSmartStore = () => {
         const smartStoreUrl = `https://smartstore.naver.com/maker-3d/products/${productId}`;

@@ -29,7 +29,6 @@ export default function LoginPage() {
 
         try {
             await signIn(email, password);
-            console.log('로그인 성공');
             router.push('/'); // 메인 페이지로 이동
         } catch (error: any) {
             console.error('로그인 에러:', error);

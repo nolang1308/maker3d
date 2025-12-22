@@ -198,7 +198,6 @@ export default function EditPage(): React.ReactElement {
 
             // 1. 먼저 삭제된 기존 파일들을 삭제
             if (deletedFileIds.length > 0) {
-                console.log('Deleting removed files:', deletedFileIds);
                 const deletePromises = deletedFileIds.map(async (filePath) => {
                     try {
                         const deleteResponse = await fetch(`/api/upload?filePath=${encodeURIComponent(filePath)}`, {
@@ -220,19 +219,16 @@ export default function EditPage(): React.ReactElement {
             
             if (newFiles.length > 0) {
                 try {
-                    console.log('Preparing to upload new files:', newFiles);
                     const formData = new FormData();
                     formData.append('noticeId', noticeId);
                     
                     newFiles.forEach(fileData => {
                         if (fileData.file && !fileData.isOverSize) {
-                            console.log('Adding file to FormData:', fileData.name);
                             formData.append('files', fileData.file);
                         }
                     });
 
                     const fileCount = formData.getAll('files').length;
-                    console.log('Total files to upload:', fileCount);
 
                     if (fileCount > 0) {
                         const uploadResponse = await fetch('/api/upload', {
@@ -243,7 +239,6 @@ export default function EditPage(): React.ReactElement {
                         if (uploadResponse.ok) {
                             const uploadResult = await uploadResponse.json();
                             newAttachments = uploadResult.files || [];
-                            console.log('File upload successful:', newAttachments);
                         } else {
                             const errorData = await uploadResponse.json();
                             console.error('File upload failed:', uploadResponse.status, errorData);

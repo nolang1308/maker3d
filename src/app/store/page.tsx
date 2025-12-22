@@ -93,7 +93,6 @@ export default function StorePage() {
                     }
                 });
                 const tokenData = await tokenResponse.json();
-                // console.log('토큰 발행 성공:', tokenData);
 
                 // 2. 상품 목록 가져오기
                 const productsResponse = await fetch(`${BACKEND_URL}/api/naver/product/all`, {
@@ -105,11 +104,9 @@ export default function StorePage() {
                 const productsData = await productsResponse.json();
                 
                 if (productsData.success && productsData.data) {
-                    // console.log('상품 목록 조회 성공:', productsData.data);
                     
                     // 네이버 API 응답 구조에 맞춰 데이터 추출
                     const contents: NaverContent[] = productsData.data.contents || [];
-                    // console.log('상품 contents:', contents);
                     
                     // 각 content의 channelProducts를 평탄화하여 상품 목록 생성
                     const allProducts: (NaverContent & NaverChannelProduct)[] = [];
@@ -126,8 +123,6 @@ export default function StorePage() {
                             });
                         }
                     });
-                    
-                    // console.log('평탄화된 상품 목록:', allProducts);
                     
                     const transformedProducts = allProducts.map(product => {
                         // 할인율 계산

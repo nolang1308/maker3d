@@ -19,16 +19,6 @@ export default function PostDetailPage() {
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [modalAction, setModalAction] = useState<'edit' | 'delete' | null>(null);
 
-    // 디버깅용 로그
-    useEffect(() => {
-        console.log('현재 사용자:', user);
-        console.log('현재 게시글:', post);
-        if (user && post) {
-            console.log('사용자 이메일:', user.email);
-            console.log('게시글 작성자 ID:', post.authorId);
-            console.log('일치 여부:', user.email === post.authorId);
-        }
-    }, [user, post]);
     const [password, setPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [actionLoading, setActionLoading] = useState(false);
@@ -117,10 +107,6 @@ export default function PostDetailPage() {
             return;
         }
 
-        // 디버깅용 로그
-        console.log('입력한 비밀번호:', password);
-        console.log('게시글 저장된 비밀번호:', post.password);
-        
         if (password !== post.password) {
             setPasswordError('비밀번호가 일치하지 않습니다.');
             return;

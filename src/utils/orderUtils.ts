@@ -116,8 +116,6 @@ export async function saveOrder(
       ...orderData,
       createdAt: new Date().toISOString()
     });
-
-    console.log('주문 저장 완료:', orderNumber);
   } catch (error) {
     console.error('주문 저장 오류:', error);
     throw error;

@@ -146,11 +146,6 @@ export default function Page(): React.ReactElement {
                 files: validFiles.length > 0 ? validFiles : undefined
             };
 
-            console.log('게시글 저장 시작:', {
-                title: postData.title,
-                filesCount: validFiles.length
-            });
-
             const authorName = user.email?.split('@')[0] || '익명';
             await createPost(postData, user.email!, authorName);
 

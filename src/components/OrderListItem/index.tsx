@@ -100,8 +100,6 @@ export default function OrderListItem({
             // 정리
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
-
-            console.log('파일 다운로드 완료:', orderNumber);
         } catch (error) {
             console.error('파일 다운로드 오류:', error);
             alert('파일 다운로드 중 오류가 발생했습니다.');

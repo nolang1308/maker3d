@@ -141,13 +141,6 @@ export default function PortfolioEditPage(): React.ReactElement {
             setLoading(true);
             setError('');
 
-            console.log('=== 포트폴리오 수정 시작 ===');
-            console.log('ID:', portfolioId);
-            console.log('제목:', title);
-            console.log('카테고리:', category);
-            console.log('새 이미지:', imageFile?.name);
-            console.log('기존 이미지:', existingImageUrl);
-
             const portfolioData: PortfolioUpdateFormData = {
                 title: title.trim(),
                 category: category,
@@ -157,7 +150,6 @@ export default function PortfolioEditPage(): React.ReactElement {
             };
 
             const result = await updatePortfolio(portfolioId, portfolioData, existingImageUrl);
-            console.log('포트폴리오 수정 성공:', result);
 
             setSavedDialogOpen(true);
 

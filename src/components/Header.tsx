@@ -13,7 +13,6 @@ const Header = () => {
     const handleLogout = async () => {
         try {
             await logout();
-            console.log('로그아웃 성공');
         } catch (error) {
             console.error('로그아웃 에러:', error);
         }
@@ -48,7 +47,13 @@ const Header = () => {
                 </a>
 
                 <nav className={styles.navigation}>
-                    <Link href="/intro" className={styles.navItem}>소개</Link>
+                    <div className={styles.dropdown}>
+                        <Link href="/intro" className={styles.navItem}>소개</Link>
+                        <div className={styles.dropdownMenu}>
+                            <Link href="/" className={styles.dropdownItem}>MAKER3D</Link>
+                            <Link href="/intro" className={styles.dropdownItem}>회사소개</Link>
+                        </div>
+                    </div>
                     <Link href="/portfolio" className={styles.navItem}>포트폴리오</Link>
                     <div className={styles.dropdown}>
                         <Link href="/notice" className={styles.navItem}>공지사항</Link>
@@ -118,7 +123,14 @@ const Header = () => {
                 </div>
 
                 <nav className={styles.mobileNavigation}>
-                    <Link href="/intro" className={styles.mobileNavItem} onClick={closeMobileMenu}>소개</Link>
+                    <div className={styles.mobileDropdown}>
+                        <span className={styles.mobileNavItem}>소개</span>
+                        <div className={styles.mobileDropdownContent}>
+                            <Link href="/" className={styles.mobileDropdownItem} onClick={closeMobileMenu}>MAKER3D</Link>
+                            <Link href="/intro" className={styles.mobileDropdownItem} onClick={closeMobileMenu}>회사소개</Link>
+                        </div>
+                    </div>
+
                     <Link href="/portfolio" className={styles.mobileNavItem} onClick={closeMobileMenu}>포트폴리오</Link>
 
                     <div className={styles.mobileDropdown}>

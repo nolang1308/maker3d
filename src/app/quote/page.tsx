@@ -67,7 +67,6 @@ export default function QuotePage() {
                         }));
 
                         setFileItems(loadedItems);
-                        console.log('저장된 견적을 불러왔습니다:', loadedItems.length, '개');
                     }
                 } catch (error) {
                     console.error('견적 불러오기 오류:', error);
@@ -118,8 +117,6 @@ export default function QuotePage() {
             setEstimatedPrice(0);
             setPrintTime('');
             setHasCalculatedEstimate(false); // 견적 계산 상태 초기화
-
-            console.log('새 파일 업로드: 기존 저장된 견적이 초기화되었습니다.');
         }
     };
 
@@ -151,8 +148,6 @@ export default function QuotePage() {
             formData.append('material', material);
             formData.append('color', color);
 
-            console.log('견적 계산 요청:', { material, color });
-
             // 직접 백엔드로 호출 (Vercel 제한 우회)
             const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
             const response = await fetch(`${backendUrl}/api/upload-stl`, {
@@ -163,8 +158,6 @@ export default function QuotePage() {
             const result = await response.json();
 
             if (result.success) {
-                console.log('PrusaSlicer 출력 시간:', result.printTime);
-                console.log('계산된 가격:', result.estimatedPrice);
                 setPrintTime(result.printTime);
                 setEstimatedPrice(result.estimatedPrice);
                 setHasCalculatedEstimate(true); // 견적 계산 완료 표시
@@ -257,7 +250,6 @@ export default function QuotePage() {
 
                     if (result.success) {
                         savedFilePaths = result.filePaths;
-                        console.log('파일 백엔드 저장 완료:', savedFilePaths);
                     } else {
                         throw new Error(result.error || '파일 저장 실패');
                     }
@@ -297,8 +289,6 @@ export default function QuotePage() {
                         quotes: savedQuotes,
                         updatedAt: new Date().toISOString()
                     });
-
-                    console.log('견적이 Firebase에 저장되었습니다.');
                 }
 
                 // 폼 초기화
@@ -348,7 +338,6 @@ export default function QuotePage() {
         try {
             // 1. 주문번호 생성
             const orderNumber = await generateOrderNumber();
-            console.log('생성된 주문번호:', orderNumber);
 
             // 2. STL 파일 처리 (새 업로드 파일 우선, 저장된 파일 후순위)
             let fileUrls: string[] = [];
@@ -357,7 +346,6 @@ export default function QuotePage() {
             if (uploadedFiles.length > 0) {
                 // 새로 업로드된 파일 사용
                 fileUrls = await uploadSTLFiles(uploadedFiles, orderNumber);
-                console.log('새 파일 업로드 완료:', fileUrls);
             } else {
                 // 저장된 파일이 있는지 확인
                 const hasSavedFiles = fileItems.some(item => item.savedFilePath);
@@ -385,7 +373,6 @@ export default function QuotePage() {
 
                     if (result.success) {
                         fileUrls = result.filePaths;
-                        console.log('저장된 파일 복사 완료:', fileUrls);
                     } else {
                         throw new Error(result.error || '저장된 파일 복사 실패');
                     }
@@ -394,7 +381,6 @@ export default function QuotePage() {
                     const files = fileItems.map(item => item.file).filter((file): file is File => file !== null);
                     if (files.length > 0) {
                         fileUrls = await uploadSTLFiles(files, orderNumber);
-                        console.log('파일 업로드 완료:', fileUrls);
                     }
                 }
             }
@@ -458,7 +444,6 @@ export default function QuotePage() {
                         quotes: [],
                         updatedAt: new Date().toISOString()
                     });
-                    console.log('주문 완료 후 저장된 견적이 초기화되었습니다.');
                 } catch (error) {
                     console.error('Firebase 초기화 오류:', error);
                 }
@@ -495,8 +480,6 @@ export default function QuotePage() {
                     quotes: savedQuotes,
                     updatedAt: new Date().toISOString()
                 });
-
-                console.log('견적이 삭제되었습니다.');
             } catch (error) {
                 console.error('Firebase 삭제 오류:', error);
             }
@@ -528,8 +511,6 @@ export default function QuotePage() {
                     quotes: savedQuotes,
                     updatedAt: new Date().toISOString()
                 });
-
-                console.log('수량이 업데이트되었습니다.');
             } catch (error) {
                 console.error('Firebase 업데이트 오류:', error);
             }

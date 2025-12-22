@@ -105,12 +105,6 @@ export default function PortfolioWritePage(): React.ReactElement {
             setLoading(true);
             setError('');
 
-            console.log('=== 포트폴리오 저장 시작 ===');
-            console.log('제목:', title);
-            console.log('카테고리:', category);
-            console.log('이미지 파일:', imageFile?.name, imageFile?.size);
-            console.log('사용자:', user?.email);
-
             const portfolioData: PortfolioFormData = {
                 title: title.trim(),
                 category: category,
@@ -120,9 +114,7 @@ export default function PortfolioWritePage(): React.ReactElement {
 
             const writerName = user.email?.split('@')[0] || '관리자';
 
-            console.log('createPortfolio 호출 시작...');
             const result = await createPortfolio(portfolioData, user.email!, writerName);
-            console.log('포트폴리오 생성 성공:', result);
 
             setSavedDialogOpen(true);
 

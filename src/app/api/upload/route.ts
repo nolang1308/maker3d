@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const noticeId = formData.get('noticeId') as string;
     const files = formData.getAll('files') as File[];
 
-    console.log('Upload request:', { noticeId, fileCount: files.length });
+    // console.log('Upload request:', { noticeId, fileCount: files.length });
 
     if (!noticeId) {
       return NextResponse.json(
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await backendResponse.json();
-    console.log('백엔드 업로드 성공:', result);
+    // console.log('백엔드 업로드 성공:', result);
 
     return NextResponse.json({
       success: true,
@@ -88,7 +88,7 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const filePath = searchParams.get('filePath');
 
-    console.log('Individual file deletion request for:', filePath);
+    // console.log('Individual file deletion request for:', filePath);
 
     if (!filePath) {
       console.error('Missing filePath parameter');
@@ -113,7 +113,6 @@ export async function DELETE(request: NextRequest) {
     }
 
     const result = await backendResponse.json();
-    console.log('백엔드 삭제 성공:', result);
 
     return NextResponse.json({
       success: true,

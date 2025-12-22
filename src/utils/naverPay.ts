@@ -62,8 +62,6 @@ export const requestNaverPay = async (paymentData: PaymentData) => {
       "returnUrl": `${window.location.origin}/payment/success`
     };
 
-    console.log('🔍 네이버페이 결제 요청 데이터:', paymentInfo);
-
     // 결제 창 열기
     oPay.open(paymentInfo);
     

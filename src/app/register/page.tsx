@@ -72,7 +72,6 @@ export default function RegisterPage() {
             // 회원가입 성공 시 추가 사용자 정보를 저장할 수 있습니다.
             // 예: Firestore에 사용자 프로필 정보 저장
             
-            console.log('회원가입 성공:', formData);
             alert('회원가입이 완료되었습니다!');
             router.push('/login');
         } catch (error: any) {
