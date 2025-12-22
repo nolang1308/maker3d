@@ -291,7 +291,8 @@ export default function StorePage() {
                                 {"더보기 >"}
                             </p>
                         </div>
-                        <div className={styles.ItemWrapper}>
+                        {/* 데스크톱용 (1024px 초과) - ItemComponent 사용 */}
+                        <div className={styles.ItemWrapperDesktop}>
                             {loading ? (
                                 // 로딩 스켈레톤
                                 Array.from({ length: 16 }, (_, index) => (
@@ -304,6 +305,30 @@ export default function StorePage() {
                             ) : (
                                 popularProducts.map((product) => (
                                     <ItemComponent
+                                        key={product.id}
+                                        image={product.image}
+                                        title={product.name}
+                                        originalPrice={product.originalPrice}
+                                        discountRate={product.discountRate}
+                                        finalPrice={product.finalPrice}
+                                        onClick={() => handleProductClick(typeof product.id === 'string' ? parseInt(product.id) : product.id)}
+                                    />
+                                ))
+                            )}
+                        </div>
+                        {/* 태블릿/모바일용 (1024px 이하) - MiniItemComponent 사용 */}
+                        <div className={styles.ItemWrapperMobile}>
+                            {loading ? (
+                                // 로딩 스켈레톤
+                                Array.from({ length: 16 }, (_, index) => (
+                                    <div key={index} className={styles.loadingSkeleton}>
+                                        <div className={styles.skeletonImage}></div>
+                                        <div className={styles.skeletonText}></div>
+                                    </div>
+                                ))
+                            ) : (
+                                popularProducts.map((product) => (
+                                    <MiniItemComponent
                                         key={product.id}
                                         image={product.image}
                                         title={product.name}

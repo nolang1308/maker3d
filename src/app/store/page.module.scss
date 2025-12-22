@@ -6,7 +6,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  
+
   .skeletonImage {
     width: 125px;
     height: 125px;
@@ -14,8 +14,20 @@
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
     border-radius: 8px;
+
+    @media (max-width: 1024px) {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1;
+    }
+
+    @media (max-width: 800px) {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1;
+    }
   }
-  
+
   .skeletonText {
     width: 100px;
     height: 12px;
@@ -23,6 +35,11 @@
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
     border-radius: 4px;
+
+    @media (max-width: 800px) {
+      width: 80%;
+      height: 10px;
+    }
   }
 }
 
@@ -83,6 +100,11 @@
     display: flex;
     flex-direction: column;
     min-height: auto;
+    padding: 0 20px;
+
+    @media (max-width: 800px) {
+      padding: 0 15px;
+    }
     .adPanel{
       width: 100%;
       height: 277px;
@@ -90,6 +112,14 @@
       position: relative;
       overflow: hidden;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+      @media (max-width: 1024px) {
+        height: 200px;
+      }
+
+      @media (max-width: 800px) {
+        height: 150px;
+      }
       
       .slideWrapper {
         width: 100%;
@@ -128,25 +158,62 @@
               justify-content: space-between;
               padding: 40px 60px;
               color: white;
-              
+
+              @media (max-width: 1024px) {
+                padding: 30px 40px;
+              }
+
+              @media (max-width: 800px) {
+                padding: 20px 30px;
+              }
+
               .textSection {
                 flex: 1;
                 max-width: 500px;
-                
+
+                @media (max-width: 1024px) {
+                  max-width: 350px;
+                }
+
+                @media (max-width: 800px) {
+                  max-width: 100%;
+                }
+
                 .adTitle {
                   @include display-medium();
                   color: white;
                   margin-bottom: 16px;
                   font-weight: bold;
+
+                  @media (max-width: 1024px) {
+                    font-size: 24px;
+                    margin-bottom: 12px;
+                  }
+
+                  @media (max-width: 800px) {
+                    font-size: 18px;
+                    margin-bottom: 8px;
+                  }
                 }
-                
+
                 .adDescription {
                   @include body-large();
                   color: rgba(255, 255, 255, 0.9);
                   margin-bottom: 24px;
                   line-height: 1.6;
+
+                  @media (max-width: 1024px) {
+                    font-size: 14px;
+                    margin-bottom: 16px;
+                  }
+
+                  @media (max-width: 800px) {
+                    font-size: 12px;
+                    margin-bottom: 12px;
+                    display: none;
+                  }
                 }
-                
+
                 .ctaButton {
                   @include button-medium();
                   background-color: #ffffff;
@@ -157,23 +224,46 @@
                   cursor: pointer;
                   font-weight: bold;
                   transition: all 0.3s ease;
-                  
+
                   &:hover {
                     background-color: #f0f0f0;
                     transform: translateY(-2px);
                     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
                   }
+
+                  @media (max-width: 1024px) {
+                    padding: 10px 20px;
+                    font-size: 13px;
+                  }
+
+                  @media (max-width: 800px) {
+                    padding: 8px 16px;
+                    font-size: 12px;
+                  }
                 }
               }
-              
+
               .imageSection {
                 flex-shrink: 0;
                 margin-left: 40px;
-                
+
+                @media (max-width: 1024px) {
+                  margin-left: 20px;
+                }
+
+                @media (max-width: 800px) {
+                  display: none;
+                }
+
                 .adImage {
                   border-radius: 8px;
                   object-fit: cover;
                   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+
+                  @media (max-width: 1024px) {
+                    width: 200px;
+                    height: auto;
+                  }
                 }
               }
             }
@@ -261,9 +351,28 @@
         height: 303px;
         display: flex;
         justify-content: space-between;
+
+        @media (max-width: 1024px) {
+          flex-direction: column;
+          height: auto;
+          gap: 30px;
+        }
+
+        @media (max-width: 800px) {
+          gap: 24px;
+        }
         .bestReviewWrapper{
           width: 545px;
           height: 100%;
+
+          @media (max-width: 1024px) {
+            width: 100%;
+          }
+
+          @media (max-width: 800px) {
+            width: 100%;
+          }
+
           .title{
             width: 100%;
             height: auto;
@@ -272,10 +381,19 @@
             flex-direction: row;
             @include title-large();
             color: #000000;
+
+            @media (max-width: 800px) {
+              font-size: 18px;
+            }
+
             p{
               @include button-medium();
               cursor: pointer;
               color: #555555;
+
+              @media (max-width: 800px) {
+                font-size: 13px;
+              }
 
             }
           }
@@ -285,6 +403,23 @@
             grid-template-columns: repeat(4, 125px);
             grid-template-rows: repeat(2, 125px);
             gap: 15px;
+
+            @media (max-width: 1024px) {
+              grid-template-columns: repeat(4, 1fr);
+              grid-template-rows: repeat(2, 1fr);
+              max-height: 280px;
+            }
+
+            @media (max-width: 800px) {
+              grid-template-columns: repeat(2, 1fr);
+              grid-template-rows: repeat(2, 1fr);
+              gap: 12px;
+              max-height: 280px;
+
+              & > *:nth-child(n+5) {
+                display: none;
+              }
+            }
             
             .reviewItem {
               width: 125px;
@@ -293,12 +428,24 @@
               cursor: pointer;
               transition: transform 0.3s ease, box-shadow 0.3s ease;
               background-color: #b5b5b5;
-              
+
+              @media (max-width: 1024px) {
+                width: 100%;
+                height: 100%;
+                min-height: 125px;
+              }
+
+              @media (max-width: 800px) {
+                width: 100%;
+                height: 100%;
+                min-height: 125px;
+              }
+
               &:hover {
                 transform: scale(1.05);
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
               }
-              
+
               .reviewImage {
                 width: 100%;
                 height: 100%;
@@ -313,6 +460,11 @@
           height: 268px;
           display: flex;
           flex-direction: column;
+
+          @media (max-width: 800px) {
+            height: auto;
+          }
+
           .title{
             width: 100%;
             height: auto;
@@ -323,11 +475,32 @@
             color: #000000;
             margin-bottom: 10px;
 
+            @media (max-width: 800px) {
+              font-size: 18px;
+            }
           }
+
           .mdItemWrapper{
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+
+            @media (max-width: 1024px) {
+              grid-template-columns: repeat(4, 1fr);
+
+              & > *:nth-child(n+5) {
+                display: none;
+              }
+            }
+
+            @media (max-width: 800px) {
+              grid-template-columns: repeat(2, 1fr);
+              gap: 12px;
+
+              & > *:nth-child(n+3) {
+                display: none;
+              }
+            }
           }
         }
 
@@ -335,9 +508,11 @@
       .bestItemWrapper{
         margin-top: 30px;
         width:  100%;
-        height: 1660px;
+        height: auto;
         display: flex;
         flex-direction: column;
+        margin-bottom: 30px;
+
         .title{
           width: 100%;
           height: auto;
@@ -348,18 +523,47 @@
           color: #000000;
           margin-bottom: 30px;
 
+          @media (max-width: 800px) {
+            font-size: 18px;
+            margin-bottom: 20px;
+          }
+
           p{
             @include button-medium();
             cursor: pointer;
             color: #555555;
+
+            @media (max-width: 800px) {
+              font-size: 13px;
+            }
           }
         }
-        .ItemWrapper{
+
+        // 데스크톱용 (1024px 초과) - ItemComponent 사용
+        .ItemWrapperDesktop{
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          grid-template-rows: repeat(4, auto);
-          column-gap: 53px;
-          row-gap: 32px;
+          gap: 20px;
+
+          @media (max-width: 1024px) {
+            display: none;
+          }
+        }
+
+        // 태블릿/모바일용 (1024px 이하) - MiniItemComponent 사용
+        .ItemWrapperMobile{
+          display: none;
+
+          @media (max-width: 1024px) {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+          }
+
+          @media (max-width: 800px) {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+          }
         }
 
       }
@@ -376,6 +580,14 @@
       color: #0a0a0a;
       @include body-medium();
       padding: 28px;
+
+      @media (max-width: 800px) {
+        width: 100%;
+        height: 55px;
+        padding: 16px 20px;
+        font-size: 13px;
+        margin-top: 20px;
+      }
 
     }
 
