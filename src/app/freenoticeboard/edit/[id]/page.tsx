@@ -24,9 +24,11 @@ export default function EditPage(): React.ReactElement {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [initialLoading, setInitialLoading] = useState(true);
+    const [deletedFileUrls, setDeletedFileUrls] = useState<string[]>([]); // 삭제할 파일 URL 추적
 
     const MAX_FILES = 10;
-    const MAX_SIZE = 20 * 1024 * 1024; // 20MB
+    // 파일 용량 제한 제거 (무제한)
+    const MAX_SIZE = Infinity;
 
     // 게시글 데이터 로드
     useEffect(() => {
@@ -45,6 +47,19 @@ export default function EditPage(): React.ReactElement {
                     setMarkdown(post.content);
                     setSelectedCategory(post.category || "write");
                     setPassword(post.password || "");
+
+                    // 기존 첨부파일 불러오기
+                    if (post.attachments && post.attachments.length > 0) {
+                        const existingFiles = post.attachments.map((attachment, index) => ({
+                            name: attachment.name,
+                            size: attachment.size,
+                            url: attachment.url,
+                            isExisting: true, // 기존 파일 표시
+                            isOverSize: false,
+                            id: `existing-${index}`
+                        }));
+                        setFiles(existingFiles);
+                    }
                 } else {
                     setError('게시글을 찾을 수 없습니다.');
                     setTimeout(() => router.push('/freenoticeboard'), 2000);
@@ -71,20 +86,20 @@ export default function EditPage(): React.ReactElement {
     const handleFileUpload = (newFiles: FileList) => {
         const fileArray = Array.from(newFiles);
         const validFiles: any[] = [];
-        
+
         fileArray.forEach(file => {
             if (files.length + validFiles.length < MAX_FILES) {
                 const fileData = {
                     name: file.name,
                     size: file.size,
                     file,
-                    isOverSize: file.size > MAX_SIZE,
+                    isOverSize: false, // 용량 제한 제거
                     id: Date.now() + Math.random()
                 };
                 validFiles.push(fileData);
             }
         });
-        
+
         setFiles(prev => [...prev, ...validFiles]);
     };
 
@@ -109,10 +124,25 @@ export default function EditPage(): React.ReactElement {
     };
 
     const removeFile = (id: any) => {
+        // 삭제하려는 파일 찾기
+        const fileToRemove = files.find(file => file.id === id);
+
+        // 기존 파일이면 삭제할 URL 목록에 추가
+        if (fileToRemove?.isExisting && fileToRemove.url) {
+            setDeletedFileUrls(prev => [...prev, fileToRemove.url]);
+        }
+
+        // UI에서 파일 제거
         setFiles(prev => prev.filter(file => file.id !== id));
     };
 
     const clearAllFiles = () => {
+        // 기존 파일들의 URL을 모두 삭제 목록에 추가
+        const existingFileUrls = files
+            .filter(file => file.isExisting && file.url)
+            .map(file => file.url);
+
+        setDeletedFileUrls(prev => [...prev, ...existingFileUrls]);
         setFiles([]);
     };
 
@@ -162,17 +192,34 @@ export default function EditPage(): React.ReactElement {
             setLoading(true);
             setError('');
 
+            // 새로 추가된 파일만 추출 (기존 파일 제외)
+            const newFiles = files
+                .filter(file => !file.isExisting && file.file)
+                .map(file => file.file);
+
+            // 남아있는 기존 파일들
+            const remainingExistingFiles = files
+                .filter(file => file.isExisting)
+                .map(file => ({
+                    name: file.name,
+                    url: file.url,
+                    size: file.size
+                }));
+
             const updateData: Partial<PostFormData> = {
                 title: title.trim(),
                 content: markdown.trim(),
                 category: selectedCategory,
-                password: password
+                password: password,
+                files: newFiles.length > 0 ? newFiles : undefined,
+                deletedFileUrls: deletedFileUrls.length > 0 ? deletedFileUrls : undefined,
+                existingFiles: remainingExistingFiles
             };
 
             await updatePost(postId, updateData);
 
             setSavedDialogOpen(true);
-            
+
             // 3초 후 상세 페이지로 이동
             setTimeout(() => {
                 router.push(`/freenoticeboard/${postId}`);

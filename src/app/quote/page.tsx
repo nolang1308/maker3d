@@ -111,7 +111,13 @@ export default function QuotePage() {
             const files = Array.from(e.target.files);
             setUploadedFiles(files);
             setCurrentPreviewFile(files[0]);
-            // 자동 견적 계산 제거 - 견적내기 버튼 클릭 시에만 계산
+
+            // 새 파일 업로드 시 기존 저장된 견적 초기화
+            setFileItems([]);
+            setEstimatedPrice(0);
+            setPrintTime('');
+
+            console.log('새 파일 업로드: 기존 저장된 견적이 초기화되었습니다.');
         }
     };
 
@@ -330,45 +336,52 @@ export default function QuotePage() {
             const orderNumber = await generateOrderNumber();
             console.log('생성된 주문번호:', orderNumber);
 
-            // 2. STL 파일 처리 (저장된 파일 또는 새 파일)
+            // 2. STL 파일 처리 (새 업로드 파일 우선, 저장된 파일 후순위)
             let fileUrls: string[] = [];
 
-            // 저장된 파일이 있는지 확인
-            const hasSavedFiles = fileItems.some(item => item.savedFilePath);
-
-            if (hasSavedFiles && user) {
-                // 저장된 파일을 주문 폴더로 복사
-                const savedFilePaths = fileItems
-                    .filter(item => item.savedFilePath)
-                    .map(item => item.savedFilePath as string);
-
-                const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
-                const response = await fetch(`${backendUrl}/api/copy-saved-files-to-order`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        userId: user.uid,
-                        orderNumber: orderNumber,
-                        filePaths: savedFilePaths
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    fileUrls = result.filePaths;
-                    console.log('저장된 파일 복사 완료:', fileUrls);
-                } else {
-                    throw new Error(result.error || '저장된 파일 복사 실패');
-                }
-            } else {
+            // 새로 업로드한 파일이 있는지 확인 (uploadedFiles 우선)
+            if (uploadedFiles.length > 0) {
                 // 새로 업로드된 파일 사용
-                const files = fileItems.map(item => item.file).filter((file): file is File => file !== null);
-                if (files.length > 0) {
-                    fileUrls = await uploadSTLFiles(files, orderNumber);
-                    console.log('파일 업로드 완료:', fileUrls);
+                fileUrls = await uploadSTLFiles(uploadedFiles, orderNumber);
+                console.log('새 파일 업로드 완료:', fileUrls);
+            } else {
+                // 저장된 파일이 있는지 확인
+                const hasSavedFiles = fileItems.some(item => item.savedFilePath);
+
+                if (hasSavedFiles && user) {
+                    // 저장된 파일을 주문 폴더로 복사
+                    const savedFilePaths = fileItems
+                        .filter(item => item.savedFilePath)
+                        .map(item => item.savedFilePath as string);
+
+                    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
+                    const response = await fetch(`${backendUrl}/api/copy-saved-files-to-order`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            userId: user.uid,
+                            orderNumber: orderNumber,
+                            filePaths: savedFilePaths
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        fileUrls = result.filePaths;
+                        console.log('저장된 파일 복사 완료:', fileUrls);
+                    } else {
+                        throw new Error(result.error || '저장된 파일 복사 실패');
+                    }
+                } else {
+                    // fileItems에서 파일 추출
+                    const files = fileItems.map(item => item.file).filter((file): file is File => file !== null);
+                    if (files.length > 0) {
+                        fileUrls = await uploadSTLFiles(files, orderNumber);
+                        console.log('파일 업로드 완료:', fileUrls);
+                    }
                 }
             }
 

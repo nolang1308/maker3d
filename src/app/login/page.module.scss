@@ -10,6 +10,12 @@
   justify-content: center;
   background-color: #ffffff;
 
+  @media (max-width: 800px) {
+    margin-top: 100px;
+    margin-bottom: 100px;
+    padding: 0 20px;
+  }
+
 }
 
 .loginContainer {
@@ -25,12 +31,22 @@
   min-height: 480px;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 800px) {
+    width: 100%;
+    max-width: 483px;
+    min-height: auto;
+  }
 }
 
 .title {
   @include headline-medium();
   color: #0a0a0a;
   text-align: left;
+
+  @media (max-width: 800px) {
+    font-size: 24px;
+  }
 }
 
 .inputGroup {
@@ -101,6 +117,12 @@
   width: 100%;
   margin-top: 16px;
   flex-shrink: 0;
+
+  @media (max-width: 800px) {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
 }
 
 .accountActions {

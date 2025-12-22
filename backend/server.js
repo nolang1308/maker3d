@@ -688,6 +688,71 @@ app.post('/api/upload-freenotice-files', uploadFreeNotice.array('files', 10), as
   }
 });
 
+// 자유게시판 파일 삭제 API
+app.post('/api/delete-freenotice-files', async (req, res) => {
+  try {
+    const { fileUrls } = req.body;
+
+    console.log('자유게시판 파일 삭제 요청:', {
+      filesCount: fileUrls?.length
+    });
+
+    if (!fileUrls || !Array.isArray(fileUrls) || fileUrls.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: '삭제할 파일 URL이 필요합니다.'
+      });
+    }
+
+    const deletedFiles = [];
+    const errors = [];
+
+    for (const fileUrl of fileUrls) {
+      try {
+        // URL에서 postId와 filename 추출
+        // 예: /api/download-freenotice-file/${postId}/${filename}
+        const urlParts = fileUrl.split('/');
+        const filename = urlParts[urlParts.length - 1];
+        const postId = urlParts[urlParts.length - 2];
+
+        if (!postId || !filename) {
+          errors.push({ url: fileUrl, error: '잘못된 URL 형식' });
+          continue;
+        }
+
+        const filePath = path.join(__dirname, 'freenoticeboard', postId, filename);
+
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+          deletedFiles.push(fileUrl);
+          console.log(`파일 삭제 완료: ${filePath}`);
+        } else {
+          console.log(`파일이 존재하지 않음: ${filePath}`);
+          // 파일이 없어도 성공으로 처리 (이미 삭제됨)
+          deletedFiles.push(fileUrl);
+        }
+      } catch (error) {
+        console.error(`파일 삭제 오류 (${fileUrl}):`, error);
+        errors.push({ url: fileUrl, error: error.message });
+      }
+    }
+
+    res.json({
+      success: true,
+      deletedFiles,
+      errors: errors.length > 0 ? errors : undefined
+    });
+
+  } catch (error) {
+    console.error('자유게시판 파일 삭제 오류:', error);
+    res.status(500).json({
+      success: false,
+      error: '파일 삭제 중 오류가 발생했습니다.',
+      details: error.message
+    });
+  }
+});
+
 // 자유게시판 파일 다운로드 API
 app.get('/api/download-freenotice-file/:postId/:filename', (req, res) => {
   try {

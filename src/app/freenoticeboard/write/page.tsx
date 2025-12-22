@@ -36,25 +36,26 @@ export default function Page(): React.ReactElement {
     }, [user, router]);
 
     const MAX_FILES = 10;
-    const MAX_SIZE = 20 * 1024 * 1024; // 20MB
+    // 파일 용량 제한 제거 (무제한)
+    const MAX_SIZE = Infinity;
 
     const handleFileUpload = (newFiles: FileList) => {
         const fileArray = Array.from(newFiles);
         const validFiles: any[] = [];
-        
+
         fileArray.forEach(file => {
             if (files.length + validFiles.length < MAX_FILES) {
                 const fileData = {
                     name: file.name,
                     size: file.size,
                     file,
-                    isOverSize: file.size > MAX_SIZE,
+                    isOverSize: false, // 용량 제한 제거
                     id: Date.now() + Math.random()
                 };
                 validFiles.push(fileData);
             }
         });
-        
+
         setFiles(prev => [...prev, ...validFiles]);
     };
 

@@ -14,7 +14,12 @@
       "Bash(if not exist temp mkdir temp)",
       "Bash(firebase deploy:*)",
       "Bash(if not exist \"src\\\\app\\\\api\\\\upload-freenotice-files\" mkdir \"src\\\\app\\\\api\\\\upload-freenotice-files\")",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(node:*)",
+      "Bash(if exist .env type .env)",
+      "Bash(taskkill /PID 468928 /F)",
+      "Bash(taskkill:*)",
+      "Bash(cmd //c taskkill //PID 461956 //F)"
     ]
   }
 }

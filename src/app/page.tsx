@@ -50,15 +50,28 @@ export default function Home() {
     }, []);
 
     const handlePrevReview = () => {
-        setCurrentReviewIndex(prev => 
-            prev === 0 ? Math.max(0, reviews.length - 2) : Math.max(0, prev - 2)
-        );
+        const isMobile = window.innerWidth <= 1024;
+        const step = isMobile ? 1 : 2;
+
+        setCurrentReviewIndex(prev => {
+            if (prev === 0) {
+                return isMobile ? reviews.length - 1 : Math.max(0, reviews.length - 2);
+            }
+            return Math.max(0, prev - step);
+        });
     };
 
     const handleNextReview = () => {
-        setCurrentReviewIndex(prev => 
-            prev + 2 >= reviews.length ? 0 : prev + 2
-        );
+        const isMobile = window.innerWidth <= 1024;
+        const step = isMobile ? 1 : 2;
+
+        setCurrentReviewIndex(prev => {
+            if (isMobile) {
+                return (prev + 1) >= reviews.length ? 0 : prev + 1;
+            } else {
+                return (prev + 2) >= reviews.length ? 0 : prev + 2;
+            }
+        });
     };
 
     const getProcessImage = () => {

@@ -189,6 +189,8 @@ export interface PostFormData {
   password?: string;
   tags?: string[];
   files?: File[];
+  deletedFileUrls?: string[]; // 삭제할 파일 URL 목록
+  existingFiles?: { name: string; url: string; size: number }[]; // 남아있는 기존 파일
 }
 
 // 게시글 생성
@@ -280,15 +282,82 @@ export async function createPost(
 }
 
 // 게시글 수정
-export async function updatePost(id: string, updates: Partial<Post>): Promise<Post | null> {
+export async function updatePost(id: string, updates: Partial<PostFormData>): Promise<Post | null> {
   try {
-    const updateData = {
-      ...updates,
+    // 파일 업로드 처리
+    let newAttachments: { name: string; url: string; size: number }[] = [];
+    if (updates.files && updates.files.length > 0) {
+      try {
+        console.log('파일 업로드 시작:', updates.files.length, '개');
+
+        const uploadFormData = new FormData();
+        uploadFormData.append('postId', id);
+
+        updates.files.forEach(file => {
+          uploadFormData.append('files', file);
+        });
+
+        // 직접 백엔드로 호출 (Vercel 제한 우회)
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
+        const uploadResponse = await fetch(`${backendUrl}/api/upload-freenotice-files`, {
+          method: 'POST',
+          body: uploadFormData
+        });
+
+        if (uploadResponse.ok) {
+          const uploadResult = await uploadResponse.json();
+          newAttachments = uploadResult.files || [];
+          console.log('파일 업로드 성공:', newAttachments);
+        } else {
+          const errorData = await uploadResponse.json();
+          console.error('파일 업로드 실패:', errorData);
+        }
+      } catch (uploadError) {
+        console.error('파일 업로드 에러:', uploadError);
+      }
+    }
+
+    // 삭제할 파일 처리
+    if (updates.deletedFileUrls && updates.deletedFileUrls.length > 0) {
+      try {
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
+        const deleteResponse = await fetch(`${backendUrl}/api/delete-freenotice-files`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fileUrls: updates.deletedFileUrls
+          })
+        });
+
+        if (deleteResponse.ok) {
+          console.log('파일 삭제 성공:', updates.deletedFileUrls);
+        } else {
+          console.error('파일 삭제 실패');
+        }
+      } catch (deleteError) {
+        console.error('파일 삭제 에러:', deleteError);
+      }
+    }
+
+    // 최종 첨부파일 목록 = 남아있는 기존 파일 + 새로 업로드된 파일
+    const finalAttachments = [
+      ...(updates.existingFiles || []),
+      ...newAttachments
+    ];
+
+    // 업데이트할 데이터 준비 (files, deletedFileUrls, existingFiles 제외)
+    const { files, deletedFileUrls, existingFiles, ...restUpdates } = updates;
+
+    const updateData: any = {
+      ...restUpdates,
+      attachments: finalAttachments,
       updatedAt: Timestamp.now()
     };
 
     await updateDoc(doc(db, 'posts', id), updateData);
-    
+
     // 수정된 게시글 반환
     return await getPost(id);
   } catch (error) {
