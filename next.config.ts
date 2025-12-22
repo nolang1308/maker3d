@@ -21,12 +21,6 @@ const nextConfig: NextConfig = {
   },
   // Google Cloud Storage external package 설정
   serverExternalPackages: ['@google-cloud/storage'],
-  // API Route body size 제한 해제
-  api: {
-    bodyParser: {
-      sizeLimit: '500mb',
-    },
-  },
 };
 
 export default nextConfig;
