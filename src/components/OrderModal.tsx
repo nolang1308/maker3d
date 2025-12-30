@@ -28,6 +28,8 @@ export default function OrderModal({
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
+  const [isAgreed, setIsAgreed] = useState(false);
+  const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
 
   if (!isOpen) return null;
@@ -59,6 +61,14 @@ export default function OrderModal({
       newErrors.email = '이메일을 입력해주세요.';
     } else if (!validateEmail(email)) {
       newErrors.email = '올바른 이메일 형식을 입력해주세요.';
+    }
+
+    if (!isAgreed) {
+      newErrors.agreement = '주문 제작 상품 동의사항에 체크해주세요.';
+    }
+
+    if (!isOrderConfirmed) {
+      newErrors.orderConfirm = '주문 제작 상품 확인사항에 체크해주세요.';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -137,6 +147,57 @@ export default function OrderModal({
               />
               {errors.email && <span className={styles.errorText}>{errors.email}</span>}
             </div>
+
+            {/* 주문 확인 체크박스 */}
+            <div className={styles.agreementSection}>
+              <div className={styles.checkboxGroup}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={isOrderConfirmed}
+                    onChange={(e) => {
+                      setIsOrderConfirmed(e.target.checked);
+                      setErrors({...errors, orderConfirm: ''});
+                    }}
+                    className={styles.checkbox}
+                  />
+                  <span className={styles.checkmark}></span>
+                  <div className={styles.agreementText}>
+                    <p>
+                      본 상품은 주문 제작 상품으로 결제 완료 후 제작이 시작되며 취소·환불이 제한됨을 확인하였습니다.
+                    </p>
+                  </div>
+                </label>
+              </div>
+              {errors.orderConfirm && <span className={styles.errorText}>{errors.orderConfirm}</span>}
+            </div>
+
+            {/* 동의 체크박스 */}
+            <div className={styles.agreementSection}>
+              <div className={styles.checkboxGroup}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={isAgreed}
+                    onChange={(e) => {
+                      setIsAgreed(e.target.checked);
+                      setErrors({...errors, agreement: ''});
+                    }}
+                    className={styles.checkbox}
+                  />
+                  <span className={styles.checkmark}></span>
+                  <div className={styles.agreementText}>
+                    <p>
+                      본 상품은 주문과 동시에 제작이 진행되는 주문 제작(3D프린팅) 상품으로,
+                      결제 완료 후 제작이 즉시 시작되며,
+                      이에 따라 「전자상거래 등에서의 소비자보호에 관한 법률」 제17조 제2항에 따라
+                      단순 변심에 의한 취소 및 환불이 제한될 수 있음을 확인하였으며 이에 동의합니다.
+                    </p>
+                  </div>
+                </label>
+              </div>
+              {errors.agreement && <span className={styles.errorText}>{errors.agreement}</span>}
+            </div>
           </div>
         </div>
 
@@ -145,15 +206,20 @@ export default function OrderModal({
             취소
           </button>
           <button
-            className={styles.submitBtn}
+            className={`${styles.submitBtn} ${(!isAgreed || !isOrderConfirmed) ? styles.disabled : ''}`}
             onClick={handleSubmit}
-            style={{ background: '#00de5a' }}
+            disabled={!isAgreed || !isOrderConfirmed}
+            style={{ 
+              background: (isAgreed && isOrderConfirmed) ? '#00de5a' : '#ccc',
+              cursor: (isAgreed && isOrderConfirmed) ? 'pointer' : 'not-allowed',
+              opacity: (isAgreed && isOrderConfirmed) ? 1 : 0.6
+            }}
           >
             <Image
               src="/btn_npaygr_paying.svg"
               alt="주문하기"
               width={200}
-              height={50}
+              height={45}
             />
           </button>
         </div>

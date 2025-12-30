@@ -178,7 +178,8 @@
 
       .hamburger {
         span:nth-child(1) {
-          transform: rotate(45deg) translate(5px, 5px);
+          transform: rotate(45deg);
+          position: absolute;
         }
 
         span:nth-child(2) {
@@ -186,7 +187,8 @@
         }
 
         span:nth-child(3) {
-          transform: rotate(-45deg) translate(5px, -5px);
+          transform: rotate(-45deg);
+          position: absolute;
         }
       }
     }
@@ -197,6 +199,9 @@
       gap: 4px;
       align-items: center;
       justify-content: center;
+      position: relative;
+      width: 20px;
+      height: 20px;
 
       span {
         display: block;

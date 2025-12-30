@@ -19,7 +19,8 @@
       "Bash(if exist .env type .env)",
       "Bash(taskkill /PID 468928 /F)",
       "Bash(taskkill:*)",
-      "Bash(cmd //c taskkill //PID 461956 //F)"
+      "Bash(cmd //c taskkill //PID 461956 //F)",
+      "Bash(npm uninstall:*)"
     ]
   }
 }

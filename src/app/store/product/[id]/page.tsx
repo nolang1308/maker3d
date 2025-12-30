@@ -308,9 +308,6 @@ export default function ProductDetailPage() {
         }
     };
 
-    function handleProductClick(number: number) {
-
-    }
 
     // 샘플 리뷰 데이터
     const sampleReviews = [

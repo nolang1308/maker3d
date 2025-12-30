@@ -835,7 +835,6 @@
       width:  100%;
       height: auto;
       min-height: 176px;
-      background-color: #FFF3CD;
       border-radius: 10px;
 
       @media (max-width: 768px) {
@@ -843,9 +842,21 @@
         padding-bottom: 16px;
       }
 
+      // 유의사항 부분만을 감싸는 노란색 박스
+      .cautionSection {
+        background-color: #FFF3CD;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+
+        @media (max-width: 768px) {
+          padding: 16px;
+        }
+      }
+
       .cautionTitle{
-        margin-top: 11px;
-        margin-left: 24px;
+        margin-top: 0;
+        margin-left: 0;
         display: flex;
         flex-direction: row;
         @include button-medium();
@@ -858,25 +869,27 @@
       }
       .cautionInfoWrapper{
         margin-top: 12px;
+        margin-left: 0;
+        margin-right: 0;
         display: flex;
         flex-direction: column;
         gap: 8px;
         
         @media (max-width: 768px) {
-          margin-left: 16px;
-          margin-right: 16px;
+          margin-left: 0;
+          margin-right: 0;
         }
         
         .cautionInfo{
           @include label-large();
-          margin-left: 77px;
+          margin-left: 32px;
           position: relative;
 
           @media (max-width: 768px) {
-            margin-left: 40px;
+            margin-left: 24px;
             font-size: 12px;
             line-height: 1.4;
-            padding-right: 16px;
+            padding-right: 0;
           }
           
           &::before {
@@ -890,22 +903,224 @@
 
     }
 
+    // 이용약관 섹션 (유의사항 내부)
+    .termsSection {
+      margin-top: 24px;
+      border-top: 1px solid #E5E5E5;
+      padding-top: 20px;
 
+      .termsHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+
+        .termsTitle {
+          @include title-large();
+          color: #0a0a0a;
+          margin: 0;
+          font-weight: 600;
+
+          @media (max-width: 768px) {
+            @include title-medium();
+          }
+        }
+
+        .termsToggleBtn {
+          @include button-medium();
+          background-color: #2493D8;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          padding: 8px 16px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+
+          &:hover {
+            background-color: #1a7bb8;
+            transform: translateY(-1px);
+          }
+
+          @media (max-width: 768px) {
+            @include button-small();
+            padding: 6px 12px;
+          }
+        }
+      }
+
+      .termsContent {
+        background-color: #f8f9fa;
+        border: 1px solid #E5E5E5;
+        border-radius: 8px;
+        padding: 20px;
+        max-height: 200px;
+        overflow-y: auto;
+        transition: all 0.3s ease;
+
+        &.expanded {
+          max-height: none;
+          overflow-y: visible;
+        }
+
+        @media (max-width: 768px) {
+          padding: 16px;
+          max-height: 150px;
+        }
+
+        // 스크롤바 스타일링
+        &::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 3px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: #c1c1c1;
+          border-radius: 3px;
+          
+          &:hover {
+            background: #a8a8a8;
+          }
+        }
+
+        .termsItem {
+          margin-bottom: 20px;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+
+          h4 {
+            @include title-medium();
+            color: #2493D8;
+            margin-bottom: 8px;
+            font-weight: 600;
+
+            @media (max-width: 768px) {
+              @include title-small();
+            }
+          }
+
+          p {
+            @include body-medium();
+            color: #4F5558;
+            line-height: 1.6;
+            margin-bottom: 6px;
+
+            @media (max-width: 768px) {
+              @include body-small();
+            }
+          }
+
+          ul {
+            margin: 8px 0;
+            padding-left: 16px;
+
+            li {
+              @include body-medium();
+              color: #4F5558;
+              line-height: 1.5;
+              margin-bottom: 3px;
+
+              @media (max-width: 768px) {
+                @include body-small();
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // 쇼핑가이드 스타일
+    .shoppingGuide {
+      width: 100%;
+      min-height: 233px;
+      background-color: #ffffff;
+      border: 1px solid #EBEBEB;
+      margin-top: 32px;
+      margin-bottom: 32px;
+
+      @media (max-width: 768px) {
+        margin-top: 24px;
+        margin-bottom: 24px;
+      }
+
+      .tabWrapper {
+        width: 100%;
+        height: 62px;
+        background-color: #666666;
+        display: flex;
+        flex-direction: row;
+        border-bottom: 1px solid #EBEBEB;
+
+        .tab, .tabCenter {
+          cursor: pointer;
+          flex: 1;
+          background-color: #FAFAFA;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          @include label-large();
+          color: #454545;
+          transition: all 0.3s ease;
+
+          &:hover {
+            background-color: #F0F0F0;
+          }
+
+          &.active {
+            background-color: #ffffff;
+            color: #000000;
+            font-weight: 600;
+          }
+
+          @media (max-width: 768px) {
+            @include label-medium();
+            font-size: 13px;
+          }
+        }
+
+        .tabCenter {
+          border-left: 1px solid #EBEBEB;
+          border-right: 1px solid #EBEBEB;
+        }
+      }
+
+      .shoppingGuideContent {
+        padding: 35px 36px 35px 36px;
+
+        @media (max-width: 768px) {
+          padding: 24px 20px;
+        }
+
+        .contentLine {
+          @include label-large();
+          color: #333333;
+          line-height: 1.6;
+          margin-bottom: 8px;
+
+          &:first-child {
+            @include label-large();
+            color: #000000;
+            margin-bottom: 16px;
+            font-weight: 600;
+          }
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+
+          @media (max-width: 768px) {
+            @include label-medium();
+            font-size: 13px;
+          }
+        }
+      }
+    }
 
   }
 
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

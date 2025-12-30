@@ -14,7 +14,7 @@
     "@google-cloud/storage": "^7.18.0",
     "@toast-ui/editor": "^3.2.2",
     "@toast-ui/react-editor": "^3.2.3",
-    "@types/three": "^0.181.0",
+    "@types/three": "^0.182.0",
     "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
@@ -23,7 +23,7 @@
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "sass": "^1.93.2",
-    "three": "^0.181.1"
+    "three": "^0.182.0"
   },
   "devDependencies": {
     "@types/node": "^20",

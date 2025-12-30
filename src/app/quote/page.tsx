@@ -39,6 +39,11 @@ export default function QuotePage() {
     const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
     const [isProcessingOrder, setIsProcessingOrder] = useState(false);
     const [hasCalculatedEstimate, setHasCalculatedEstimate] = useState(false); // 견적 계산 완료 상태
+    const [isTermsExpanded, setIsTermsExpanded] = useState(false); // 이용약관 확장 상태
+    const [isPaymentInfoExpanded, setIsPaymentInfoExpanded] = useState(false); // 상품결제정보 확장 상태
+    const [isPrivacyPolicyExpanded, setIsPrivacyPolicyExpanded] = useState(false); // 개인정보처리방침 확장 상태
+    const [isShippingPolicyExpanded, setIsShippingPolicyExpanded] = useState(false); // 배송 및 환불 정책 확장 상태
+    const [activeShoppingGuideTab, setActiveShoppingGuideTab] = useState('상품결제정보'); // 쇼핑가이드 탭 상태
 
     // 로그인 체크 제거 - 견적 계산은 로그인 없이 가능
 
@@ -765,28 +770,322 @@ export default function QuotePage() {
                             견적 주문 하기
                         </div>
                     </div>
-                    <div className={styles.cautionWrapper}>
-                        <div className={styles.cautionTitle}>
-                            <Image
-                                src="/caution_icon.svg"
-                                alt="MAKER 3D Logo"
-                                width={20}
-                                height={20}
-                            />
-                            <p>유의사항</p>
-                        </div>
-                        <div className={styles.cautionInfoWrapper}>
-                            <p className={styles.cautionInfo}>모델링에 문제가 있을 경우 자동 견적 이용이 안되거나, 추후 견적이 달라질 수 있습니다.</p>
-                            <p className={styles.cautionInfo}>배송은 근무일 기준 2~3일 이내 출고됩니다.</p>
-                            <p className={styles.cautionInfo}>퀵 서비스 및 화물 배송은 고객센터 (054-462-4140) 로 문의 부탁드립니다.</p>
-                            <p className={styles.cautionInfo}>하나의 파일에 여러 종류의 색상 설정은 고객센터 (054-462-4140) 로 문의 부탁드립니다.</p>
-                            <p className={styles.cautionInfo}>실시간 견적에 사용된 데이터는 임시저장 후 바로 폐기됩니다.</p>
+
+                    {/* 쇼핑가이드 섹션 */}
+                    <div className={styles.shoppingGuide}>
+                        <div className={styles.tabWrapper}>
+                            <div
+                                className={`${styles.tab} ${activeShoppingGuideTab === '상품결제정보' ? styles.active : ''}`}
+                                onClick={() => setActiveShoppingGuideTab('상품결제정보')}
+                            >
+                                상품결제정보
+                            </div>
+                            <div
+                                className={`${styles.tabCenter} ${activeShoppingGuideTab === '배송정보' ? styles.active : ''}`}
+                                onClick={() => setActiveShoppingGuideTab('배송정보')}
+                            >
+                                배송정보
+                            </div>
+                            <div
+                                className={`${styles.tab} ${activeShoppingGuideTab === '교환 및 반품정보' ? styles.active : ''}`}
+                                onClick={() => setActiveShoppingGuideTab('교환 및 반품정보')}
+                            >
+                                교환 및 반품정보
+                            </div>
                         </div>
 
+                        <div className={styles.shoppingGuideContent}>
+                            {activeShoppingGuideTab === '상품결제정보' && (
+                                <>
+                                    <p className={styles.contentLine}>■ 결제 안내</p>
+                                    <p className={styles.contentLine}>- 본 상품은 Maker 3D에서 제작·판매하는 주문 제작(3D프린팅) 상품입니다.</p>
+                                    <p className={styles.contentLine}>- 결제 완료와 동시에 제작이 즉시 시작됩니다.</p>
+                                    <p className={styles.contentLine}>- 결제 수단: 네이버페이(신용카드, 계좌이체, 간편결제 등)</p>
+                                    <p className={styles.contentLine}>- 현금영수증 발행 가능 (결제 단계에서 신청)</p>
+                                    <p className={styles.contentLine}>&nbsp;</p>
+                                    <p className={styles.contentLine}>■ 제작 및 배송 안내</p>
+                                    <p className={styles.contentLine}>- 제작 기간: 결제 완료 후 2~5영업일</p>
+                                    <p className={styles.contentLine}>- 배송 기간: 제작 완료 후 1~3영업일</p>
+                                    <p className={styles.contentLine}>- 배송비: 기본 배송비 3,000원 (도서·산간 지역은 추가 배송비가 발생할 수 있습니다.)</p>
+                                    <p className={styles.contentLine}>&nbsp;</p>
+                                    <p className={styles.contentLine}>■ 취소·환불 안내 (중요)</p>
+                                    <p className={styles.contentLine}>- 본 상품은 고객 요청에 따라 개별 제작되는 주문 제작 상품으로, 「전자상거래 등에서의 소비자보호에 관한 법률」 제17조 제2항에 따라 결제 완료 후 제작이 시작된 이후에는 청약철회(취소)가 제한될 수 있습니다.</p>
+                                    <p className={styles.contentLine}>- 단순 변심, 옵션 선택 오류, 고객 제공 데이터 오류로 인한 취소·환불은 불가합니다.</p>
+                                    <p className={styles.contentLine}>- 출력 불량, 파손, 오배송 등 판매자 귀책 사유가 확인될 경우 재제작 또는 환불로 처리됩니다.</p>
+                                    <p className={styles.contentLine}>- 불량 접수는 상품 수령 후 7일 이내 고객센터로 접수해 주세요.</p>
+                                    <p className={styles.contentLine}>&nbsp;</p>
+                                    <p className={styles.contentLine}>■ 3D프린팅 제품 유의사항</p>
+                                    <p className={styles.contentLine}>- 3D프린팅 공정 특성상 미세한 적층 흔적, 표면 질감, 색상 오차가 발생할 수 있으며 이는 제조 공정상 자연스러운 현상으로 불량 사유에 해당하지 않습니다.</p>
+                                    <p className={styles.contentLine}>- 제품 이미지와 실제 출력물은 모니터 환경에 따라 차이가 있을 수 있습니다.</p>
+                                    <p className={styles.contentLine}>&nbsp;</p>
+                                    <p className={styles.contentLine}>■ 고객센터 안내</p>
+                                    <p className={styles.contentLine}>- 문의 방법: 자사몰 고객센터 054-462-4140 / Maker 3D카카오채널 1:1 문의</p>
+                                    <p className={styles.contentLine}>- 운영 시간: 평일 09:00 ~ 19:00 (주말·공휴일 휴무)</p>
+                                </>
+                            )}
+                            {activeShoppingGuideTab === '배송정보' && (
+                                <>
+                                    <p className={styles.contentLine}>배송안내</p>
+                                    <p className={styles.contentLine}>1. 주문 제작 상품은 결제 완료 후 제작이 시작됩니다.</p>
+                                    <p className={styles.contentLine}>2. 제작 기간은 결제 완료 후 2~5영업일입니다.</p>
+                                    <p className={styles.contentLine}>3. 배송 기간은 제작 완료 후 1~3영업일이며 택배사 사정에 따라 달라질 수 있습니다.</p>
+                                    <p className={styles.contentLine}>4. 도서·산간 지역은 추가 배송비가 발생할 수 있습니다.</p>
+                                </>
+                            )}
+                            {activeShoppingGuideTab === '교환 및 반품정보' && (
+                                <>
+                                    <p className={styles.contentLine}>교환/반품</p>
+                                    <p className={styles.contentLine}>1. 일반 상품은 상품 수령일로부터 7일 이내 환불 신청이 가능합니다.</p>
+                                    <p className={styles.contentLine}>2. 주문 제작(3D프린팅) 상품은 전자상거래법 제17조 제2항에 따라 결제 완료 후 제작이 시작된 이후에는 단순 변심에 의한 환불이 제한됩니다.</p>
+                                    <p className={styles.contentLine}>3. 판매자 귀책 사유(출력 불량, 파손, 오배송)의 경우 재제작 또는 환불로 처리됩니다.</p>
+                                    <p className={styles.contentLine}>4. 환불은 확인 후 영업일 기준 3~7일 이내 처리됩니다.</p>
+                                </>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className={styles.cautionWrapper}>
+                        <div className={styles.cautionSection}>
+                            <div className={styles.cautionTitle}>
+                                <Image
+                                    src="/caution_icon.svg"
+                                    alt="MAKER 3D Logo"
+                                    width={20}
+                                    height={20}
+                                />
+                                <p>유의사항</p>
+                            </div>
+                            <div className={styles.cautionInfoWrapper}>
+                                <p className={styles.cautionInfo}>모델링에 문제가 있을 경우 자동 견적 이용이 안되거나, 추후 견적이 달라질 수 있습니다.</p>
+                                <p className={styles.cautionInfo}>하나의 파일에 여러 종류의 색상 설정은 고객센터 (054-462-4140) 로 문의 부탁드립니다.</p>
+                                <p className={styles.cautionInfo}>실시간 견적에 사용된 데이터는 임시저장 후 바로 폐기됩니다.</p>
+                            </div>
+                        </div>
+
+
+                        {/* 이용약관 섹션 - 유의사항 아래로 이동 */}
+                        <div className={styles.termsSection}>
+                            <div className={styles.termsHeader}>
+                                <h3 className={styles.termsTitle}>Maker 3D 쇼핑몰 이용약관</h3>
+                                <button 
+                                    className={styles.termsToggleBtn}
+                                    onClick={() => setIsTermsExpanded(!isTermsExpanded)}
+                                >
+                                    {isTermsExpanded ? '접기' : '전체보기'}
+                                </button>
+                            </div>
+                            <div className={`${styles.termsContent} ${isTermsExpanded ? styles.expanded : ''}`}>
+                                <div className={styles.termsItem}>
+                                    <h4>제1조 (목적)</h4>
+                                    <p>이 약관은 주식회사 비트텍(이하 "회사")이 운영하는 온라인 쇼핑몰 Maker 3D(이하 "몰")에서 제공하는 서비스 이용과 관련하여 회사와 이용자의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>제2조 (정의)</h4>
+                                    <p>1. "몰"이란 회사가 재화 또는 용역을 이용자에게 제공하기 위하여 설정한 온라인 쇼핑몰을 말합니다.</p>
+                                    <p>2. "이용자"란 몰에 접속하여 이 약관에 따라 서비스를 이용하는 회원 및 비회원을 말합니다.</p>
+                                    <p>3. "회원"이란 몰에 회원등록을 한 자로서 지속적으로 서비스를 이용할 수 있는 자를 말합니다.</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>제3조 (약관의 명시 및 개정)</h4>
+                                    <p>1. 회사는 본 약관의 내용을 이용자가 쉽게 알 수 있도록 몰에 게시합니다.</p>
+                                    <p>2. 회사는 관련 법령을 위배하지 않는 범위에서 본 약관을 개정할 수 있습니다.</p>
+
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>제4조 (서비스의 제공)</h4>
+                                    <p>회사는 다음과 같은 서비스를 제공합니다.</p>
+                                    <p>1. 재화 또는 용역에 대한 정보 제공 및 구매계약 체결</p>
+                                    <p>2. 주문 제작(3D프린팅) 상품의 제작 및 배송</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>제5조 (결제 및 제작 개시 시점)</h4>
+                                    <p>1. 주문 제작 상품은 주문과 동시에 제작이 진행되는 주문 제작(3D프린팅)상품으로, 결제 완료 시점에 제작이 즉시 시작됩니다.</p>
+                                    <p>2. 결제 완료 후 제작이 개시된 경우 「전자상거래 등에서의 소비자보호에 관한 법률」 제17조 제2항에 따라 청약철회가 제한될 수 있습니다.</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>제6조 (주문 제작 상품 특화 조항)</h4>
+                                    <p>1. 주문 제작 상품은 고객의 요청에 따라 개별 제작되는 맞춤 제작 상품으로, 단순 변심, 옵션 선택 오류, 고객 제공 데이터 오류를 사유로 한 취소·환불·교환이 불가합니다.</p>
+                                    <p>2. 단, 상품수령 시 출력 불량, 파손, 오배송 등 판매자 귀책 사유가 확인될 경우 관련 법령에 따라 재제작 또는 환불로 처리됩니다.</p>
+                                    <p>3. 3D프린팅 공정 특성상 발생하는 미세한 적층 흔적, 표면 질감 차이, 색상 오차는 제조 공정상 자연스러운 현상으로 불량에 해당하지 않습니다.</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>제7조 (배송)</h4>
+                                    <p>1. 상품은 결제 완료 및 제작 완료 후 순차적으로 배송됩니다.</p>
+                                    <p>2. 배송 기간은 제작 기간과 택배사 사정에 따라 달라질 수 있습니다.</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>제8조 (청약철회 및 환불)</h4>
+                                    <p>1. 일반 상품은 상품 수령일로부터 7일 이내 청약철회가 가능합니다.</p>
+                                    <p>2. 주문 제작 상품은 관련 법령에 따라 청약철회가 제한될 수 있습니다.</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>제9조 (개인정보 보호)</h4>
+                                    <p>회사는 개인정보보호법 등 관계 법령을 준수하며 개인정보처리방침에 따라 이용자의 개인정보를 보호합니다.</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>제10조 (분쟁 해결)</h4>
+                                    <p>회사는 이용자가 제기하는 정당한 불만 및 의견을 신속히 처리하며, 분쟁 발생 시 「전자상거래 등에서의 소비자보호에 관한 법률」 및 공정거래위원회 소비자분쟁해결기준을 따릅니다.</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>제11조 (면책 조항)</h4>
+                                    <p>천재지변, 시스템 장애 등 회사의 귀책 사유가 아닌 사유로 발생한 손해에 대하여 회사는 책임을 지지 않습니다.</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>제12조 (준거법 및 관할)</h4>
+                                    <p>본 약관은 대한민국 법을 준거법으로 하며, 본 약관과 관련된 분쟁의 관할 법원은 회사의 본점 소재지를 관할하는 법원으로 합니다.</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>부칙</h4>
+                                    <p>본 약관은 2025년 12월 30일부터 시행합니다.</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>고객지원</h4>
+                                    <p>문의사항이 있으시면 고객센터 (054-462-4140)로 연락주시기 바랍니다.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 상품결제정보 섹션 */}
+                        <div className={styles.termsSection}>
+                            <div className={styles.termsHeader}>
+                                <h3 className={styles.termsTitle}>MAKER3D 상품결제정보</h3>
+                                <button 
+                                    className={styles.termsToggleBtn}
+                                    onClick={() => setIsPaymentInfoExpanded(!isPaymentInfoExpanded)}
+                                >
+                                    {isPaymentInfoExpanded ? '접기' : '전체보기'}
+                                </button>
+                            </div>
+                            <div className={`${styles.termsContent} ${isPaymentInfoExpanded ? styles.expanded : ''}`}>
+                                <div className={styles.termsItem}>
+                                    <h4>■ 결제 안내</h4>
+                                    <p>- 본 상품은 Maker 3D에서 제작·판매하는 주문 제작(3D프린팅) 상품입니다.</p>
+                                    <p>- 결제 완료와 동시에 제작이 즉시 시작됩니다.</p>
+                                    <p>- 결제 수단: 네이버페이(신용카드, 계좌이체, 간편결제 등)</p>
+                                    <p>- 현금영수증 발행 가능 (결제 단계에서 신청)</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>■ 제작 및 배송 안내</h4>
+                                    <p>- 제작 기간: 결제 완료 후 2~5영업일</p>
+                                    <p>- 배송 기간: 제작 완료 후 1~3영업일</p>
+                                    <p>- 배송비: 기본 배송비 3,000원 (도서·산간 지역은 추가 배송비가 발생할 수 있습니다.)</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>■ 취소·환불 안내 (중요)</h4>
+                                    <p>- 본 상품은 고객 요청에 따라 개별 제작되는 주문 제작 상품으로, 「전자상거래 등에서의 소비자보호에 관한 법률」 제17조 제2항에 따라 결제 완료 후 제작이 시작된 이후에는 청약철회(취소)가 제한될 수 있습니다.</p>
+                                    <p>- 단순 변심, 옵션 선택 오류, 고객 제공 데이터 오류로 인한 취소·환불은 불가합니다.</p>
+                                    <p>- 출력 불량, 파손, 오배송 등 판매자 귀책 사유가 확인될 경우 재제작 또는 환불로 처리됩니다.</p>
+                                    <p>- 불량 접수는 상품 수령 후 7일 이내 고객센터로 접수해 주세요.</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>■ 3D프린팅 제품 유의사항</h4>
+                                    <p>- 3D프린팅 공정 특성상 미세한 적층 흔적, 표면 질감, 색상 오차가 발생할 수 있으며 이는 제조 공정상 자연스러운 현상으로 불량 사유에 해당하지 않습니다.</p>
+                                    <p>- 제품 이미지와 실제 출력물은 모니터 환경에 따라 차이가 있을 수 있습니다.</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>■ 고객센터 안내</h4>
+                                    <p>- 문의 방법: 자사몰 고객센터 054-462-4140 / Maker 3D카카오채널 1:1 문의</p>
+                                    <p>- 운영 시간: 평일 09:00 ~ 19:00 (주말·공휴일 휴무)</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 개인정보처리방침 섹션 */}
+                        <div className={styles.termsSection}>
+                            <div className={styles.termsHeader}>
+                                <h3 className={styles.termsTitle}>Maker 3D 개인정보처리방침</h3>
+                                <button 
+                                    className={styles.termsToggleBtn}
+                                    onClick={() => setIsPrivacyPolicyExpanded(!isPrivacyPolicyExpanded)}
+                                >
+                                    {isPrivacyPolicyExpanded ? '접기' : '전체보기'}
+                                </button>
+                            </div>
+                            <div className={`${styles.termsContent} ${isPrivacyPolicyExpanded ? styles.expanded : ''}`}>
+                                <div className={styles.termsItem}>
+                                    <h4>제1조 (개인정보의 수집 항목 및 방법)</h4>
+                                    <p>회사는 서비스 제공을 위해 다음과 같은 개인정보를 수집합니다.</p>
+                                    <p>- 필수 항목: 이름, 연락처, 배송지 주소, 결제 정보</p>
+                                    <p>- 수집 방법: 회원가입, 주문 및 결제 과정</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>제2조 (개인정보의 수집 및 이용 목적)</h4>
+                                    <p>회사는 수집한 개인정보를 다음의 목적을 위해 이용합니다.</p>
+                                    <p>- 주문 처리 및 상품 배송</p>
+                                    <p>- 결제 및 환불 처리</p>
+                                    <p>- 고객 상담 및 분쟁 처리</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>제3조 (개인정보의 보유 및 이용 기간)</h4>
+                                    <p>회사는 개인정보를 수집 및 이용 목적 달성 시까지 보유하며, 관계 법령에 따라 일정 기간 보관할 수 있습니다.</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>제4조 (개인정보의 제3자 제공)</h4>
+                                    <p>회사는 원칙적으로 이용자의 개인정보를 외부에 제공하지 않습니다. 다만, 상품 배송을 위해 택배사에 최소한의 정보가 제공될 수 있습니다.</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>제5조 (개인정보 보호 책임자)</h4>
+                                    <p>- 개인정보 보호 책임자: 장재영</p>
+                                    <p>- 직위: 대표이사</p>
+                                    <p>- 연락처: 054-462-4140</p>
+                                    <p>- 이메일: 3dstore@bittech3d.com</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 배송 및 환불 정책 섹션 */}
+                        <div className={styles.termsSection}>
+                            <div className={styles.termsHeader}>
+                                <h3 className={styles.termsTitle}>Maker 3D 배송 및 환불 정책</h3>
+                                <button 
+                                    className={styles.termsToggleBtn}
+                                    onClick={() => setIsShippingPolicyExpanded(!isShippingPolicyExpanded)}
+                                >
+                                    {isShippingPolicyExpanded ? '접기' : '전체보기'}
+                                </button>
+                            </div>
+                            <div className={`${styles.termsContent} ${isShippingPolicyExpanded ? styles.expanded : ''}`}>
+                                <div className={styles.termsItem}>
+                                    <h4>제1조 (배송 정책)</h4>
+                                    <p>1. 주문 제작 상품은 결제 완료 후 제작이 시작됩니다.</p>
+                                    <p>2. 제작 기간은 결제 완료 후 2~5영업일입니다.</p>
+                                    <p>3. 배송 기간은 제작 완료 후 1~3영업일이며 택배사 사정에 따라 달라질 수 있습니다.</p>
+                                    <p>4. 도서·산간 지역은 추가 배송비가 발생할 수 있습니다.</p>
+                                </div>
+
+                                <div className={styles.termsItem}>
+                                    <h4>제2조 (환불 및 반품 정책)</h4>
+                                    <p>1. 일반 상품은 상품 수령일로부터 7일 이내 환불 신청이 가능합니다.</p>
+                                    <p>2. 주문 제작(3D프린팅) 상품은 전자상거래법 제17조 제2항에 따라 결제 완료 후 제작이 시작된 이후에는 단순 변심에 의한 환불이 제한됩니다.</p>
+                                    <p>3. 판매자 귀책 사유(출력 불량, 파손, 오배송)의 경우 재제작 또는 환불로 처리됩니다.</p>
+                                    <p>4. 환불은 확인 후 영업일 기준 3~7일 이내 처리됩니다.</p>
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
                 </div>
-
 
             </div>
 

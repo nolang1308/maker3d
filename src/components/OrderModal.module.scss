@@ -164,8 +164,8 @@
 
 .cancelBtn,
 .submitBtn {
-  flex:1;
-  height: 50px;
+  width: 200px;
+  height: 45px;
   @include button-large();
   border-radius: 8px;
   cursor: pointer;
@@ -188,5 +188,97 @@
 
   &:hover {
     background: #2563EB;
+  }
+
+  &.disabled {
+    background: #ccc !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+
+    &:hover {
+      background: #ccc !important;
+    }
+  }
+}
+
+// 동의 체크박스 섹션
+.agreementSection {
+  margin-top: 24px;
+  padding: 20px;
+  background-color: #FFF9C4;
+  border: 1px solid #FDE047;
+  border-radius: 8px;
+}
+
+.checkboxGroup {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+  width: 100%;
+}
+
+.checkbox {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #D1D5DB;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  margin-top: 2px;
+
+  &:checked {
+    background: #3B82F6;
+    border-color: #3B82F6;
+
+    &::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+    }
+  }
+
+  &:hover {
+    border-color: #3B82F6;
+  }
+}
+
+.checkmark {
+  display: none;
+}
+
+.agreementText {
+  flex: 1;
+  color: #374151;
+
+  strong {
+    display: block;
+    margin-bottom: 8px;
+    color: #111827;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0;
+    line-height: 1.6;
+    font-size: 13px;
+    color: #4B5563;
   }
 }
