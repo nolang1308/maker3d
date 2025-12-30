@@ -20,7 +20,9 @@
       "Bash(taskkill /PID 468928 /F)",
       "Bash(taskkill:*)",
       "Bash(cmd //c taskkill //PID 461956 //F)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(git log:*)",
+      "Bash(npx vercel:*)"
     ]
   }
 }

@@ -608,49 +608,49 @@ export default function ProductDetailPage() {
                     <div className={styles.line}></div>
                 </div>
 
-                <div className={styles.categoryWrapper}>
-                    {tabs.map((tab, index) => (
-                        <div key={`third-${tab.name}`} className={styles.tabGroup}>
-                            <div
-                                className={`${styles.tab} ${tab.name === '쇼핑가이드' ? styles.active : ''}`}
-                            >
-                                {tab.name}
-                                {tab.count && <span className={styles.count}>({tab.count})</span>}
-                            </div>
-                            {index < tabs.length - 1 && <div className={styles.separator}>|</div>}
-                        </div>
-                    ))}
-                </div>
-                <div className={styles.shoppingGuide}>
-                    <div className={styles.tabWrapper}>
-                        <div
-                            className={`${styles.tab} ${activeShoppingGuideTab === '상품결제정보' ? styles.active : ''}`}
-                            onClick={() => setActiveShoppingGuideTab('상품결제정보')}
-                        >
-                            상품결제정보
-                        </div>
-                        <div
-                            className={`${styles.tabCenter} ${activeShoppingGuideTab === '배송정보' ? styles.active : ''}`}
-                            onClick={() => setActiveShoppingGuideTab('배송정보')}
-                        >
-                            배송정보
-                        </div>
-                        <div
-                            className={`${styles.tab} ${activeShoppingGuideTab === '교환 및 반품정보' ? styles.active : ''}`}
-                            onClick={() => setActiveShoppingGuideTab('교환 및 반품정보')}
-                        >
-                            교환 및 반품정보
-                        </div>
-                    </div>
+                {/*<div className={styles.categoryWrapper}>*/}
+                {/*    {tabs.map((tab, index) => (*/}
+                {/*        <div key={`third-${tab.name}`} className={styles.tabGroup}>*/}
+                {/*            <div*/}
+                {/*                className={`${styles.tab} ${tab.name === '쇼핑가이드' ? styles.active : ''}`}*/}
+                {/*            >*/}
+                {/*                {tab.name}*/}
+                {/*                {tab.count && <span className={styles.count}>({tab.count})</span>}*/}
+                {/*            </div>*/}
+                {/*            {index < tabs.length - 1 && <div className={styles.separator}>|</div>}*/}
+                {/*        </div>*/}
+                {/*    ))}*/}
+                {/*</div>*/}
+                {/*<div className={styles.shoppingGuide}>*/}
+                {/*    <div className={styles.tabWrapper}>*/}
+                {/*        <div*/}
+                {/*            className={`${styles.tab} ${activeShoppingGuideTab === '상품결제정보' ? styles.active : ''}`}*/}
+                {/*            onClick={() => setActiveShoppingGuideTab('상품결제정보')}*/}
+                {/*        >*/}
+                {/*            상품결제정보*/}
+                {/*        </div>*/}
+                {/*        <div*/}
+                {/*            className={`${styles.tabCenter} ${activeShoppingGuideTab === '배송정보' ? styles.active : ''}`}*/}
+                {/*            onClick={() => setActiveShoppingGuideTab('배송정보')}*/}
+                {/*        >*/}
+                {/*            배송정보*/}
+                {/*        </div>*/}
+                {/*        <div*/}
+                {/*            className={`${styles.tab} ${activeShoppingGuideTab === '교환 및 반품정보' ? styles.active : ''}`}*/}
+                {/*            onClick={() => setActiveShoppingGuideTab('교환 및 반품정보')}*/}
+                {/*        >*/}
+                {/*            교환 및 반품정보*/}
+                {/*        </div>*/}
+                {/*    </div>*/}
 
-                    <div className={styles.shoppingGuideContent}>
-                        {shoppingGuideContent[activeShoppingGuideTab]?.content?.map((line, index) => (
-                            <p key={index} className={styles.contentLine}>
-                                {line || '\u00A0'}
-                            </p>
-                        )) || <p>내용을 불러올 수 없습니다.</p>}
-                    </div>
-                </div>
+                {/*    <div className={styles.shoppingGuideContent}>*/}
+                {/*        {shoppingGuideContent[activeShoppingGuideTab]?.content?.map((line, index) => (*/}
+                {/*            <p key={index} className={styles.contentLine}>*/}
+                {/*                {line || '\u00A0'}*/}
+                {/*            </p>*/}
+                {/*        )) || <p>내용을 불러올 수 없습니다.</p>}*/}
+                {/*    </div>*/}
+                {/*</div>*/}
                 <div className={styles.lineWrapper}>
                     <div className={styles.line}></div>
                 </div>
