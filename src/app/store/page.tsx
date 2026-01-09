@@ -39,47 +39,18 @@ interface NaverContent {
 
 
 export default function StorePage() {
-    const [currentSlide, setCurrentSlide] = useState(0);
     const [popularProducts, setPopularProducts] = useState<Product[]>([]);
     const [mdRecommendedProducts, setMdRecommendedProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
+    const [currentSlide, setCurrentSlide] = useState(0);
     const router = useRouter();
+
+    const bannerImages = ['/banner/1.png', '/banner/2.png', '/banner/3.png'];
 
     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
     
     // 디버깅용 - 환경변수 확인
 
-    // 샘플 광고 이미지들 (실제로는 서버에서 받아온 데이터)
-    const advertisements = [
-        {
-            id: 1,
-            title: '3D 프린팅 신제품 출시',
-            image: '/mainPhoto.png',
-            description: '최신 3D 프린터로 더욱 정교한 출력이 가능합니다',
-            gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-        },
-        {
-            id: 2,
-            title: '특가 이벤트 진행중',
-            image: '/mainPhoto2.svg',
-            description: '지금 주문하시면 50% 할인 혜택',
-            gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
-        },
-        {
-            id: 3,
-            title: '프리미엄 소재 입고',
-            image: '/mainPhoto3.svg',
-            description: '고품질 레진 및 필라멘트 신규 입고',
-            gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
-        },
-        {
-            id: 4,
-            title: '빠른 배송 서비스',
-            image: '/mainPhoto4.svg',
-            description: '당일 출고, 익일 배송으로 빠르게 받아보세요',
-            gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
-        }
-    ];
 
     useEffect(() => {
         const fetchStoreData = async () => {
@@ -160,27 +131,6 @@ export default function StorePage() {
     }, []);
 
 
-    // 자동 슬라이드 기능
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % advertisements.length);
-        }, 3000); // 3초마다 변경
-
-        return () => clearInterval(timer);
-    }, [advertisements.length]);
-
-    // 수동으로 슬라이드 변경
-    const goToSlide = (index: number) => {
-        setCurrentSlide(index);
-    };
-
-    const goToPrevious = () => {
-        setCurrentSlide((prev) => (prev - 1 + advertisements.length) % advertisements.length);
-    };
-
-    const goToNext = () => {
-        setCurrentSlide((prev) => (prev + 1) % advertisements.length);
-    };
 
     // 상품 상세페이지로 이동
     const handleProductClick = (productId: number) => {
@@ -190,63 +140,54 @@ export default function StorePage() {
     return (
         <div className={styles.container}>
             <div className={styles.innerContainer}>
+                {/* 배너 슬라이더 */}
                 <div className={styles.adPanel}>
                     <div className={styles.slideWrapper}>
-                        <div
+                        <div 
                             className={styles.slideContainer}
-                            style={{transform: `translateX(-${currentSlide * 100}%)`}}
+                            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
                         >
-                            {advertisements.map((ad, index) => (
-                                <div key={ad.id} className={styles.slide}>
-                                    <div
-                                        className={styles.slideContent}
-                                        style={{background: ad.gradient}}
-                                    >
-                                        <div className={styles.textSection}>
-                                            <h2 className={styles.adTitle}>{ad.title}</h2>
-                                            <p className={styles.adDescription}>{ad.description}</p>
-                                            <button className={styles.ctaButton}>자세히 보기</button>
-                                        </div>
-                                        <div className={styles.imageSection}>
-                                            <Image
-                                                src={ad.image}
-                                                alt={ad.title}
-                                                width={300}
-                                                height={200}
-                                                className={styles.adImage}
-                                            />
-                                        </div>
-                                    </div>
+                            {bannerImages.map((image, index) => (
+                                <div key={index} className={styles.slide}>
+                                    <Image
+                                        src={image}
+                                        alt={`배너 ${index + 1}`}
+                                        fill
+                                        className={styles.adImage}
+                                        style={{ objectFit: 'cover' }}
+                                        priority={index === 0}
+                                    />
                                 </div>
                             ))}
                         </div>
 
-                        {/* 좌우 네비게이션 버튼 */}
-                        <button
+                        {/* 네비게이션 버튼 */}
+                        <button 
                             className={`${styles.navButton} ${styles.prevButton}`}
-                            onClick={goToPrevious}
+                            onClick={() => setCurrentSlide(prev => prev === 0 ? bannerImages.length - 1 : prev - 1)}
                         >
-                            &#8249;
+                            ‹
                         </button>
-                        <button
+                        <button 
                             className={`${styles.navButton} ${styles.nextButton}`}
-                            onClick={goToNext}
+                            onClick={() => setCurrentSlide(prev => prev === bannerImages.length - 1 ? 0 : prev + 1)}
                         >
-                            &#8250;
+                            ›
                         </button>
 
-                        {/* 인디케이터 점들 */}
+                        {/* 인디케이터 */}
                         <div className={styles.indicators}>
-                            {advertisements.map((_, index) => (
+                            {bannerImages.map((_, index) => (
                                 <button
                                     key={index}
                                     className={`${styles.indicator} ${index === currentSlide ? styles.active : ''}`}
-                                    onClick={() => goToSlide(index)}
+                                    onClick={() => setCurrentSlide(index)}
                                 />
                             ))}
                         </div>
                     </div>
                 </div>
+
                 <div className={styles.itemWrapper}>
                     <div className={styles.topItem}>
                         <div className={styles.mdItem}>

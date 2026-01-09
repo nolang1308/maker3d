@@ -22,7 +22,9 @@
       "Bash(cmd //c taskkill //PID 461956 //F)",
       "Bash(npm uninstall:*)",
       "Bash(git log:*)",
-      "Bash(npx vercel:*)"
+      "Bash(npx vercel:*)",
+      "Bash(git checkout:*)",
+      "Bash(npm run build:*)"
     ]
   }
 }

@@ -491,6 +491,21 @@ export default function QuotePage() {
         }
     };
 
+    // 견적가이드 다운로드 핸들러
+    const handleGuideDownload = () => {
+        try {
+            const link = document.createElement('a');
+            link.href = '/quote/file/guide.pdf';
+            link.download = '견적가이드.pdf';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('파일 다운로드 오류:', error);
+            alert('파일 다운로드 중 오류가 발생했습니다.');
+        }
+    };
+
     const updateQuantity = async (id: number, newQuantity: number) => {
         const updatedItems = fileItems.map(item =>
             item.id === id ? {...item, quantity: newQuantity} : item
@@ -539,7 +554,11 @@ export default function QuotePage() {
             <div className={styles.innerContainer}>
                 <div className={styles.titleWrapper}>
                     <p>실시간 견적 확인</p>
-                    <div className={styles.guide}>
+                    <div 
+                        className={styles.guide}
+                        onClick={handleGuideDownload}
+                        style={{ cursor: 'pointer' }}
+                    >
                         견적가이드 다운로드
                         <Image
                             src="/download_icon.svg"
@@ -761,6 +780,30 @@ export default function QuotePage() {
 
                         </div>
                     </div>
+
+                    <div className={styles.cautionSection}>
+                        <div className={styles.cautionTitle}>
+                            <Image
+                                src="/caution_icon.svg"
+                                alt="MAKER 3D Logo"
+                                width={20}
+                                height={20}
+                            />
+                            <p>유의사항</p>
+                        </div>
+                        <div className={styles.cautionInfoWrapper}>
+                            <p className={styles.cautionInfo} style={{marginBottom: '8px', lineHeight: '1.4'}}>
+                                실시간 자동 견적은 기본 3D프린팅 세팅값에 따라 견적이 산출됩니다.<br/>
+                                세팅이 바뀌면 금액이 변동될 수 있습니다.
+                            </p>
+                            <p className={styles.cautionInfo} style={{marginBottom: '8px', lineHeight: '1.4'}}>
+                                실시간 견적은 실제 견적보다 상이할 수 있으며, 반드시 최종 상담 진행 후 결제를 진행해주세요.
+                            </p>
+                            <p className={styles.cautionInfo} style={{marginBottom: '0', lineHeight: '1.4'}}>
+                                설계나 수정이 필요하신 경우, 고객센터 <strong>(054-462-4140)</strong>로 문의 부탁드립니다.
+                            </p>
+                        </div>
+                    </div>
                     <div className={styles.orderWrapper}>
                         <div
                             className={styles.order}
@@ -804,7 +847,7 @@ export default function QuotePage() {
                                     <p className={styles.contentLine}>- 현금영수증 발행 가능 (결제 단계에서 신청)</p>
                                     <p className={styles.contentLine}>&nbsp;</p>
                                     <p className={styles.contentLine}>■ 제작 및 배송 안내</p>
-                                    <p className={styles.contentLine}>- 제작 기간: 결제 완료 후 2~5영업일</p>
+                                    <p className={styles.contentLine}>- 제작 기간: 결제 완료 후 근무일 기준 2~5영업일 (주문이 많으면 출고일이 조금 밀릴 수 있습니다.)</p>
                                     <p className={styles.contentLine}>- 배송 기간: 제작 완료 후 1~3영업일</p>
                                     <p className={styles.contentLine}>- 배송비: 기본 배송비 3,000원 (도서·산간 지역은 추가 배송비가 발생할 수 있습니다.)</p>
                                     <p className={styles.contentLine}>&nbsp;</p>
@@ -827,7 +870,7 @@ export default function QuotePage() {
                                 <>
                                     <p className={styles.contentLine}>배송안내</p>
                                     <p className={styles.contentLine}>1. 주문 제작 상품은 결제 완료 후 제작이 시작됩니다.</p>
-                                    <p className={styles.contentLine}>2. 제작 기간은 결제 완료 후 2~5영업일입니다.</p>
+                                    <p className={styles.contentLine}>2. 제작 기간은 결제 완료 후 근무일 기준 2~5영업일입니다. (주문이 많으면 출고일이 조금 밀릴 수 있습니다.)</p>
                                     <p className={styles.contentLine}>3. 배송 기간은 제작 완료 후 1~3영업일이며 택배사 사정에 따라 달라질 수 있습니다.</p>
                                     <p className={styles.contentLine}>4. 도서·산간 지역은 추가 배송비가 발생할 수 있습니다.</p>
                                 </>
@@ -845,22 +888,6 @@ export default function QuotePage() {
                     </div>
 
                     <div className={styles.cautionWrapper}>
-                        <div className={styles.cautionSection}>
-                            <div className={styles.cautionTitle}>
-                                <Image
-                                    src="/caution_icon.svg"
-                                    alt="MAKER 3D Logo"
-                                    width={20}
-                                    height={20}
-                                />
-                                <p>유의사항</p>
-                            </div>
-                            <div className={styles.cautionInfoWrapper}>
-                                <p className={styles.cautionInfo}>모델링에 문제가 있을 경우 자동 견적 이용이 안되거나, 추후 견적이 달라질 수 있습니다.</p>
-                                <p className={styles.cautionInfo}>하나의 파일에 여러 종류의 색상 설정은 고객센터 (054-462-4140) 로 문의 부탁드립니다.</p>
-                                <p className={styles.cautionInfo}>실시간 견적에 사용된 데이터는 임시저장 후 바로 폐기됩니다.</p>
-                            </div>
-                        </div>
 
 
                         {/* 이용약관 섹션 - 유의사항 아래로 이동 */}
