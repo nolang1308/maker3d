@@ -43,6 +43,7 @@ export default function StorePage() {
     const [mdRecommendedProducts, setMdRecommendedProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [isHovered, setIsHovered] = useState(false);
     const router = useRouter();
 
     const bannerImages = ['/banner/1.png', '/banner/2.png', '/banner/3.png'];
@@ -130,6 +131,17 @@ export default function StorePage() {
         fetchStoreData();
     }, []);
 
+    // 배너 자동 슬라이드 기능
+    useEffect(() => {
+        if (!isHovered) {
+            const interval = setInterval(() => {
+                setCurrentSlide(prev => (prev + 1) % bannerImages.length);
+            }, 3000);
+
+            return () => clearInterval(interval);
+        }
+    }, [bannerImages.length, isHovered]);
+
 
 
     // 상품 상세페이지로 이동
@@ -142,7 +154,11 @@ export default function StorePage() {
             <div className={styles.innerContainer}>
                 {/* 배너 슬라이더 */}
                 <div className={styles.adPanel}>
-                    <div className={styles.slideWrapper}>
+                    <div 
+                        className={styles.slideWrapper}
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
+                    >
                         <div 
                             className={styles.slideContainer}
                             style={{ transform: `translateX(-${currentSlide * 100}%)` }}

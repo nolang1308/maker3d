@@ -24,7 +24,15 @@
       "Bash(git log:*)",
       "Bash(npx vercel:*)",
       "Bash(git checkout:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(lsof:*)",
+      "Bash(kill:*)",
+      "Bash(echo $NEXT_PUBLIC_BACKEND_URL)",
+      "Bash(curl:*)",
+      "Bash(ping:*)",
+      "Bash(telnet:*)",
+      "Bash(nc:*)",
+      "WebSearch"
     ]
   }
 }
