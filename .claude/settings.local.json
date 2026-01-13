@@ -32,7 +32,12 @@
       "Bash(ping:*)",
       "Bash(telnet:*)",
       "Bash(nc:*)",
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:docs.pay.naver.com)",
+      "Bash(if [ -f .env.local ])",
+      "Bash(then grep -E \"NAVER.*PAY\" .env.local)",
+      "Bash(else echo \".env.local 파일 없음\")",
+      "Bash(fi)"
     ]
   }
 }

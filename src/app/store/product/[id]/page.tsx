@@ -430,47 +430,33 @@ export default function ProductDetailPage() {
             return;
         }
 
-        // try {
-        //     setIsPaymentLoading(true);
-        //
-        //     // 주문 데이터 준비
-        //     const orderData = {
-        //         productId: product.id,
-        //         productName: product.name,
-        //         quantity: quantity,
-        //         selectedOption: selectedOption,
-        //         unitPrice: product.finalPrice,
-        //         totalPrice: product.finalPrice * quantity,
-        //         productImage: product.images[0],
-        //         categoryId: categoryId
-        //     };
-        //
-        //     // 네이버페이 결제 요청
-        //     const paymentData: PaymentData = {
-        //         merchantPayKey: `ORDER_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        //         productName: product.name,
-        //         productCount: quantity,
-        //         totalPayAmount: product.finalPrice * quantity,
-        //         taxScopeAmount: product.finalPrice * quantity,
-        //         taxExScopeAmount: 0,
-        //         returnUrl: `${window.location.origin}/payment/complete`
-        //     };
-        //
-        //     const naverPayResult = await requestNaverPay(paymentData);
-        //
-        //     if (naverPayResult.success) {
-        //         // 네이버페이로 리다이렉트
-        //         window.location.href = naverPayResult.naverPayUrl;
-        //     } else {
-        //         throw new Error(naverPayResult.message || '결제 요청에 실패했습니다.');
-        //     }
-        //
-        // } catch (error) {
-        //     console.error('주문 처리 중 오류:', error);
-        //     alert('주문 처리 중 오류가 발생했습니다. 다시 시도해 주세요.');
-        // } finally {
-        //     setIsPaymentLoading(false);
-        // }
+        try {
+            setIsPaymentLoading(true);
+
+            // 주문 데이터 준비 (옵션 가격 포함)
+            const totalPrice = (product.finalPrice + optionPrice) * quantity;
+            
+            const paymentData: PaymentData = {
+                productId: product.id,
+                productName: product.name,
+                quantity: quantity,
+                totalPayAmount: totalPrice,
+                selectedOption: selectedOption
+            };
+
+            const naverPayResult = await requestNaverPay(paymentData);
+
+            if (naverPayResult.success) {
+                // 결제 성공 시 처리는 네이버페이 SDK에서 자동으로 처리됨
+                console.log('네이버페이 결제 요청 성공:', naverPayResult.orderId);
+            }
+
+        } catch (error) {
+            console.error('주문 처리 중 오류:', error);
+            alert('주문 처리 중 오류가 발생했습니다. 다시 시도해 주세요.');
+        } finally {
+            setIsPaymentLoading(false);
+        }
     };
 
     // 장바구니 추가 핸들러

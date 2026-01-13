@@ -112,11 +112,22 @@ export default function StorePage() {
                         };
                     });
 
+                    // 임시로 특정 상품만 표시 (원하는 상품 ID들로 변경)
+                    const targetProductIds = ['12957350747', '11227921750']; // 원하는 상품 ID들
+                    const filteredProducts = transformedProducts.filter(product =>
+                        targetProductIds.includes(String(product.id))
+                    );
+
+                    // 기존 코드 (주석 처리)
                     // MD 추천 상품 (처음 6개)
-                    setMdRecommendedProducts(transformedProducts.slice(0, 6));
-                    
+                    // setMdRecommendedProducts(transformedProducts.slice(0, 6));
+
                     // 인기 상품 (처음 16개)
-                    setPopularProducts(transformedProducts.slice(0, 16));
+                    // setPopularProducts(transformedProducts.slice(0, 16));
+
+                    // 필터링된 상품으로 설정
+                    setMdRecommendedProducts(filteredProducts.slice(0, 6));
+                    setPopularProducts(filteredProducts.slice(0, 16));
                 } else {
                     console.error('상품 데이터 형식 오류:', productsData);
                 }
