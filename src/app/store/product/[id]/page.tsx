@@ -17,7 +17,8 @@ export default function ProductDetailPage() {
     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
 
     const [quantity, setQuantity] = useState(1);
-    const [selectedOption, setSelectedOption] = useState('');
+    const [selectedOption, setSelectedOption] = useState('[필수] 옵션선택');
+    const [optionPrice, setOptionPrice] = useState(0);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [PhotoReviewCount, setPhotoReviewCount] = useState(12);
     const [activeTab, setActiveTab] = useState('관련상품');
@@ -51,7 +52,8 @@ export default function ProductDetailPage() {
                     // console.log('상품 상세 응답:', data);
                     // //
                     // console.log('상품 상세 API 응답:', naverProduct);
-                    // console.log('ㄴㄹㅇㄴㄹ:', naverProduct.originProduct.leafCategoryId);
+                    // console.log('ㄴㄹㅇㄴㄹ:', naverProduct.originProduct.detailAttribute.optionInfo.optionCombinations.length);
+                    // console.log('ㄴㄹㅇㄴㄹ:', naverProduct.originProduct.detailAttribute.optionInfo.optionCombinations[2].price);
                     setCategoryId(naverProduct.originProduct.leafCategoryId);
                     // console.log('===============',categoryId)
 
@@ -68,7 +70,10 @@ export default function ProductDetailPage() {
                         finalPrice: naverProduct.originProduct.salePrice || naverProduct.salePrice || 0,
                         description: naverProduct.productDescription || naverProduct.detailContent || '네이버 스마트스토어 상품입니다.',
                         optionLabel: '옵션선택',
-                        options: naverProduct.options?.map((opt: any) => opt.name) || ['[필수] 옵션선택', '옵션1', '옵션2', '옵션3'], // eslint-disable-line @typescript-eslint/no-explicit-any
+                        options: naverProduct.originProduct?.detailAttribute?.optionInfo?.optionCombinations?.length > 0 
+                            ? ['[필수] 옵션선택', ...naverProduct.originProduct.detailAttribute.optionInfo.optionCombinations.map((opt: any) => opt.optionName1)] // eslint-disable-line @typescript-eslint/no-explicit-any
+                            : ['[필수] 옵션선택'],
+                        optionCombinations: naverProduct.originProduct?.detailAttribute?.optionInfo?.optionCombinations || [],
                         totalScore: 5,
                         reviewCount: 7,
                         categoryName: naverProduct.wholeCategoryName || naverProduct.categoryName || '',
@@ -204,6 +209,22 @@ export default function ProductDetailPage() {
         const newQuantity = quantity + change;
         if (newQuantity >= 1) {
             setQuantity(newQuantity);
+        }
+    };
+
+    const handleOptionChange = (selectedOption: string) => {
+        setSelectedOption(selectedOption);
+        
+        if (product && selectedOption !== '[필수] 옵션선택') {
+            // 선택한 옵션에 해당하는 가격 찾기
+            const optionIndex = product.options.findIndex((opt: string) => opt === selectedOption) - 1; // '[필수] 옵션선택'을 제외한 실제 인덱스
+            if (optionIndex >= 0 && product.optionCombinations && product.optionCombinations[optionIndex]) {
+                setOptionPrice(product.optionCombinations[optionIndex].price || 0);
+            } else {
+                setOptionPrice(0);
+            }
+        } else {
+            setOptionPrice(0);
         }
     };
 
@@ -471,8 +492,8 @@ export default function ProductDetailPage() {
             image: product.images[0],
             option: selectedOption,
             quantity: quantity,
-            unitPrice: product.finalPrice,
-            totalPrice: product.finalPrice * quantity
+            unitPrice: product.finalPrice + optionPrice,
+            totalPrice: (product.finalPrice + optionPrice) * quantity
         };
 
         // localStorage에 장바구니 데이터 저장
@@ -575,7 +596,7 @@ export default function ProductDetailPage() {
                                 <select
                                     className={`${styles.optionSelect} ${!selectedOption || selectedOption === '[필수] 옵션선택' ? styles.required : ''}`}
                                     value={selectedOption}
-                                    onChange={(e) => setSelectedOption(e.target.value)}
+                                    onChange={(e) => handleOptionChange(e.target.value)}
                                     required
                                 >
                                     {product.options.map((option: any, index: number) => (
@@ -609,7 +630,7 @@ export default function ProductDetailPage() {
                             <div className={styles.totalRow}>
                                 <span className={styles.totalLabel}>총 상품금액</span>
                                 <div className={styles.totalAmount}>
-                                    <span className={styles.totalPrice}>₩{(product.finalPrice * quantity).toLocaleString()}</span>
+                                    <span className={styles.totalPrice}>₩{((product.finalPrice + optionPrice) * quantity).toLocaleString()}</span>
                                     <span className={styles.totalQuantityInfo}>({quantity}개)</span>
                                 </div>
                             </div>
