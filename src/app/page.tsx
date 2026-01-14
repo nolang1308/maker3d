@@ -10,7 +10,6 @@ import QuickMenu from '@/components/QuickMenu';
 export default function Home() {
     const [activeButton, setActiveButton] = useState<number>(1);
     const [currentReviewIndex, setCurrentReviewIndex] = useState<number>(0);
-    const [showModal, setShowModal] = useState<boolean>(true);
     const [cardWidth, setCardWidth] = useState<number>(672);
 
     const reviews = [
@@ -94,26 +93,6 @@ export default function Home() {
     return (
         <>
             <QuickMenu />
-            {showModal && (
-                <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
-                    <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-                        <div className={styles.modalContent}>
-                            <h2 className={styles.modalTitle}>알림</h2>
-                            <p className={styles.modalMessage}>
-                                현재 웹페이지 제작 중 입니다.<br/>
-                                아직 웹페이지는 온전하지 않으며, <br/>
-                                일부기능이 제한됩니다.   <br/>
-                            </p>
-                            <button 
-                                className={styles.modalButton}
-                                onClick={() => setShowModal(false)}
-                            >
-                                확인
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
             <div className={styles.container}>
             <div className={styles.innerContainer}>
                 <Image

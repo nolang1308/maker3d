@@ -301,28 +301,31 @@ export default function ProductDetailPage() {
     const shoppingGuideContent: Record<string, {content: string[]}> = {
         '상품결제정보': {
             content: [
-                '결제수단 (현재 페이지 제작 중 입니다. 아래 내용은 정확하지 않으니, 주의 해주시기 바랍니다.)',
-                '- NPay 네이버 결제',
-                '결제수단의 주의점입니다. 결제수단의 주의점입니다. 결제수단의 주의점입니다. 결제수단의 주의점입니다.',
-                '결제수단의 주의점입니다. 결제수단의 주의점입니다. 결제수단의 주의점입니다. 결제수단의 주의점입니다. 결제수단의 주의점입니다. 결제수단의 주의점입니다.'
+                '결제수단',
+                '- 네이버페이 (신용카드, 계좌이체, 간편결제)',
+                '- 안전하고 간편한 네이버페이 결제 시스템',
+                '- 결제 완료 후 즉시 제작 시작',
+                '- 네이버포인트 적립 및 사용 가능'
             ]
         },
         '배송정보': {
             content: [
-                '배송안내 (현재 페이지 제작 중 입니다. 아래 내용은 정확하지 않으니, 주의 해주시기 바랍니다.)',
+                '배송안내',
                 '- 평일 오후 2시 이전 주문 시 당일 발송',
                 '- 주말 및 공휴일 제외',
-                '배송에 관한 안내사항입니다. 배송지연이 발생할 수 있으니 양해 부탁드립니다.',
-                '제주도 및 도서산간 지역은 추가 배송비가 발생할 수 있습니다.'
+                '- 제작 기간: 근무일 기준 2~5영업일',
+                '- 배송 기간: 제작 완료 후 1~3영업일',
+                '- 제주도 및 도서산간 지역은 추가 배송비가 발생할 수 있습니다.'
             ]
         },
         '교환 및 반품정보': {
             content: [
-                '교환/반품 (현재 페이지 제작 중 입니다. 아래 내용은 정확하지 않으니, 주의 해주시기 바랍니다.)',
+                '교환/반품',
                 '- 수령 후 7일 이내 교환/반품 가능',
                 '- 상품 하자 시 무료 교환/반품',
-                '교환 및 반품에 관한 정책입니다. 고객 변심으로 인한 반품은 배송비가 발생할 수 있습니다.',
-                '단순 변심으로 인한 교환/반품은 고객 부담입니다.'
+                '- 주문 제작 상품 특성상 단순 변심에 의한 교환/반품 제한',
+                '- 출력 불량, 파손, 오배송 시 재제작 또는 환불',
+                '- 불량 접수는 고객센터(054-462-4140)로 연락'
             ]
         }
     };
@@ -412,7 +415,7 @@ export default function ProductDetailPage() {
     }
 
     // 주문하기 핸들러
-    const handleBuyNow = async () => {
+    const handleBuyNow = () => {
         // 네이버페이 입점심사 기준에 맞는 유효성 검사
         if (!selectedOption || selectedOption === '[필수] 옵션선택') {
             alert('옵션을 선택해 주세요.');
@@ -430,33 +433,20 @@ export default function ProductDetailPage() {
             return;
         }
 
-        try {
-            setIsPaymentLoading(true);
+        // 직접 주문 데이터 준비
+        const directOrderData = {
+            id: product.id,
+            name: product.name,
+            image: product.images[0],
+            option: selectedOption,
+            quantity: quantity,
+            unitPrice: product.finalPrice + optionPrice,
+            totalPrice: (product.finalPrice + optionPrice) * quantity
+        };
 
-            // 주문 데이터 준비 (옵션 가격 포함)
-            const totalPrice = (product.finalPrice + optionPrice) * quantity;
-            
-            const paymentData: PaymentData = {
-                productId: product.id,
-                productName: product.name,
-                quantity: quantity,
-                totalPayAmount: totalPrice,
-                selectedOption: selectedOption
-            };
-
-            const naverPayResult = await requestNaverPay(paymentData);
-
-            if (naverPayResult.success) {
-                // 결제 성공 시 처리는 네이버페이 SDK에서 자동으로 처리됨
-                console.log('네이버페이 결제 요청 성공:', naverPayResult.orderId);
-            }
-
-        } catch (error) {
-            console.error('주문 처리 중 오류:', error);
-            alert('주문 처리 중 오류가 발생했습니다. 다시 시도해 주세요.');
-        } finally {
-            setIsPaymentLoading(false);
-        }
+        // 주문서 페이지로 이동 (직접 주문)
+        const orderDataParam = encodeURIComponent(JSON.stringify(directOrderData));
+        router.push(`/order?directOrder=${orderDataParam}`);
     };
 
     // 장바구니 추가 핸들러
@@ -662,13 +652,13 @@ export default function ProductDetailPage() {
                         {/* 구매 버튼 영역 */}
                         <div className={styles.actionSection}>
                             <div className={styles.buttonGroup}>
-                                {/*<button*/}
-                                {/*    className={styles.cartButton}*/}
-                                {/*    onClick={handleAddToCart}*/}
-                                {/*    disabled={!selectedOption || selectedOption === '[필수] 옵션선택'}*/}
-                                {/*>*/}
-                                {/*    장바구니*/}
-                                {/*</button>*/}
+                                <button
+                                    className={styles.cartButton}
+                                    onClick={handleAddToCart}
+                                    disabled={!selectedOption || selectedOption === '[필수] 옵션선택'}
+                                >
+                                    장바구니
+                                </button>
                                 
                                 <div className={styles.paymentGroup}>
                                     <div className={styles.naverPayInfo}>

@@ -11,7 +11,10 @@ export async function POST(request: NextRequest) {
       totalPayAmount, 
       quantity, 
       selectedOption,
-      orderId 
+      orderId,
+      customerName,
+      customerPhone,
+      customerEmail
     } = body;
 
     console.log('🔍 Extracted values:', {
@@ -62,34 +65,41 @@ export async function POST(request: NextRequest) {
       ]
     };
 
-    // 네이버페이 API 호출 (실제 구현에서는 서버 인증서와 함께 호출)
-    const naverPayResponse = await fetch(naverPayApiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Naver-Client-Id': process.env.NAVER_CLIENT_ID || '',
-        'X-Naver-Client-Secret': process.env.NAVER_CLIENT_SECRET || '',
-      },
-      body: JSON.stringify(paymentRequest),
-    });
-
-    if (!naverPayResponse.ok) {
-      console.error('네이버페이 API 오류:', await naverPayResponse.text());
-      
-      // 개발 환경에서는 더미 데이터 반환
-      if (process.env.NODE_ENV === 'development') {
-        return NextResponse.json({
-          success: true,
+    // 개발 환경에서는 네이버페이 API 호출을 우회하고 더미 데이터 반환
+    let naverPayResult;
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📝 Development mode: 네이버페이 API 호출 우회');
+      naverPayResult = {
+        body: {
           paymentId: `test-payment-${orderId}`,
-          chainId: `test-chain-${Date.now()}`,
-          orderId: orderId
+          chainId: `test-chain-${Date.now()}`
+        }
+      };
+    } else {
+      try {
+        // 운영 환경에서만 실제 네이버페이 API 호출
+        const naverPayResponse = await fetch(naverPayApiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Naver-Client-Id': process.env.NAVER_CLIENT_ID || '',
+            'X-Naver-Client-Secret': process.env.NAVER_CLIENT_SECRET || '',
+          },
+          body: JSON.stringify(paymentRequest),
         });
-      }
-      
-      throw new Error('네이버페이 API 호출 실패');
-    }
 
-    const naverPayResult = await naverPayResponse.json();
+        if (!naverPayResponse.ok) {
+          console.error('네이버페이 API 오류:', await naverPayResponse.text());
+          throw new Error('네이버페이 API 호출 실패');
+        }
+
+        naverPayResult = await naverPayResponse.json();
+      } catch (error) {
+        console.error('네이버페이 API 호출 중 오류:', error);
+        throw new Error('네이버페이 API 호출 실패');
+      }
+    }
     
     // 결제 정보를 데이터베이스에 임시 저장 (선택사항)
     // await savePaymentPrepareInfo({

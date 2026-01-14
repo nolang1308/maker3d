@@ -1,5 +1,6 @@
 import styles from './Footer.module.scss';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const Footer = () => {
     return (
@@ -20,9 +21,9 @@ const Footer = () => {
                         {/* 왼쪽: 링크 + 회사정보 */}
                         <div className={styles.leftSection}>
                             <div className={styles.links}>
-                                <span className={styles.link}>개인정보처리방침</span>
+                                <Link href="/policy/privacy" className={styles.link}>개인정보처리방침</Link>
                                 <span className={styles.divider}>|</span>
-                                <span className={styles.link}>이용약관</span>
+                                <Link href="/policy/terms" className={styles.link}>이용약관</Link>
                             </div>
                             <div className={styles.infoDetails}>
                                 <div className={styles.infoRow}>

@@ -1,0 +1,282 @@
+.container {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  padding-top: 20px;
+}
+
+.innerContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.pageTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.section {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+// 상품 목록
+.productList {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.productItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.productInfo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.productImage {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.productDetails {
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #333;
+  }
+
+  p {
+    font-size: 14px;
+    color: #666;
+    margin: 2px 0;
+  }
+}
+
+.productPrice {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+// 폼 스타일
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  input, textarea {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: #03c75a;
+    }
+
+    &::placeholder {
+      color: #999;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+}
+
+// 결제 정보
+.paymentSummary {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 20px;
+  background: #f8f9fa;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  &.total {
+    font-size: 18px;
+    font-weight: 600;
+    padding-top: 15px;
+    color: #333;
+  }
+}
+
+// 결제 버튼
+.paymentSection {
+  display: flex;
+  justify-content: center;
+  margin: 40px 0;
+}
+
+.paymentButton {
+  background: #03c75a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 18px 40px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 300px;
+
+  &:hover:not(:disabled) {
+    background: #02b351;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+}
+
+// 빈 장바구니
+.emptyCart {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 12px;
+
+  h2 {
+    font-size: 24px;
+    color: #666;
+    margin-bottom: 20px;
+  }
+
+  button {
+    background: #03c75a;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #02b351;
+    }
+  }
+}
+
+// 반응형
+@media (max-width: 768px) {
+  .innerContainer {
+    padding: 0 15px;
+  }
+
+  .section {
+    padding: 20px;
+    margin-bottom: 15px;
+  }
+
+  .pageTitle {
+    font-size: 24px;
+    margin-bottom: 30px;
+  }
+
+  .sectionTitle {
+    font-size: 18px;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .productItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .productInfo {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .paymentButton {
+    width: 100%;
+    min-width: unset;
+  }
+}

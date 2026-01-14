@@ -462,6 +462,156 @@ export default function QuotePage() {
         }
     };
 
+    // 네이버페이 주문 처리
+    const handleNaverPayOrder = async (customerInfo: CustomerInfo) => {
+        setIsProcessingOrder(true);
+        
+        try {
+            // 1. 주문번호 생성
+            const orderNumber = await generateOrderNumber();
+            
+            // 2. STL 파일 처리 (기존 로직과 동일)
+            let fileUrls: string[] = [];
+            
+            if (uploadedFiles.length > 0) {
+                fileUrls = await uploadSTLFiles(uploadedFiles, orderNumber);
+            } else {
+                const hasSavedFiles = fileItems.some(item => item.savedFilePath);
+                
+                if (hasSavedFiles && user) {
+                    const savedFilePaths = fileItems
+                        .filter(item => item.savedFilePath)
+                        .map(item => item.savedFilePath as string);
+                        
+                    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:10000';
+                    const response = await fetch(`${backendUrl}/api/copy-saved-files-to-order`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            userId: user.uid,
+                            orderNumber: orderNumber,
+                            filePaths: savedFilePaths
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        fileUrls = result.filePaths;
+                    } else {
+                        throw new Error(result.error || '저장된 파일 복사 실패');
+                    }
+                } else {
+                    const files = fileItems.map(item => item.file).filter((file): file is File => file !== null);
+                    if (files.length > 0) {
+                        fileUrls = await uploadSTLFiles(files, orderNumber);
+                    }
+                }
+            }
+            
+            // 3. 총 금액 계산
+            const totalAmount = fileItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            // 4. 결제 준비 API 호출
+            const paymentResponse = await fetch('/api/payment/prepare', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    productId: 'custom-3d-print',
+                    productName: `3D 프린팅 주문제작 (${fileItems.length}개 파일)`,
+                    totalPayAmount: totalAmount,
+                    quantity: fileItems.reduce((sum, item) => sum + item.quantity, 0),
+                    selectedOption: `${fileItems[0]?.material || 'PLA'} | ${fileItems[0]?.color || 'White'}`,
+                    orderId: orderNumber,
+                    customerName: customerInfo.name,
+                    customerPhone: customerInfo.phoneNumber,
+                    customerEmail: customerInfo.email
+                })
+            });
+
+            const paymentData = await paymentResponse.json();
+
+            if (!paymentData.success) {
+                throw new Error(paymentData.message || '결제 준비 실패');
+            }
+
+            // 5. 주문 데이터 구성 및 저장
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+
+            const orderDate = `${year}-${month}-${day}`;
+            const orderTime = `${hours}:${minutes}:${seconds}`;
+            
+            const orderData: OrderData = {
+                customerName: customerInfo.name,
+                phoneNumber: customerInfo.phoneNumber,
+                orderEmail: customerInfo.email,
+                userEmail: user?.email || '',
+                fileUrls: fileUrls,
+                files: fileItems.map((item, index) => ({
+                    fileName: item.fileName,
+                    material: item.material,
+                    color: item.color,
+                    quantity: item.quantity,
+                    price: item.price
+                })),
+                totalPrice: totalAmount,
+                paymentStatus: 'payment_pending',
+                orderDate: `${orderDate} ${orderTime}`,
+                orderTime: orderTime,
+                workStatus: 'pending',
+                paymentId: paymentData.paymentId
+            };
+            
+            await saveOrder(orderNumber, orderData);
+
+            // 6. 네이버페이 결제 페이지로 이동
+            if (process.env.NODE_ENV === 'development') {
+                // 개발 환경에서는 성공 메시지 표시
+                alert(`네이버페이 결제가 준비되었습니다!\n주문번호: ${orderNumber}\n개발 모드에서는 결제 페이지로 이동하지 않습니다.`);
+                setIsOrderModalOpen(false);
+                
+                // 폼 초기화
+                setFileItems([]);
+                setMaterial('');
+                setColor('');
+                setQuantity(1);
+                setUploadedFiles([]);
+                setCurrentPreviewFile(null);
+                setEstimatedPrice(0);
+                setPrintTime('');
+                setHasCalculatedEstimate(false);
+                
+                if (user) {
+                    const quotesRef = doc(db, 'savedQuotes', user.uid);
+                    await setDoc(quotesRef, {
+                        userId: user.uid,
+                        quotes: [],
+                        updatedAt: new Date().toISOString()
+                    });
+                }
+            } else {
+                // 운영 환경에서는 실제 네이버페이 페이지로 이동
+                const naverPayUrl = `https://order.pay.naver.com/payments/${paymentData.paymentId}`;
+                window.location.href = naverPayUrl;
+            }
+            
+        } catch (error) {
+            console.error('네이버페이 주문 처리 중 오류:', error);
+            alert('결제 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+            setIsProcessingOrder(false);
+        }
+    };
+
     // 견적가이드 PDF 다운로드
     const handleGuideDownload = () => {
         const link = document.createElement('a');
@@ -1114,6 +1264,7 @@ export default function QuotePage() {
                 isOpen={isOrderModalOpen}
                 onClose={() => setIsOrderModalOpen(false)}
                 onSubmit={handleOrderSubmit}
+                onNaverPayOrder={handleNaverPayOrder}
                 totalPrice={fileItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)}
                 fileCount={fileItems.length}
             />

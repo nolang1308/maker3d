@@ -8,6 +8,7 @@ interface OrderModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: CustomerInfo) => void;
+  onNaverPayOrder: (data: CustomerInfo) => void;
   totalPrice: number;
   fileCount: number;
 }
@@ -22,6 +23,7 @@ export default function OrderModal({
   isOpen,
   onClose,
   onSubmit,
+  onNaverPayOrder,
   totalPrice,
   fileCount
 }: OrderModalProps) {
@@ -76,7 +78,7 @@ export default function OrderModal({
       return;
     }
 
-    onSubmit({ name, phoneNumber, email });
+    onNaverPayOrder({ name, phoneNumber, email });
   };
 
   return (

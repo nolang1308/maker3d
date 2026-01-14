@@ -98,10 +98,11 @@ export interface OrderData {
     price: number;
   }>;
   totalPrice: number;
-  paymentStatus: 'pending' | 'completed' | 'failed';
+  paymentStatus: 'pending' | 'payment_pending' | 'completed' | 'failed';
   orderDate: string;
   orderTime: string;
   workStatus: 'pending' | 'processing' | 'completed' | 'cancelled';
+  paymentId?: string;
 }
 
 // Firestore에 주문 정보 저장

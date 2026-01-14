@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "npay-payments": {
+      "command": "npx",
+      "args": ["@naverpay/payments-mcp"]
+    }
+  }
+}

@@ -44,6 +44,24 @@ export const requestNaverPay = async (paymentData: PaymentData) => {
     
     const orderId = generateOrderId();
     
+    // 결제 준비 API 호출
+    const prepareResponse = await fetch('/api/payment/prepare', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...paymentData,
+        orderId
+      }),
+    });
+
+    const prepareResult = await prepareResponse.json();
+    
+    if (!prepareResult.success) {
+      throw new Error(prepareResult.message || '결제 준비에 실패했습니다.');
+    }
+
     // 네이버페이 객체 생성
     const oPay = (window as any).Naver.Pay.create({
       "mode": "development", // 샌드박스 모드
