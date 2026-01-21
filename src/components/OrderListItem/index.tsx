@@ -14,9 +14,11 @@ interface OrderListItemProps {
     orderDate: string;
     orderTime: string;
     workStatus: number; // 0: 처리시작, 1: 처리중, 2: 처리완료
+    isQuotePage?: boolean; // 새로운견적 페이지 여부
     onStartProcessing?: () => void;
     onCompleteProcessing?: () => void;
     onCancelOrder?: () => void;
+    onPaymentComplete?: () => void;
 }
 
 export default function OrderListItem({
@@ -30,9 +32,11 @@ export default function OrderListItem({
     orderDate,
     orderTime,
     workStatus,
+    isQuotePage = false,
     onStartProcessing,
     onCompleteProcessing,
-    onCancelOrder
+    onCancelOrder,
+    onPaymentComplete
 }: OrderListItemProps) {
 
     // 주문 시간으로부터 경과 시간 계산
@@ -168,12 +172,21 @@ export default function OrderListItem({
 
             {/* 작업 상태 컬럼 */}
             <div className={styles.workColumn}>
-                <div
-                    className={`${styles.workStatus} ${statusInfo.className} ${(workStatus === 0 || workStatus === 1) ? styles.clickable : ''}`}
-                    onClick={handleStatusClick}
-                >
-                    {statusInfo.text}
-                </div>
+                {isQuotePage ? (
+                    <button
+                        className={styles.paymentCompleteBtn}
+                        onClick={onPaymentComplete}
+                    >
+                        결제완료 처리
+                    </button>
+                ) : (
+                    <div
+                        className={`${styles.workStatus} ${statusInfo.className} ${(workStatus === 0 || workStatus === 1) ? styles.clickable : ''}`}
+                        onClick={handleStatusClick}
+                    >
+                        {statusInfo.text}
+                    </div>
+                )}
             </div>
 
             {/* 취소 버튼 */}

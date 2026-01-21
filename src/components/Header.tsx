@@ -68,14 +68,6 @@ const Header = () => {
                 <div className={styles.authButtons}>
                     <Link href="/quote" className={styles.checkQuoteButton}>실시간 견적 확인</Link>
                     <Link href="/store" className={styles.storeButton}>스토어</Link>
-                    <Link href="/cart" className={styles.cartButton}>
-                        <Image
-                            src="/cart_icon.svg"
-                            alt="장바구니"
-                            width={20}
-                            height={20}
-                        />
-                    </Link>
                 </div>
 
                 <div className={styles.userActions}>

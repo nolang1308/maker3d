@@ -25,7 +25,7 @@ interface Order {
 export default function NoticePage() {
     const router = useRouter();
     const [selectedChip, setSelectedChip] = useState<string>('전체');
-    const [currentPage, setCurrentPage] = useState<'order' | 'delivery'>('order');
+    const [currentPage, setCurrentPage] = useState<'quote' | 'order' | 'delivery'>('quote');
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,12 +34,17 @@ export default function NoticePage() {
     const [cancelOrder, setCancelOrder] = useState<Order | null>(null);
     const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
     const [completeOrder, setCompleteOrder] = useState<Order | null>(null);
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [paymentOrder, setPaymentOrder] = useState<Order | null>(null);
 
     // 페이지별 칩 설정
+    const quoteChips = ['전체', '결제대기'];
     const orderChips = ['전체', '대기중', '처리중'];
     const deliveryChips = ['전체', '처리완료'];
-    
-    const chips = currentPage === 'order' ? orderChips : deliveryChips;
+
+    const chips = currentPage === 'quote' ? quoteChips
+                : currentPage === 'order' ? orderChips
+                : deliveryChips;
 
     // Firestore에서 주문 데이터 가져오기 (실시간)
     useEffect(() => {
@@ -63,8 +68,9 @@ export default function NoticePage() {
                 else if (data.workStatus === 'completed') statusNumber = 2;
 
                 // paymentStatus 한글 변환
-                let paymentStatusText = '결제 완료';
+                let paymentStatusText = '대기중'; // 기본값을 대기중으로 변경
                 if (data.paymentStatus === 'pending') paymentStatusText = '대기중';
+                else if (data.paymentStatus === 'payment_pending') paymentStatusText = '결제대기';
                 else if (data.paymentStatus === 'failed') paymentStatusText = '실패';
                 else if (data.paymentStatus === 'completed') paymentStatusText = '결제 완료';
 
@@ -72,7 +78,7 @@ export default function NoticePage() {
                     orderNumber: docSnapshot.id,
                     customerName: data.customerName || '',
                     phoneNumber: data.phoneNumber || '',
-                    email: data.email || '',
+                    email: data.orderEmail || data.email || '',
                     fileUrls: data.fileUrls || [],
                     paymentAmount: data.totalPrice || 0,
                     paymentStatus: paymentStatusText,
@@ -108,21 +114,26 @@ export default function NoticePage() {
 
     // 페이지별 제목과 설명
     const getPageContent = () => {
-        if (currentPage === 'order') {
+        if (currentPage === 'quote') {
             return {
-                title: '신규 주문 관리',
-                subtitle: '실시간으로 들어오는 3D 프린팅 주문을 관리합니다'
+                title: '새로운 견적',
+                subtitle: '결제 대기 중인 견적 요청을 관리합니다'
+            };
+        } else if (currentPage === 'order') {
+            return {
+                title: '처리중인 주문',
+                subtitle: '결제 완료된 주문을 처리합니다'
             };
         } else {
             return {
-                title: '처리 완료 주문',
-                subtitle: '성공적으로 출력이 완료된 주문 내역을 관리합니다.'
+                title: '처리 완료',
+                subtitle: '성공적으로 출력이 완료된 주문 내역을 관리합니다'
             };
         }
     };
 
     // 페이지 변경 핸들러
-    const handlePageChange = (page: 'order' | 'delivery') => {
+    const handlePageChange = (page: 'quote' | 'order' | 'delivery') => {
         setCurrentPage(page);
         setSelectedChip('전체'); // 페이지 변경 시 칩 초기화
     };
@@ -132,16 +143,33 @@ export default function NoticePage() {
         let filtered = orders;
 
         // 페이지별 필터링
-        if (currentPage === 'delivery') {
-            filtered = filtered.filter(order => order.workStatus === 2); // 배송완료만
+        if (currentPage === 'quote') {
+            // 새로운 견적: 결제 미완료 주문만
+            filtered = filtered.filter(order => order.paymentStatus !== '결제 완료');
+        } else if (currentPage === 'order') {
+            // 처리중인 주문: 결제 완료 + 작업 미완료
+            filtered = filtered.filter(order =>
+                order.paymentStatus === '결제 완료' && order.workStatus !== 2
+            );
         } else {
-            filtered = filtered.filter(order => order.workStatus !== 2); // 배송완료 제외
+            // 처리 완료: 작업 완료된 주문
+            filtered = filtered.filter(order => order.workStatus === 2);
         }
 
         // 칩별 필터링
-        const filterStatus = getWorkStatusFromChip(selectedChip);
-        if (filterStatus !== null) {
-            filtered = filtered.filter(order => order.workStatus === filterStatus);
+        if (currentPage === 'quote') {
+            if (selectedChip === '결제대기') {
+                // 결제대기 또는 대기중 상태만 필터링
+                filtered = filtered.filter(order =>
+                    order.paymentStatus === '결제대기' || order.paymentStatus === '대기중'
+                );
+            }
+            // '전체'일 경우 추가 필터링 없음
+        } else {
+            const filterStatus = getWorkStatusFromChip(selectedChip);
+            if (filterStatus !== null) {
+                filtered = filtered.filter(order => order.workStatus === filterStatus);
+            }
         }
 
         return filtered;
@@ -157,6 +185,23 @@ export default function NoticePage() {
     // 대기중 주문 개수 계산 (취소된 주문 제외)
     const getPendingOrderCount = () => {
         return orders.filter(order => order.workStatus === 0).length;
+    };
+
+    // 새로운 견적 개수 계산
+    const getQuoteCount = () => {
+        return orders.filter(order => order.paymentStatus !== '결제 완료').length;
+    };
+
+    // 처리중인 주문 개수 계산
+    const getProcessingOrderCount = () => {
+        return orders.filter(order =>
+            order.paymentStatus === '결제 완료' && order.workStatus !== 2
+        ).length;
+    };
+
+    // 처리 완료 개수 계산
+    const getCompletedOrderCount = () => {
+        return orders.filter(order => order.workStatus === 2).length;
     };
 
     // 처리시작 버튼 클릭 핸들러
@@ -249,6 +294,36 @@ export default function NoticePage() {
         setCompleteOrder(null);
     };
 
+    // 결제완료 처리 버튼 클릭 핸들러
+    const handlePaymentComplete = (order: Order) => {
+        setPaymentOrder(order);
+        setIsPaymentModalOpen(true);
+    };
+
+    // 결제완료 처리 확인 핸들러
+    const handleConfirmPayment = async () => {
+        if (!paymentOrder) return;
+
+        try {
+            const orderRef = doc(db, 'orders', paymentOrder.orderNumber);
+            await updateDoc(orderRef, {
+                paymentStatus: 'completed'
+            });
+
+            setIsPaymentModalOpen(false);
+            setPaymentOrder(null);
+        } catch (error) {
+            console.error('결제 완료 처리 오류:', error);
+            alert('결제 완료 처리에 실패했습니다.');
+        }
+    };
+
+    // 결제완료 모달 닫기 핸들러
+    const handlePaymentModalClose = () => {
+        setIsPaymentModalOpen(false);
+        setPaymentOrder(null);
+    };
+
     return (
         <div className={styles.container}>
             <div className={styles.ManagerSignatureBar}>
@@ -263,19 +338,34 @@ export default function NoticePage() {
                     height={32}
                     className={styles.logoIcon}
                 />
-                <div 
+                <div
+                    className={`${styles.quoteBtn} ${currentPage === 'quote' ? styles.active : ''}`}
+                    onClick={() => handlePageChange('quote')}
+                >
+                    새로운견적
+                    {getQuoteCount() > 0 && (
+                        <span className={styles.countBadge}>{getQuoteCount()}</span>
+                    )}
+                </div>
+                <div className={styles.menuDivider}></div>
+                <div
                     className={`${styles.orderBtn} ${currentPage === 'order' ? styles.active : ''}`}
                     onClick={() => handlePageChange('order')}
                 >
-                    신규 주문
+                    처리중인주문
+                    {getProcessingOrderCount() > 0 && (
+                        <span className={styles.countBadge}>{getProcessingOrderCount()}</span>
+                    )}
                 </div>
-                <div 
+                <div
                     className={`${styles.completeBtn} ${currentPage === 'delivery' ? styles.active : ''}`}
                     onClick={() => handlePageChange('delivery')}
                 >
-                    처리 완료
+                    처리완료
+                    {getCompletedOrderCount() > 0 && (
+                        <span className={styles.countBadge}>{getCompletedOrderCount()}</span>
+                    )}
                 </div>
-
             </div>
             <div className={styles.mainWrapper}>
 
@@ -341,9 +431,11 @@ export default function NoticePage() {
                                 orderDate={order.orderDate}
                                 orderTime={order.orderTime}
                                 workStatus={order.workStatus}
+                                isQuotePage={currentPage === 'quote'}
                                 onStartProcessing={() => handleStartProcessing(order)}
                                 onCompleteProcessing={() => handleCompleteOrder(order)}
                                 onCancelOrder={() => handleCancelOrder(order)}
+                                onPaymentComplete={() => handlePaymentComplete(order)}
                             />
                         ))
                     )}
@@ -393,6 +485,21 @@ export default function NoticePage() {
                 onConfirm={handleConfirmComplete}
                 onCancel={handleCompleteModalClose}
                 confirmButtonText="완료 처리"
+                confirmButtonColor="primary"
+            />
+
+            {/* 결제완료 처리 확인 모달 */}
+            <ConfirmModal
+                isOpen={isPaymentModalOpen}
+                title="결제 완료 확인"
+                message="해당 견적의 결제를 완료 처리하시겠습니까?"
+                orderNumber={paymentOrder?.orderNumber || ''}
+                customerName={paymentOrder?.customerName || ''}
+                phoneNumber={paymentOrder?.phoneNumber || ''}
+                email={paymentOrder?.email || ''}
+                onConfirm={handleConfirmPayment}
+                onCancel={handlePaymentModalClose}
+                confirmButtonText="결제완료 처리"
                 confirmButtonColor="primary"
             />
 

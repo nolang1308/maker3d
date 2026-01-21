@@ -49,7 +49,8 @@
       object-fit: contain;
     }
 
-    .orderBtn {
+    .quoteBtn {
+      position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -61,17 +62,48 @@
       color: #F5F5F7;
       cursor: pointer;
       transition: all 0.2s ease;
-      
+
+      &.active {
+        background-color: #5856D6;
+      }
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+
+    .menuDivider {
+      width: 100%;
+      height: 1px;
+      background-color: #48484A;
+      margin: 4px 0;
+    }
+
+    .orderBtn {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 48px;
+      border-radius: 10px;
+      background-color: #48484A;
+      @include title-small();
+      color: #F5F5F7;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
       &.active {
         background-color: #007AFF;
       }
-      
+
       &:hover {
         opacity: 0.8;
       }
     }
 
     .completeBtn {
+      position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -83,14 +115,30 @@
       color: #F5F5F7;
       cursor: pointer;
       transition: all 0.2s ease;
-      
+
       &.active {
         background-color: #34C759;
       }
-      
+
       &:hover {
         opacity: 0.8;
       }
+    }
+
+    .countBadge {
+      position: absolute;
+      right: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      border-radius: 11px;
+      background-color: #FF3B30;
+      color: #FFFFFF;
+      font-size: 12px;
+      font-weight: 600;
     }
   }
 

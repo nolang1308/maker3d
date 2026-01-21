@@ -303,7 +303,6 @@
 
       .infoSection {
         width: 492px;
-        height: 517px;
         display: flex;
         flex-direction: column;
 
@@ -311,6 +310,33 @@
           @include title-small();
           color: #000000;
           margin-bottom: 33px;
+        }
+
+        .goToStoreSection {
+          margin-top: 20px;
+
+          .goToStoreBtn {
+            width: 100%;
+            height: 60px;
+            background-color: #2493D8;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            @include title-medium();
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            &:hover {
+              background-color: #1a7bb8;
+              transform: translateY(-2px);
+              box-shadow: 0 4px 12px rgba(36, 147, 216, 0.3);
+            }
+
+            &:active {
+              transform: translateY(0);
+            }
+          }
         }
 
         .priceTable {

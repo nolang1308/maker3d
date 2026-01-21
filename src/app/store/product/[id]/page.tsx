@@ -559,137 +559,16 @@ export default function ProductDetailPage() {
                                 <span className={styles.finalPriceLabel}>판매가</span>
                                 <span className={styles.finalPrice}>₩{product.finalPrice.toLocaleString()}원</span>
                             </div>
-                            <div className={styles.priceRow}>
-                                <span className={styles.priceLabel}>설명</span>
-                                <span className={styles.description}>{product.description}</span>
-                            </div>
                         </div>
 
-                        {/* 옵션 선택 */}
-                        <div className={styles.optionSection}>
-                            <div className={styles.priceRow}>
-                                <span className={styles.optionLabel}>{product.optionLabel}</span>
-                                <select
-                                    className={`${styles.optionSelect} ${!selectedOption || selectedOption === '[필수] 옵션선택' ? styles.required : ''}`}
-                                    value={selectedOption}
-                                    onChange={(e) => handleOptionChange(e.target.value)}
-                                    required
-                                >
-                                    {product.options.map((option: any, index: number) => (
-                                        <option 
-                                            key={option} 
-                                            value={option}
-                                            disabled={index === 0 && option === '[필수] 옵션선택'}
-                                        >
-                                            {index === 0 && option === '[필수] 옵션선택' ? '- 옵션을 선택해 주세요 -' : option}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            {(!selectedOption || selectedOption === '[필수] 옵션선택') && (
-                                <div className={styles.validationMessage}>
-                                    * 옵션 선택은 필수입니다
-                                </div>
-                            )}
-                        </div>
-                        {/*<div className={styles.moveToSmartStoreWrapper}>*/}
-                        {/*    <div*/}
-                        {/*        className={styles.moveToSmartStore}*/}
-                        {/*        onClick={handleGoToSmartStore}*/}
-                        {/*    >*/}
-                        {/*        구매하러가기*/}
-                        {/*    </div>*/}
-                        {/*</div>*/}
-
-                        {/* 총 상품금액 */}
-                        <div className={styles.totalSection}>
-                            <div className={styles.totalRow}>
-                                <span className={styles.totalLabel}>총 상품금액</span>
-                                <div className={styles.totalAmount}>
-                                    <span className={styles.totalPrice}>₩{((product.finalPrice + optionPrice) * quantity).toLocaleString()}</span>
-                                    <span className={styles.totalQuantityInfo}>({quantity}개)</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* 수량 선택 */}
-                        <div className={styles.quantitySection}>
-                            <span className={styles.quantityLabel}>수량</span>
-                            <div className={styles.quantityControl}>
-                                <button
-                                    className={styles.quantityBtn}
-                                    onClick={() => handleQuantityChange(-1)}
-                                    disabled={quantity <= 1}
-                                >
-                                    -
-                                </button>
-                                <input 
-                                    type="number" 
-                                    className={styles.quantityInput}
-                                    value={quantity}
-                                    min="1"
-                                    max={product.stockQuantity || 999}
-                                    onChange={(e) => {
-                                        const newQuantity = parseInt(e.target.value) || 1;
-                                        if (newQuantity >= 1 && (!product.stockQuantity || newQuantity <= product.stockQuantity)) {
-                                            setQuantity(newQuantity);
-                                        }
-                                    }}
-                                />
-                                <button
-                                    className={styles.quantityBtn}
-                                    onClick={() => handleQuantityChange(1)}
-                                    disabled={product.stockQuantity && quantity >= product.stockQuantity}
-                                >
-                                    +
-                                </button>
-                            </div>
-                            {product.stockQuantity && (
-                                <span className={styles.stockInfo}>재고: {product.stockQuantity}개</span>
-                            )}
-                        </div>
-
-                        {/* 구매 버튼 영역 */}
-                        <div className={styles.actionSection}>
-                            <div className={styles.buttonGroup}>
-                                <button
-                                    className={styles.cartButton}
-                                    onClick={handleAddToCart}
-                                    disabled={!selectedOption || selectedOption === '[필수] 옵션선택'}
-                                >
-                                    장바구니
-                                </button>
-                                
-                                <div className={styles.paymentGroup}>
-                                    <div className={styles.naverPayInfo}>
-                                        <span className={styles.naverBrand}>NAVER</span>
-                                        <div className={styles.paymentDetails}>
-                                            <span className={styles.pointInfo}>네이버포인트 적립</span>
-                                            <span className={styles.payMethod}>네이버페이</span>
-                                        </div>
-                                    </div>
-                                    <button
-                                        className={styles.payButton}
-                                        onClick={handleBuyNow}
-                                        disabled={isPaymentLoading || !selectedOption || selectedOption === '[필수] 옵션선택'}
-                                    >
-                                        {isPaymentLoading ? (
-                                            '결제 준비 중...'
-                                        ) : (
-                                            <Image
-                                                src="/btn_npaygr_paying.svg"
-                                                alt="주문하기"
-                                                width={251}
-                                                height={65}
-                                            />
-                                        )}
-                                    </button>
-                                </div>
-                                
-                                {/*<button className={styles.wishButton}>*/}
-                                {/*    <span>♡</span>*/}
-                                {/*</button>*/}
-                            </div>
+                        {/* 구매하러가기 버튼 */}
+                        <div className={styles.goToStoreSection}>
+                            <button
+                                className={styles.goToStoreBtn}
+                                onClick={handleGoToSmartStore}
+                            >
+                                구매하러가기
+                            </button>
                         </div>
                     </div>
                 </div>

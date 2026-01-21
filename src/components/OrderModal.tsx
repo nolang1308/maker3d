@@ -1,14 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
+import { useState, useEffect } from 'react';
 import styles from './OrderModal.module.scss';
 
 interface OrderModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: CustomerInfo) => void;
-  onNaverPayOrder: (data: CustomerInfo) => void;
+  onNaverPayOrder: (data: CustomerInfo) => Promise<string>; // 주문번호 반환
   totalPrice: number;
   fileCount: number;
 }
@@ -33,6 +32,24 @@ export default function OrderModal({
   const [isAgreed, setIsAgreed] = useState(false);
   const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [orderNumber, setOrderNumber] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 모달이 닫힐 때 상태 초기화
+  useEffect(() => {
+    if (!isOpen) {
+      setIsSuccess(false);
+      setOrderNumber('');
+      setName('');
+      setPhoneNumber('');
+      setEmail('');
+      setIsAgreed(false);
+      setIsOrderConfirmed(false);
+      setErrors({});
+      setIsSubmitting(false);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -42,11 +59,30 @@ export default function OrderModal({
   };
 
   const validatePhoneNumber = (phone: string) => {
-    const phoneRegex = /^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/;
+    // 010-0000-0000 형식만 허용
+    const phoneRegex = /^010-\d{4}-\d{4}$/;
     return phoneRegex.test(phone);
   };
 
-  const handleSubmit = () => {
+  // 전화번호 자동 포맷팅 (010-0000-0000)
+  const formatPhoneNumber = (value: string) => {
+    // 숫자만 추출
+    const numbers = value.replace(/[^\d]/g, '');
+
+    // 최대 11자리까지만 허용
+    const limited = numbers.slice(0, 11);
+
+    // 포맷팅
+    if (limited.length <= 3) {
+      return limited;
+    } else if (limited.length <= 7) {
+      return `${limited.slice(0, 3)}-${limited.slice(3)}`;
+    } else {
+      return `${limited.slice(0, 3)}-${limited.slice(3, 7)}-${limited.slice(7)}`;
+    }
+  };
+
+  const handleSubmit = async () => {
     const newErrors: {[key: string]: string} = {};
 
     if (!name.trim()) {
@@ -56,13 +92,13 @@ export default function OrderModal({
     if (!phoneNumber.trim()) {
       newErrors.phoneNumber = '전화번호를 입력해주세요.';
     } else if (!validatePhoneNumber(phoneNumber)) {
-      newErrors.phoneNumber = '올바른 전화번호 형식을 입력해주세요.';
+      newErrors.phoneNumber = '010-0000-0000 형식으로 입력해주세요.';
     }
 
     if (!email.trim()) {
       newErrors.email = '이메일을 입력해주세요.';
     } else if (!validateEmail(email)) {
-      newErrors.email = '올바른 이메일 형식을 입력해주세요.';
+      newErrors.email = '올바른 이메일 형식을 입력해주세요. (예: example@email.com)';
     }
 
     if (!isAgreed) {
@@ -78,8 +114,45 @@ export default function OrderModal({
       return;
     }
 
-    onNaverPayOrder({ name, phoneNumber, email });
+    setIsSubmitting(true);
+    try {
+      const resultOrderNumber = await onNaverPayOrder({ name, phoneNumber, email });
+      setOrderNumber(resultOrderNumber);
+      setIsSuccess(true);
+    } catch (error) {
+      console.error('주문 처리 오류:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  // 성공 모달
+  if (isSuccess) {
+    return (
+      <div className={styles.overlay} onClick={onClose}>
+        <div className={styles.successModal} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.successContent}>
+            <div className={styles.successIcon}>✓</div>
+            <h2 className={styles.successTitle}>견적 요청 완료</h2>
+            <p className={styles.successMessage}>
+              견적 요청이 성공적으로 접수되었습니다.
+            </p>
+            <div className={styles.orderNumberBox}>
+              <span className={styles.orderNumberLabel}>주문번호</span>
+              <span className={styles.orderNumberValue}>{orderNumber}</span>
+            </div>
+            <p className={styles.successInfo}>
+              담당자가 확인 후 연락드리겠습니다.<br />
+              마이페이지에서 견적 현황을 확인하실 수 있습니다.
+            </p>
+            <button className={styles.successBtn} onClick={onClose}>
+              확인
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -126,10 +199,11 @@ export default function OrderModal({
                 type="tel"
                 value={phoneNumber}
                 onChange={(e) => {
-                  setPhoneNumber(e.target.value);
+                  const formatted = formatPhoneNumber(e.target.value);
+                  setPhoneNumber(formatted);
                   setErrors({...errors, phoneNumber: ''});
                 }}
-                placeholder="010-1234-5678"
+                placeholder="010-0000-0000"
                 className={errors.phoneNumber ? styles.error : ''}
               />
               {errors.phoneNumber && <span className={styles.errorText}>{errors.phoneNumber}</span>}
@@ -208,21 +282,11 @@ export default function OrderModal({
             취소
           </button>
           <button
-            className={`${styles.submitBtn} ${(!isAgreed || !isOrderConfirmed) ? styles.disabled : ''}`}
+            className={`${styles.submitBtn} ${(!isAgreed || !isOrderConfirmed || isSubmitting) ? styles.disabled : ''}`}
             onClick={handleSubmit}
-            disabled={!isAgreed || !isOrderConfirmed}
-            style={{ 
-              background: (isAgreed && isOrderConfirmed) ? '#00de5a' : '#ccc',
-              cursor: (isAgreed && isOrderConfirmed) ? 'pointer' : 'not-allowed',
-              opacity: (isAgreed && isOrderConfirmed) ? 1 : 0.6
-            }}
+            disabled={!isAgreed || !isOrderConfirmed || isSubmitting}
           >
-            <Image
-              src="/btn_npaygr_paying.svg"
-              alt="주문하기"
-              width={200}
-              height={45}
-            />
+            {isSubmitting ? '처리 중...' : '견적 보내기'}
           </button>
         </div>
       </div>

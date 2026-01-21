@@ -125,9 +125,6 @@ function OrdersSection({ userEmail }: { userEmail: string }) {
                             <span className={`${styles.badge} ${styles[order.workStatus]}`}>
                                 {getStatusText(order.workStatus)}
                             </span>
-                            <span className={`${styles.badge} ${styles[order.paymentStatus]}`}>
-                                {getPaymentStatusText(order.paymentStatus)}
-                            </span>
                         </div>
                     </div>
 

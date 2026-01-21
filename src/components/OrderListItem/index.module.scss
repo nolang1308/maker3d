@@ -220,6 +220,33 @@
         }
       }
     }
+
+    // 결제완료 처리 버튼
+    .paymentCompleteBtn {
+      min-width: 110px;
+      height: 36px;
+      border-radius: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      @include label-large();
+      background-color: #5856D6;
+      color: #FFFFFF;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 0 16px;
+
+      &:hover {
+        background-color: #4240B0;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(88, 86, 214, 0.3);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
   }
 
   // 취소 버튼 컬럼
