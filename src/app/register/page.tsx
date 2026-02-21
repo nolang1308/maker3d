@@ -4,6 +4,7 @@ import styles from './page.module.scss';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { createUserDocument } from '@/services/userService';
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -67,11 +68,20 @@ export default function RegisterPage() {
         setError('');
 
         try {
-            await signUp(formData.email, formData.password);
-            
-            // 회원가입 성공 시 추가 사용자 정보를 저장할 수 있습니다.
-            // 예: Firestore에 사용자 프로필 정보 저장
-            
+            const userCredential = await signUp(formData.email, formData.password);
+
+            // Firestore에 사용자 프로필 정보 저장
+            if (userCredential) {
+                await createUserDocument(
+                    userCredential.uid,
+                    formData.email,
+                    undefined,
+                    'user',
+                    formData.name,
+                    formData.phone
+                );
+            }
+
             alert('회원가입이 완료되었습니다!');
             router.push('/login');
         } catch (error: any) {

@@ -216,6 +216,101 @@
   }
 }
 
+// 로그아웃 확인 모달
+.logoutModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+  animation: fadeIn 0.2s ease;
+}
+
+.logoutModalContent {
+  background-color: #ffffff;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 360px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.3s ease;
+}
+
+.logoutModalHeader {
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid #E5E5EA;
+
+  h2 {
+    @include title-large();
+    color: #1D1D1F;
+    margin: 0;
+  }
+}
+
+.logoutModalBody {
+  padding: 28px 24px;
+  text-align: center;
+
+  p {
+    @include title-medium();
+    color: #1D1D1F;
+    margin: 0;
+  }
+}
+
+.logoutModalFooter {
+  padding: 0 24px 24px 24px;
+  display: flex;
+  gap: 12px;
+
+  button {
+    flex: 1;
+    height: 48px;
+    border-radius: 12px;
+    border: none;
+    @include button-medium();
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+}
+
+.logoutCancelBtn {
+  background-color: #F5F5F7;
+  color: #1D1D1F;
+
+  &:hover {
+    background-color: #E5E5EA;
+  }
+}
+
+.logoutConfirmBtn {
+  background-color: #2493d8;
+  color: #ffffff;
+
+  &:hover {
+    background-color: #1a7bb8;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 // 햄버거 버튼
 .hamburger {
   display: none;

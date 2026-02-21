@@ -11,7 +11,8 @@ import {
   updateProfile,
   updateEmail,
   EmailAuthProvider,
-  reauthenticateWithCredential
+  reauthenticateWithCredential,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { auth } from '@/config/firebase';
 import { getUserRole, createUserDocument, updateUserData } from '@/services/userService';
@@ -21,11 +22,12 @@ interface AuthContextType {
   userRole: 'user' | 'admin' | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<User>;
   logout: () => Promise<void>;
   updateUserPassword: (currentPassword: string, newPassword: string) => Promise<void>;
   updateUserProfile: (displayName: string) => Promise<void>;
   updateUserEmail: (currentPassword: string, newEmail: string) => Promise<void>;
+  sendPasswordReset: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -78,11 +80,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string): Promise<User> => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      return userCredential.user;
     } catch (error) {
       console.error('회원가입 에러:', error);
+      throw error;
+    }
+  };
+
+  const sendPasswordReset = async (email: string): Promise<void> => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+      console.error('비밀번호 재설정 에러:', error);
       throw error;
     }
   };
@@ -157,7 +169,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     logout,
     updateUserPassword,
     updateUserProfile,
-    updateUserEmail
+    updateUserEmail,
+    sendPasswordReset
   };
 
   return (

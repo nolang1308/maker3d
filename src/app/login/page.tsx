@@ -3,6 +3,7 @@
 import styles from './page.module.scss';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
@@ -111,7 +112,7 @@ export default function LoginPage() {
                             <label htmlFor="autoLogin" className={styles.checkText}>자동 로그인</label>
                         </div>
                         <div className={styles.accountActions}>
-                            <span className={styles.accountLink}>계정찾기</span>
+                            <Link href="/find-account" className={styles.accountLink}>계정찾기</Link>
                             <span className={styles.separator}>|</span>
                             <a href="/signup" className={styles.accountLink}>회원가입</a>
                         </div>

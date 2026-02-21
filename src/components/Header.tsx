@@ -9,13 +9,25 @@ import { useState } from 'react';
 const Header = () => {
     const { user, userRole, logout } = useAuth();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
-    const handleLogout = async () => {
+    const handleLogoutClick = () => {
+        setIsLogoutModalOpen(true);
+        setIsMobileMenuOpen(false);
+    };
+
+    const handleLogoutConfirm = async () => {
         try {
             await logout();
         } catch (error) {
             console.error('로그아웃 에러:', error);
+        } finally {
+            setIsLogoutModalOpen(false);
         }
+    };
+
+    const handleLogoutCancel = () => {
+        setIsLogoutModalOpen(false);
     };
 
     const toggleMobileMenu = () => {
@@ -78,7 +90,7 @@ const Header = () => {
                             </Link>
                             <span className={styles.userAction}>·</span>
                             <button
-                                onClick={handleLogout}
+                                onClick={handleLogoutClick}
                                 className={styles.userAction}
                                 style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}
                             >
@@ -156,10 +168,7 @@ const Header = () => {
                                 {user.email?.split('@')[0]}님
                             </Link>
                             <button
-                                onClick={() => {
-                                    handleLogout();
-                                    closeMobileMenu();
-                                }}
+                                onClick={handleLogoutClick}
                                 className={styles.mobileNavItem}
                                 style={{ background: 'none', border: 'none', color: 'white', textAlign: 'left', width: '100%' }}
                             >
@@ -189,6 +198,28 @@ const Header = () => {
                 </nav>
             </div>
         </header>
+
+            {/* 로그아웃 확인 모달 */}
+            {isLogoutModalOpen && (
+                <div className={styles.logoutModalOverlay} onClick={handleLogoutCancel}>
+                    <div className={styles.logoutModalContent} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.logoutModalHeader}>
+                            <h2>로그아웃</h2>
+                        </div>
+                        <div className={styles.logoutModalBody}>
+                            <p>로그아웃을 하시겠습니까?</p>
+                        </div>
+                        <div className={styles.logoutModalFooter}>
+                            <button className={styles.logoutCancelBtn} onClick={handleLogoutCancel}>
+                                취소
+                            </button>
+                            <button className={styles.logoutConfirmBtn} onClick={handleLogoutConfirm}>
+                                로그아웃
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };

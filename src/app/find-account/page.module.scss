@@ -1,0 +1,156 @@
+@use 'sass:color';
+@import '../../styles/style-system';
+
+.container {
+  width: 100%;
+  margin-top: 120px;
+  margin-bottom: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+
+  @media (max-width: 800px) {
+    margin-top: 60px;
+    margin-bottom: 60px;
+    padding: 0 20px;
+  }
+}
+
+.innerContainer {
+  width: 413px;
+
+  @media (max-width: 800px) {
+    width: 100%;
+    max-width: 413px;
+  }
+}
+
+.pageTitle {
+  @include headline-medium();
+  color: #0a0a0a;
+  margin-bottom: 32px;
+}
+
+// 탭
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #E8E9EB;
+  margin-bottom: 32px;
+}
+
+.tab {
+  @include button-medium();
+  color: #9D9D9D;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 12px 0;
+  margin-right: 32px;
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color 0.2s, border-color 0.2s;
+
+  &.activeTab {
+    color: #2493D8;
+    border-bottom-color: #2493D8;
+  }
+
+  &:hover:not(.activeTab) {
+    color: #4F5558;
+  }
+}
+
+// 입력 폼
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.label {
+  @include label-large();
+  color: #828A8F;
+  margin: 0;
+}
+
+.input {
+  width: 100%;
+  height: 48px;
+  padding: 12px 20px;
+  border: 1px solid #E8E9EB;
+  border-radius: 8px;
+  color: #0a0a0a;
+  background: white;
+  @include body-small();
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: #9D9D9D;
+    @include body-small();
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #2493D8;
+  }
+}
+
+// 버튼
+.submitButton {
+  margin-top: 24px;
+  width: 100%;
+  height: 58px;
+  background: #D2D5D6;
+  border: none;
+  border-radius: 8px;
+  @include button-medium();
+  color: #FAFAFB;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &.active {
+    background: #2493D8;
+
+    &:hover {
+      background: #1e7ec0;
+    }
+  }
+
+  &:not(.active):hover {
+    background: #b8bec1;
+  }
+}
+
+// 에러 메시지
+.errorMessage {
+  @include body-small();
+  color: #FF4444;
+  background-color: #FFF5F5;
+  border: 1px solid #FFB3B3;
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-top: 16px;
+  text-align: center;
+  font-weight: 500;
+}
+
+// 성공 메시지
+.successMessage {
+  @include body-small();
+  color: #1a7dc4;
+  background-color: #F0F9FF;
+  border: 1px solid #2493D8;
+  border-radius: 6px;
+  padding: 16px;
+  margin-top: 16px;
+  text-align: center;
+
+  .foundEmail {
+    @include title-small();
+    color: #2493D8;
+    margin-top: 8px;
+    word-break: break-all;
+  }
+}

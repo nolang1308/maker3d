@@ -1,10 +1,12 @@
-import { doc, getDoc, setDoc, updateDoc, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, Timestamp, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 
 export interface UserData {
   uid: string;
   email: string;
   displayName?: string;
+  name?: string;
+  phone?: string;
   role: 'user' | 'admin';
   createdAt: Date;
   updatedAt: Date;
@@ -15,11 +17,13 @@ export async function createUserDocument(
   uid: string,
   email: string,
   displayName?: string,
-  role: 'user' | 'admin' = 'user'
+  role: 'user' | 'admin' = 'user',
+  name?: string,
+  phone?: string
 ): Promise<void> {
   try {
     const userRef = doc(db, 'users', uid);
-    const userData = {
+    const userData: Record<string, unknown> = {
       uid,
       email,
       displayName: displayName || email.split('@')[0],
@@ -28,10 +32,32 @@ export async function createUserDocument(
       updatedAt: Timestamp.now()
     };
 
+    if (name) userData.name = name;
+    if (phone) userData.phone = phone;
+
     await setDoc(userRef, userData);
     console.log('사용자 문서 생성 완료:', uid);
   } catch (error) {
     console.error('사용자 문서 생성 에러:', error);
+    throw error;
+  }
+}
+
+// 이름과 전화번호로 사용자 이메일 찾기
+export async function findUserByNameAndPhone(name: string, phone: string): Promise<string | null> {
+  try {
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('name', '==', name), where('phone', '==', phone));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const data = querySnapshot.docs[0].data();
+      return data.email || null;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('사용자 찾기 에러:', error);
     throw error;
   }
 }
