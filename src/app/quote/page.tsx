@@ -548,7 +548,35 @@ export default function QuotePage() {
 
             await saveOrder(orderNumber, orderData);
 
-            // 5. 폼 초기화
+            // 5. 이메일 알림 발송
+            try {
+                await fetch('/api/send-order-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        orderNumber: orderNumber,
+                        customerName: customerInfo.name,
+                        phoneNumber: customerInfo.phoneNumber,
+                        email: customerInfo.email,
+                        totalPrice: totalAmount,
+                        files: fileItems.map(item => ({
+                            fileName: item.fileName,
+                            material: item.material,
+                            color: item.color,
+                            quantity: item.quantity,
+                            price: item.price
+                        })),
+                        orderDate: `${orderDate} ${orderTime}`
+                    })
+                });
+            } catch (emailError) {
+                console.error('이메일 발송 오류:', emailError);
+                // 이메일 발송 실패해도 주문은 정상 처리
+            }
+
+            // 6. 폼 초기화
             setFileItems([]);
             setMaterial('');
             setColor('');

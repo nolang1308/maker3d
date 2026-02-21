@@ -12,6 +12,7 @@
 
 
   .ManagerSignatureBar {
+    z-index: 999;
     position: fixed;
     top: 75px; // 상단 바 높이에 맞게 조정
 
