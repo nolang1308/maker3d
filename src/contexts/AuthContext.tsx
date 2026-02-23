@@ -45,6 +45,7 @@ const ADMIN_EMAILS = [
   'admin@maker3d.com',
   'manager@maker3d.com',
   'suminhwang1308@gmail.com',
+    '3dstore@bittech3d.com'
   // 여기에 관리자 이메일 추가
 ];
 
