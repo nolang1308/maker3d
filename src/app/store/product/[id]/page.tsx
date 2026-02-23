@@ -804,19 +804,19 @@ export default function ProductDetailPage() {
                     <div className={styles.line}></div>
                 </div>
 
-                <div className={styles.categoryWrapper}>
-                    {tabs.map((tab, index) => (
-                        <div key={`third-${tab.name}`} className={styles.tabGroup}>
-                            <div
-                                className={`${styles.tab} ${tab.name === '쇼핑가이드' ? styles.active : ''}`}
-                            >
-                                {tab.name}
-                                {tab.count && <span className={styles.count}>({tab.count})</span>}
-                            </div>
-                            {index < tabs.length - 1 && <div className={styles.separator}>|</div>}
-                        </div>
-                    ))}
-                </div>
+                {/*<div className={styles.categoryWrapper}>*/}
+                {/*    {tabs.map((tab, index) => (*/}
+                {/*        <div key={`third-${tab.name}`} className={styles.tabGroup}>*/}
+                {/*            <div*/}
+                {/*                className={`${styles.tab} ${tab.name === '쇼핑가이드' ? styles.active : ''}`}*/}
+                {/*            >*/}
+                {/*                {tab.name}*/}
+                {/*                {tab.count && <span className={styles.count}>({tab.count})</span>}*/}
+                {/*            </div>*/}
+                {/*            {index < tabs.length - 1 && <div className={styles.separator}>|</div>}*/}
+                {/*        </div>*/}
+                {/*    ))}*/}
+                {/*</div>*/}
 
 
 
