@@ -131,6 +131,23 @@ export default function Home() {
                         />
                         <p className={styles.storeButtonText}>카카오톡 상담하기</p>
                     </div>
+
+                    <a
+                        href="https://talk.naver.com/ct/w4e4gt?frm=psf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.naverTalkButton}
+                    >
+                        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="1" y="1" width="20" height="16" rx="4" fill="white" stroke="black" strokeWidth="1.5"/>
+                            <polygon points="7,17 11,21 11,17" fill="white" stroke="black" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"/>
+                            <line x1="7" y1="17" x2="11" y2="17" stroke="white" strokeWidth="2"/>
+                            <circle cx="7" cy="9" r="1.5" fill="black"/>
+                            <circle cx="11" cy="9" r="1.5" fill="black"/>
+                            <circle cx="15" cy="9" r="1.5" fill="black"/>
+                        </svg>
+                        <p className={styles.storeButtonText}>네이버 톡톡</p>
+                    </a>
                 </div>
                 <div className={styles.underArrow}>
                     <Image

@@ -35,6 +35,7 @@ export default function OrderModal({
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   // 모달이 닫힐 때 상태 초기화
   useEffect(() => {
@@ -126,10 +127,32 @@ export default function OrderModal({
     }
   };
 
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(orderNumber);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch {
+      const el = document.createElement('textarea');
+      el.value = orderNumber;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
+
+  const handleConfirm = () => {
+    onClose();
+    window.open('https://talk.naver.com/ct/w4e4gt?frm=psf', '_blank', 'noopener,noreferrer');
+  };
+
   // 성공 모달
   if (isSuccess) {
     return (
-      <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.overlay}>
         <div className={styles.successModal} onClick={(e) => e.stopPropagation()}>
           <div className={styles.successContent}>
             <div className={styles.successIcon}>✓</div>
@@ -141,12 +164,17 @@ export default function OrderModal({
               <span className={styles.orderNumberLabel}>주문번호</span>
               <span className={styles.orderNumberValue}>{orderNumber}</span>
             </div>
-            <p className={styles.successInfo}>
-              담당자가 확인 후 연락드리겠습니다.<br />
-              마이페이지에서 견적 현황을 확인하실 수 있습니다.
+            <button
+              className={`${styles.copyBtn} ${isCopied ? styles.copied : ''}`}
+              onClick={handleCopy}
+            >
+              {isCopied ? '✓ 복사됨' : '주문번호 복사하기'}
+            </button>
+            <p className={styles.naverGuideText}>
+              위 주문 번호를 복사하여, 다음 네이버 톡톡 페이지로 주문번호를 알려주세요.
             </p>
-            <button className={styles.successBtn} onClick={onClose}>
-              확인
+            <button className={styles.successBtn} onClick={handleConfirm}>
+              확인 (네이버 톡톡으로 이동)
             </button>
           </div>
         </div>

@@ -50,6 +50,20 @@
       }
     }
 
+    &.naverTalk {
+      background-color: #FFFFFF;
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+
+      &:hover {
+        background-color: #F5F5F5;
+      }
+
+      .menuText {
+        color: #000000;
+        @include button-medium()
+      }
+    }
+
     &.topButtonWrapper {
       background-color: transparent;
       display: flex;
@@ -151,6 +165,15 @@
 
         &:hover {
           background-color: #FDD800;
+        }
+      }
+
+      &.naverTalk {
+        background-color: #FFFFFF;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.08);
+
+        &:hover {
+          background-color: #F5F5F5;
         }
       }
     }

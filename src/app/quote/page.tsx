@@ -39,6 +39,7 @@ export default function QuotePage() {
     const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
     const [isProcessingOrder, setIsProcessingOrder] = useState(false);
     const [hasCalculatedEstimate, setHasCalculatedEstimate] = useState(false); // 견적 계산 완료 상태
+    const [isFileSizeModalOpen, setIsFileSizeModalOpen] = useState(false); // 파일 용량 초과 모달
     const [isTermsExpanded, setIsTermsExpanded] = useState(false); // 이용약관 확장 상태
     const [isPaymentInfoExpanded, setIsPaymentInfoExpanded] = useState(false); // 상품결제정보 확장 상태
     const [isPrivacyPolicyExpanded, setIsPrivacyPolicyExpanded] = useState(false); // 개인정보처리방침 확장 상태
@@ -111,9 +112,19 @@ export default function QuotePage() {
         }
     };
 
+    const FILE_SIZE_LIMIT = 64 * 1024 * 1024; // 64MB
+
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const files = Array.from(e.target.files);
+
+            const oversized = files.some(file => file.size > FILE_SIZE_LIMIT);
+            if (oversized) {
+                setIsFileSizeModalOpen(true);
+                e.target.value = '';
+                return;
+            }
+
             setUploadedFiles(files);
             setCurrentPreviewFile(files[0]);
 
@@ -206,6 +217,12 @@ export default function QuotePage() {
         const stlFiles = files.filter(file => file.name.toLowerCase().endsWith('.stl'));
 
         if (stlFiles.length > 0) {
+            const oversized = stlFiles.some(file => file.size > FILE_SIZE_LIMIT);
+            if (oversized) {
+                setIsFileSizeModalOpen(true);
+                return;
+            }
+
             setUploadedFiles(stlFiles);
             setCurrentPreviewFile(stlFiles[0]);
             // 드래그 앤 드롭 시에도 견적 상태 초기화
@@ -705,8 +722,23 @@ export default function QuotePage() {
                     </div>
 
                 </div>
-                <p className={styles.subTitle}>3D프린팅의 예상견적을 확인할 수 있습니다.</p>
-                <p className={styles.subTitle}>실제견적요청 시, 데이터를 압축하여 첨부 부탁드립니다.</p>
+                <div className={styles.subTitleRow}>
+                    <div>
+                        <p className={styles.subTitle}>3D프린팅의 예상견적을 확인할 수 있습니다.</p>
+                        <p className={styles.subTitle}>실제견적요청 시, 데이터를 압축하여 첨부 부탁드립니다.</p>
+                    </div>
+                    <div className={styles.consultBanner}>
+                        <p className={styles.consultText}>앗! 아직 파일이 준비되지 않았나요?<br/>전문가와 상담하여 3D파일 설계부터 시작해보세요!</p>
+                        <a
+                            href="https://talk.naver.com/ct/w4e4gt?frm=psf"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.consultBtn}
+                        >
+                            상담하기
+                        </a>
+                    </div>
+                </div>
 
                 <div className={styles.line}></div>
                 <div className={styles.fileUploader}>
@@ -1246,6 +1278,64 @@ export default function QuotePage() {
                 </div>
 
             </div>
+
+            {/* 파일 용량 초과 모달 */}
+            {isFileSizeModalOpen && (
+                <div
+                    onClick={() => setIsFileSizeModalOpen(false)}
+                    style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(0,0,0,0.5)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        zIndex: 9999
+                    }}
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            background: 'white', borderRadius: '16px',
+                            width: '90%', maxWidth: '420px',
+                            padding: '40px 32px',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center',
+                            textAlign: 'center',
+                            boxShadow: '0 4px 24px rgba(0,0,0,0.18)'
+                        }}
+                    >
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+                        <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#111827', margin: '0 0 12px 0' }}>
+                            파일이 너무 큽니다!
+                        </h3>
+                        <p style={{ fontSize: '15px', color: '#4B5563', lineHeight: 1.6, margin: '0 0 20px 0' }}>
+                            64MB 이상 파일은 아래 이메일로 파일을 보내주세요!
+                        </p>
+                        <a
+                            href="mailto:3dstore@bittech3d.com"
+                            style={{
+                                display: 'inline-block',
+                                fontSize: '15px', fontWeight: 600,
+                                color: '#2493D8', background: '#F0F9FF',
+                                border: '1px solid #2493D8', borderRadius: '8px',
+                                padding: '10px 24px', textDecoration: 'none',
+                                marginBottom: '24px'
+                            }}
+                        >
+                            3dstore@bittech3d.com
+                        </a>
+                        <button
+                            onClick={() => setIsFileSizeModalOpen(false)}
+                            style={{
+                                width: '100%', height: '48px',
+                                background: '#2493D8', color: 'white',
+                                fontSize: '16px', fontWeight: 600,
+                                border: 'none', borderRadius: '8px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            확인
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* 주문 정보 입력 모달 */}
             <OrderModal

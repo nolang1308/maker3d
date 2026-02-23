@@ -145,6 +145,40 @@
         }
       }
 
+      .naverTalkButton {
+        gap: 10px;
+        width: 194px;
+        height: 80px;
+        background-color: white;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 2px 30px rgba(0, 0, 0, 0.25);
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+
+        &:visited {
+          color: inherit;
+        }
+
+        &:hover {
+          color: inherit;
+        }
+
+        @media (max-width: 1024px) {
+          width: 100%;
+          height: 60px;
+        }
+
+        .storeButtonText {
+          @include title-small();
+          color: #0a0a0a;
+        }
+      }
+
     }
 
     .underArrow {

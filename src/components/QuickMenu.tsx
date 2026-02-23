@@ -39,6 +39,10 @@ export default function QuickMenu() {
         alert('카카오톡 문의 링크가 곧 추가될 예정입니다.');
     };
 
+    const handleNaverTalkClick = () => {
+        window.open('https://talk.naver.com/ct/w4e4gt?frm=psf', '_blank', 'noopener,noreferrer');
+    };
+
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
     };
@@ -67,6 +71,19 @@ export default function QuickMenu() {
                     height={36}
                 />
                 <p className={styles.menuText}>카카오톡<br/>문의하기</p>
+            </div>
+
+            {/* 네이버 톡톡 */}
+            <div className={`${styles.menuItem} ${styles.naverTalk}`} onClick={handleNaverTalkClick}>
+                <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="1.5" y="1.5" width="27" height="20" rx="5" fill="white" stroke="black" strokeWidth="2"/>
+                    <polygon points="9,21.5 14,28 14,21.5" fill="white" stroke="black" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"/>
+                    <line x1="9" y1="21.5" x2="14" y2="21.5" stroke="white" strokeWidth="2.5"/>
+                    <circle cx="9.5" cy="12" r="2" fill="black"/>
+                    <circle cx="15" cy="12" r="2" fill="black"/>
+                    <circle cx="20.5" cy="12" r="2" fill="black"/>
+                </svg>
+                <p className={styles.menuText}>네이버<br/>톡톡</p>
             </div>
 
             {/* 페이지 상단으로 */}
@@ -107,6 +124,18 @@ export default function QuickMenu() {
                         width={28}
                         height={24}
                     />
+                </div>
+
+                {/* 네이버 톡톡 */}
+                <div className={`${styles.mobileMenuItem} ${styles.naverTalk}`} onClick={handleNaverTalkClick}>
+                    <svg width="24" height="24" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="1.5" y="1.5" width="27" height="20" rx="5" fill="white" stroke="black" strokeWidth="2"/>
+                        <polygon points="9,21.5 14,28 14,21.5" fill="white" stroke="black" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"/>
+                        <line x1="9" y1="21.5" x2="14" y2="21.5" stroke="white" strokeWidth="2.5"/>
+                        <circle cx="9.5" cy="12" r="2" fill="black"/>
+                        <circle cx="15" cy="12" r="2" fill="black"/>
+                        <circle cx="20.5" cy="12" r="2" fill="black"/>
+                    </svg>
                 </div>
 
                 {/* 페이지 상단으로 */}
