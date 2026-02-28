@@ -1,6 +1,16 @@
 import { doc, getDoc, setDoc, updateDoc, Timestamp, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 
+export interface UserAgreements {
+  terms: boolean;        // 이용약관 동의 (필수)
+  privacy: boolean;      // 개인정보 수집 및 이용동의 (필수)
+  marketing: boolean;    // 마케팅 활용 동의 및 광고 수신 동의 (선택)
+  message: boolean;      // 메시지 수신 동의 (선택)
+  email: boolean;        // E-Mail 수신 동의 (선택)
+  ageVerified: boolean;  // 만 14세 이상 (필수)
+  agreedAt: Date;        // 동의 일시
+}
+
 export interface UserData {
   uid: string;
   email: string;
@@ -8,6 +18,7 @@ export interface UserData {
   name?: string;
   phone?: string;
   role: 'user' | 'admin';
+  agreements?: UserAgreements;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,21 +30,29 @@ export async function createUserDocument(
   displayName?: string,
   role: 'user' | 'admin' = 'user',
   name?: string,
-  phone?: string
+  phone?: string,
+  agreements?: Omit<UserAgreements, 'agreedAt'>
 ): Promise<void> {
   try {
     const userRef = doc(db, 'users', uid);
+    const now = Timestamp.now();
     const userData: Record<string, unknown> = {
       uid,
       email,
       displayName: displayName || email.split('@')[0],
       role,
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now()
+      createdAt: now,
+      updatedAt: now
     };
 
     if (name) userData.name = name;
     if (phone) userData.phone = phone;
+    if (agreements) {
+      userData.agreements = {
+        ...agreements,
+        agreedAt: now
+      };
+    }
 
     await setDoc(userRef, userData);
     console.log('사용자 문서 생성 완료:', uid);
@@ -94,7 +113,13 @@ export async function getUserData(uid: string): Promise<UserData | null> {
         uid: data.uid,
         email: data.email,
         displayName: data.displayName,
+        name: data.name,
+        phone: data.phone,
         role: data.role || 'user',
+        agreements: data.agreements ? {
+          ...data.agreements,
+          agreedAt: data.agreements.agreedAt?.toDate() || new Date()
+        } : undefined,
         createdAt: data.createdAt?.toDate() || new Date(),
         updatedAt: data.updatedAt?.toDate() || new Date()
       };

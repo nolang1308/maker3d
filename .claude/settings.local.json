@@ -38,7 +38,18 @@
       "Bash(then grep -E \"NAVER.*PAY\" .env.local)",
       "Bash(else echo \".env.local 파일 없음\")",
       "Bash(fi)",
-      "Bash(head:*)"
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(grep:*)",
+      "Bash(npx firebase:*)",
+      "Bash(which firebase 2>/dev/null && firebase --version 2>/dev/null)",
+      "Bash(/Users/dotory/google-cloud-sdk/bin/gsutil cors:*)",
+      "Bash(/Users/dotory/google-cloud-sdk/bin/gsutil ls:*)",
+      "Bash(/Users/dotory/google-cloud-sdk/bin/gcloud config:*)",
+      "Bash(/Users/dotory/google-cloud-sdk/bin/gcloud storage:*)",
+      "Bash(ls:*)",
+      "Bash(/Users/dotory/.npm-global/bin/firebase deploy:*)",
+      "Bash(/Users/dotory/.npm-global/bin/firebase login:list:*)"
     ]
   }
 }

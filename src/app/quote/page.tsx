@@ -22,6 +22,84 @@ interface FileItem {
     savedFilePath?: string; // 백엔드에 저장된 파일 경로
 }
 
+interface ColorOption {
+    name: string;
+    code: string;
+    hex: string;
+    available: boolean;
+}
+
+const TRANSPARENT_SENTINEL = 'TRANSPARENT';
+
+const MATERIAL_COLORS: Record<string, ColorOption[]> = {
+    '광경화성 레진': [
+        { name: '화이트',    code: 'W001', hex: '#F5F5F0', available: true },
+        { name: '블랙',      code: 'B001', hex: '#1A1A1A', available: true },
+        { name: '그레이',    code: 'G001', hex: '#9E9E9E', available: true },
+        { name: '다크그레이', code: 'G002', hex: '#424242', available: true },
+        { name: '빨강',      code: 'R001', hex: '#D32F2F', available: true },
+        { name: '파랑',      code: 'B002', hex: '#1976D2', available: true },
+        { name: '네이비',    code: 'N001', hex: '#0D2859', available: true },
+        { name: '초록',      code: 'GR01', hex: '#2E7D32', available: true },
+        { name: '노랑',      code: 'Y001', hex: '#FDD835', available: true },
+        { name: '주황',      code: 'O001', hex: '#F57C00', available: true },
+        { name: '보라',      code: 'P001', hex: '#6A1B9A', available: true },
+        { name: '청록',      code: 'C001', hex: '#00838F', available: true },
+        { name: '투명',      code: 'T001', hex: TRANSPARENT_SENTINEL, available: true },
+    ],
+    'PLA': [
+        { name: '화이트',    code: 'W001', hex: '#F5F5F0', available: true },
+        { name: '블랙',      code: 'B001', hex: '#1A1A1A', available: true },
+        { name: '그레이',    code: 'G001', hex: '#9E9E9E', available: true },
+        { name: '다크그레이', code: 'G002', hex: '#424242', available: true },
+        { name: '빨강',      code: 'R001', hex: '#D32F2F', available: true },
+        { name: '파랑',      code: 'B002', hex: '#1976D2', available: true },
+        { name: '네이비',    code: 'N001', hex: '#0D2859', available: true },
+        { name: '초록',      code: 'GR01', hex: '#2E7D32', available: true },
+        { name: '노랑',      code: 'Y001', hex: '#FDD835', available: true },
+        { name: '주황',      code: 'O001', hex: '#F57C00', available: true },
+        { name: '보라',      code: 'P001', hex: '#6A1B9A', available: true },
+        { name: '청록',      code: 'C001', hex: '#00838F', available: true },
+    ],
+    'ABS': [
+        { name: '화이트',    code: 'W001', hex: '#F5F5F0', available: true },
+        { name: '블랙',      code: 'B001', hex: '#1A1A1A', available: true },
+        { name: '그레이',    code: 'G001', hex: '#9E9E9E', available: true },
+        { name: '다크그레이', code: 'G002', hex: '#424242', available: true },
+        { name: '빨강',      code: 'R001', hex: '#D32F2F', available: true },
+        { name: '파랑',      code: 'B002', hex: '#1976D2', available: true },
+        { name: '네이비',    code: 'N001', hex: '#0D2859', available: true },
+        { name: '초록',      code: 'GR01', hex: '#2E7D32', available: true },
+        { name: '노랑',      code: 'Y001', hex: '#FDD835', available: true },
+        { name: '주황',      code: 'O001', hex: '#F57C00', available: true },
+        { name: '보라',      code: 'P001', hex: '#6A1B9A', available: true },
+        { name: '청록',      code: 'C001', hex: '#00838F', available: true },
+    ],
+    'PETG': [
+        { name: '화이트',    code: 'W001', hex: '#F5F5F0', available: true },
+        { name: '블랙',      code: 'B001', hex: '#1A1A1A', available: true },
+        { name: '그레이',    code: 'G001', hex: '#9E9E9E', available: true },
+        { name: '다크그레이', code: 'G002', hex: '#424242', available: true },
+        { name: '빨강',      code: 'R001', hex: '#D32F2F', available: true },
+        { name: '파랑',      code: 'B002', hex: '#1976D2', available: true },
+        { name: '네이비',    code: 'N001', hex: '#0D2859', available: true },
+        { name: '초록',      code: 'GR01', hex: '#2E7D32', available: true },
+        { name: '노랑',      code: 'Y001', hex: '#FDD835', available: true },
+        { name: '주황',      code: 'O001', hex: '#F57C00', available: true },
+        { name: '보라',      code: 'P001', hex: '#6A1B9A', available: true },
+        { name: '청록',      code: 'C001', hex: '#00838F', available: true },
+        { name: '투명',      code: 'T001', hex: TRANSPARENT_SENTINEL, available: true },
+    ],
+    'TPU': [
+        { name: '화이트',    code: 'W001', hex: '#F5F5F0', available: true },
+        { name: '블랙',      code: 'B001', hex: '#1A1A1A', available: true },
+        { name: '그레이',    code: 'G001', hex: '#9E9E9E', available: true },
+        { name: '빨강',      code: 'R001', hex: '#D32F2F', available: true },
+        { name: '파랑',      code: 'B002', hex: '#1976D2', available: true },
+        { name: '초록',      code: 'GR01', hex: '#2E7D32', available: true },
+    ],
+};
+
 export default function QuotePage() {
     const router = useRouter();
     const { user, loading } = useAuth();
@@ -40,6 +118,9 @@ export default function QuotePage() {
     const [isProcessingOrder, setIsProcessingOrder] = useState(false);
     const [hasCalculatedEstimate, setHasCalculatedEstimate] = useState(false); // 견적 계산 완료 상태
     const [isFileSizeModalOpen, setIsFileSizeModalOpen] = useState(false); // 파일 용량 초과 모달
+    const [isPrintSizeModalOpen, setIsPrintSizeModalOpen] = useState(false); // 출력 크기 초과 모달
+    const [isPrintSizeExceeded, setIsPrintSizeExceeded] = useState(false); // 출력 크기 초과 여부 (버튼 차단)
+    const [overSizeDimensions, setOverSizeDimensions] = useState<{ x: number; y: number; z: number } | null>(null); // 초과된 치수
     const [isTermsExpanded, setIsTermsExpanded] = useState(false); // 이용약관 확장 상태
     const [isPaymentInfoExpanded, setIsPaymentInfoExpanded] = useState(false); // 상품결제정보 확장 상태
     const [isPrivacyPolicyExpanded, setIsPrivacyPolicyExpanded] = useState(false); // 개인정보처리방침 확장 상태
@@ -85,6 +166,15 @@ export default function QuotePage() {
         }
     }, [user, loading]);
 
+    useEffect(() => {
+        if (!material) { setColor(''); return; }
+        const available = MATERIAL_COLORS[material] ?? [];
+        if (!available.some((c) => c.name === color && c.available)) {
+            setColor('');
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [material]);
+
     const increaseQuantity = () => {
         setQuantity(prev => prev + 1);
     };
@@ -113,6 +203,18 @@ export default function QuotePage() {
     };
 
     const FILE_SIZE_LIMIT = 64 * 1024 * 1024; // 64MB
+    const PRINT_SIZE_LIMIT = 350; // 최대 출력 크기 (mm)
+
+    const handleDimensions = (dims: { x: number; y: number; z: number }) => {
+        if (dims.x > PRINT_SIZE_LIMIT || dims.y > PRINT_SIZE_LIMIT || dims.z > PRINT_SIZE_LIMIT) {
+            setOverSizeDimensions(dims);
+            setIsPrintSizeExceeded(true);
+            setIsPrintSizeModalOpen(true);
+        } else {
+            setIsPrintSizeExceeded(false);
+            setOverSizeDimensions(null);
+        }
+    };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -133,6 +235,8 @@ export default function QuotePage() {
             setEstimatedPrice(0);
             setPrintTime('');
             setHasCalculatedEstimate(false); // 견적 계산 상태 초기화
+            setIsPrintSizeExceeded(false);
+            setOverSizeDimensions(null);
         }
     };
 
@@ -214,7 +318,10 @@ export default function QuotePage() {
         setIsDragOver(false);
 
         const files = Array.from(e.dataTransfer.files);
-        const stlFiles = files.filter(file => file.name.toLowerCase().endsWith('.stl'));
+        const ALLOWED_EXT = ['.stl', '.obj', '.stp', '.step'];
+        const stlFiles = files.filter(file =>
+            ALLOWED_EXT.some(ext => file.name.toLowerCase().endsWith(ext))
+        );
 
         if (stlFiles.length > 0) {
             const oversized = stlFiles.some(file => file.size > FILE_SIZE_LIMIT);
@@ -230,8 +337,10 @@ export default function QuotePage() {
             setEstimatedPrice(0);
             setPrintTime('');
             setHasCalculatedEstimate(false);
+            setIsPrintSizeExceeded(false);
+            setOverSizeDimensions(null);
         } else {
-            alert('STL 파일만 업로드 가능합니다.');
+            alert('STL, OBJ, STP 파일만 업로드 가능합니다.');
         }
     };
 
@@ -756,7 +865,7 @@ export default function QuotePage() {
                             height={26}
                             className={styles.logoIcon}
                         />
-                        <p>STL 파일을 드래그 하거나, 파일을 올려주세요.</p>
+                        <p>STL / OBJ / STP 파일을 드래그 하거나, 파일을 올려주세요.</p>
                         <Image
                             src="/download_divider.svg"
                             alt="MAKER 3D Logo"
@@ -767,7 +876,7 @@ export default function QuotePage() {
                         <input
                             type="file"
                             multiple
-                            accept=".stl"
+                            accept=".stl,.obj,.stp,.step"
                             onChange={handleFileUpload}
                             style={{display: 'none'}}
                             id="fileInput"
@@ -778,14 +887,23 @@ export default function QuotePage() {
 
 
                     </div>
-                    <p className={styles.in}>.stl 파일만 올려주세요.</p>
+                    <p className={styles.in}>.stl / .obj / .stp 파일을 올려주세요.</p>
 
 
                 </div>
                 <div className={styles.selectOption}>
                     <div className={styles.viewer}>
                         {currentPreviewFile ? (
-                            <STLViewer file={currentPreviewFile} className={styles.stlViewer} />
+                            <STLViewer
+                                file={currentPreviewFile}
+                                className={styles.stlViewer}
+                                onDimensions={handleDimensions}
+                                modelColor={
+                                    color && material
+                                        ? (MATERIAL_COLORS[material] ?? []).find((c) => c.name === color)?.hex
+                                        : undefined
+                                }
+                            />
                         ) : (
                             <div className={styles.viewerPlaceholder}>
                                 <p>STL 파일을 업로드하면</p>
@@ -812,20 +930,51 @@ export default function QuotePage() {
                             </select>
                         </div>
                         <div className={styles.divider}></div>
-                        <div className={styles.optionDropbox}>
-                            <span>색상 <span style={{color: '#FF4040', marginLeft: '2px'}}>*</span></span>
-                            <select
-                                className={styles.dropdown}
-                                value={color}
-                                onChange={(e) => setColor(e.target.value)}
-                            >
-                                <option value="">선택해주세요</option>
-                                <option value="G40-JG">G40-JG</option>
-                                <option value="화이트">화이트</option>
-                                <option value="블랙">블랙</option>
-                                <option value="그레이">그레이</option>
-                                <option value="투명">투명</option>
-                            </select>
+                        <div className={styles.colorPickerSection}>
+                            <div className={styles.colorPickerHeader}>
+                                <span>색상 <span style={{ color: '#FF4040', marginLeft: '2px' }}>*</span></span>
+                                {color && material && (() => {
+                                    const found = (MATERIAL_COLORS[material] ?? []).find((c) => c.name === color);
+                                    return found
+                                        ? <span className={styles.colorSelectedLabel}>{found.hex === TRANSPARENT_SENTINEL ? found.name : `${found.name}(${found.hex})`}</span>
+                                        : null;
+                                })()}
+                                {!color && <span className={styles.colorPlaceholder}>선택해주세요</span>}
+                            </div>
+
+                            {material && (MATERIAL_COLORS[material] ?? []).length > 0 ? (
+                                <div className={styles.colorGrid}>
+                                    {(MATERIAL_COLORS[material] ?? []).map((colorOption) => {
+                                        const isSelected = color === colorOption.name;
+                                        const isTransparent = colorOption.hex === TRANSPARENT_SENTINEL;
+                                        const circleClasses = [
+                                            styles.colorCircle,
+                                            isSelected ? styles.selected : '',
+                                            !colorOption.available ? styles.unavailable : '',
+                                            isTransparent ? styles.transparent : '',
+                                        ].filter(Boolean).join(' ');
+
+                                        return (
+                                            <div
+                                                key={colorOption.code}
+                                                className={circleClasses}
+                                                title={`${colorOption.name} (${colorOption.code})`}
+                                                onClick={() => { if (colorOption.available) setColor(colorOption.name); }}
+                                                style={isTransparent ? undefined : { backgroundColor: colorOption.hex }}
+                                                role="button"
+                                                aria-label={`${colorOption.name}${!colorOption.available ? ' (품절)' : ''}`}
+                                                aria-pressed={isSelected}
+                                                tabIndex={colorOption.available ? 0 : -1}
+                                                onKeyDown={(e) => {
+                                                    if ((e.key === 'Enter' || e.key === ' ') && colorOption.available) setColor(colorOption.name);
+                                                }}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                !material && <p className={styles.colorNoMaterial}>소재를 먼저 선택해주세요</p>
+                            )}
                         </div>
                         <div className={styles.infoText}>
                             <p>솔리드 데이터 일 경우, 예상견적이 높게 산출됩니다.</p>
@@ -835,10 +984,16 @@ export default function QuotePage() {
 
                             <div
                                 className={styles.calculateBtn}
-                                onClick={calculateEstimate}
+                                onClick={() => {
+                                    if (isPrintSizeExceeded) {
+                                        setIsPrintSizeModalOpen(true);
+                                        return;
+                                    }
+                                    calculateEstimate();
+                                }}
                                 style={{
-                                    cursor: isCalculating ? 'not-allowed' : 'pointer',
-                                    opacity: isCalculating ? 0.6 : 1
+                                    cursor: (isCalculating || isPrintSizeExceeded) ? 'not-allowed' : 'pointer',
+                                    opacity: (isCalculating || isPrintSizeExceeded) ? 0.5 : 1
                                 }}
                             >
                                 {isCalculating ? '계산 중...' : '견적내기'}
@@ -1278,6 +1433,80 @@ export default function QuotePage() {
                 </div>
 
             </div>
+
+            {/* 출력 크기 초과 모달 */}
+            {isPrintSizeModalOpen && overSizeDimensions && (
+                <div
+                    onClick={() => setIsPrintSizeModalOpen(false)}
+                    style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(0,0,0,0.5)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        zIndex: 9999
+                    }}
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            background: 'white', borderRadius: '16px',
+                            width: '90%', maxWidth: '420px',
+                            padding: '40px 32px',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center',
+                            textAlign: 'center',
+                            boxShadow: '0 4px 24px rgba(0,0,0,0.18)'
+                        }}
+                    >
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>📏</div>
+                        <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#111827', margin: '0 0 12px 0' }}>
+                            출력 가능 크기 초과
+                        </h3>
+                        <p style={{ fontSize: '15px', color: '#4B5563', lineHeight: 1.6, margin: '0 0 16px 0' }}>
+                            최대 출력 크기는 <strong>350 × 350 × 350 mm</strong>입니다.<br />
+                            업로드한 파일의 크기가 이를 초과합니다.
+                        </p>
+                        <div style={{
+                            background: '#FFF5F5', border: '1px solid #FECACA',
+                            borderRadius: '10px', padding: '14px 20px',
+                            width: '100%', marginBottom: '24px',
+                            fontSize: '14px', color: '#374151', lineHeight: 1.8
+                        }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span>X축</span>
+                                <span style={{ fontWeight: 600, color: overSizeDimensions.x > 350 ? '#EF4444' : '#111827' }}>
+                                    {overSizeDimensions.x.toFixed(1)} mm {overSizeDimensions.x > 350 ? '⚠️' : '✅'}
+                                </span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span>Y축</span>
+                                <span style={{ fontWeight: 600, color: overSizeDimensions.y > 350 ? '#EF4444' : '#111827' }}>
+                                    {overSizeDimensions.y.toFixed(1)} mm {overSizeDimensions.y > 350 ? '⚠️' : '✅'}
+                                </span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span>Z축</span>
+                                <span style={{ fontWeight: 600, color: overSizeDimensions.z > 350 ? '#EF4444' : '#111827' }}>
+                                    {overSizeDimensions.z.toFixed(1)} mm {overSizeDimensions.z > 350 ? '⚠️' : '✅'}
+                                </span>
+                            </div>
+                        </div>
+                        <p style={{ fontSize: '13px', color: '#6B7280', margin: '0 0 20px 0' }}>
+                            파일을 분할하거나 크기를 줄인 후 다시 업로드해 주세요.
+                        </p>
+                        <button
+                            onClick={() => setIsPrintSizeModalOpen(false)}
+                            style={{
+                                width: '100%', height: '48px',
+                                background: '#EF4444', color: 'white',
+                                fontSize: '16px', fontWeight: 600,
+                                border: 'none', borderRadius: '8px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            확인
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* 파일 용량 초과 모달 */}
             {isFileSizeModalOpen && (

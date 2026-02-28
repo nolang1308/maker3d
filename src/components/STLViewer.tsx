@@ -5,20 +5,34 @@ import React, { useEffect, useRef, useState } from 'react';
 interface STLViewerProps {
   file: File | null;
   className?: string;
+  onDimensions?: (dims: { x: number; y: number; z: number }) => void;
+  modelColor?: string; // hex string (e.g. '#F5F5F0') or 'TRANSPARENT'
 }
 
-export default function STLViewer({ file, className }: STLViewerProps) {
+export default function STLViewer({ file, className, onDimensions, modelColor }: STLViewerProps) {
   const mountRef = useRef<HTMLDivElement>(null);
+  const materialRef = useRef<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [unsupportedPreview, setUnsupportedPreview] = useState(false);
 
   useEffect(() => {
     if (!file || !mountRef.current) return;
 
+    // .stp / .step 파일은 Three.js 미지원 → placeholder 표시
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (ext === 'stp' || ext === 'step') {
+      setUnsupportedPreview(true);
+      setIsLoaded(false);
+      setError(null);
+      return;
+    }
+
+    setUnsupportedPreview(false);
+
     let scene: any = null;
     let camera: any = null;
     let renderer: any = null;
-    let mesh: any = null;
     let animationId: number | null = null;
 
     const loadAndDisplay3D = async () => {
@@ -28,7 +42,6 @@ export default function STLViewer({ file, className }: STLViewerProps) {
 
         // Three.js 동적 로딩
         const THREE = await import('three');
-        const { STLLoader } = await import('three/examples/jsm/loaders/STLLoader.js');
         const { OrbitControls } = await import('three/examples/jsm/controls/OrbitControls.js');
 
         const container = mountRef.current;
@@ -57,76 +70,106 @@ export default function STLViewer({ file, className }: STLViewerProps) {
 
         // 그리드 추가 (바닥)
         const gridHelper = new THREE.GridHelper(10, 20, 0x888888, 0xcccccc);
-        gridHelper.position.y = -1; // 바닥 위치 조정
+        gridHelper.position.y = -1;
         scene.add(gridHelper);
 
         // 조명 설정
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
         scene.add(ambientLight);
 
-        const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight1.position.set(1, 1, 1);
+        const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.7);
+        directionalLight1.position.set(1, 2, 1.5);
         scene.add(directionalLight1);
 
-        const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+        const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.3);
         directionalLight2.position.set(-1, -1, -0.5);
         scene.add(directionalLight2);
 
-        // STL 파일 로드
-        const loader = new STLLoader();
-        const arrayBuffer = await file.arrayBuffer();
-        const geometry = loader.parse(arrayBuffer);
-
-        // 지오메트리 정규화
-        geometry.computeBoundingBox();
-        const boundingBox = geometry.boundingBox;
-        if (!boundingBox) return;
-        
-        const center = new THREE.Vector3();
-        boundingBox.getCenter(center);
-
-        const size = new THREE.Vector3();
-        boundingBox.getSize(size);
-        const maxDimension = Math.max(size.x, size.y, size.z);
-        
-        // 스케일링
-        const scale = 2 / maxDimension;
-        geometry.scale(scale, scale, scale);
-        
-        // 센터링
-        geometry.translate(-center.x * scale, -center.y * scale, -center.z * scale);
-
-        // 머티리얼과 메시 생성
+        const isTransparentColor = modelColor === 'TRANSPARENT';
+        const initialColor = isTransparentColor ? 0xffffff : (modelColor ?? '#00AA88');
+        const initialOpacity = isTransparentColor ? 0.25 : 0.9;
         const material = new THREE.MeshPhongMaterial({
-          color: 0x00AA88,
+          color: initialColor,
           transparent: true,
-          opacity: 0.9,
+          opacity: initialOpacity,
           side: THREE.DoubleSide
         });
+        materialRef.current = material;
 
-        mesh = new THREE.Mesh(geometry, material);
-        scene.add(mesh);
+        if (ext === 'obj') {
+          // OBJLoader 사용
+          const { OBJLoader } = await import('three/examples/jsm/loaders/OBJLoader.js');
+          const objText = await file.text();
+          const loader = new OBJLoader();
+          const object = loader.parse(objText);
+
+          // Group 내 Mesh들의 bounding box를 합산해 정규화
+          const box = new THREE.Box3().setFromObject(object);
+          const center = new THREE.Vector3();
+          box.getCenter(center);
+          const size = new THREE.Vector3();
+          box.getSize(size);
+          const maxDimension = Math.max(size.x, size.y, size.z);
+          const scale = 2 / maxDimension;
+
+          // 모델 치수(mm) 콜백 전달
+          onDimensions?.({ x: size.x, y: size.y, z: size.z });
+
+          object.position.sub(center.multiplyScalar(scale));
+          object.scale.setScalar(scale);
+
+          object.traverse((child: any) => {
+            if (child.isMesh) {
+              child.material = material;
+            }
+          });
+
+          scene.add(object);
+        } else {
+          // 기존 STLLoader 로직
+          const { STLLoader } = await import('three/examples/jsm/loaders/STLLoader.js');
+          const loader = new STLLoader();
+          const arrayBuffer = await file.arrayBuffer();
+          const geometry = loader.parse(arrayBuffer);
+
+          geometry.computeBoundingBox();
+          const boundingBox = geometry.boundingBox;
+          if (!boundingBox) return;
+
+          const center = new THREE.Vector3();
+          boundingBox.getCenter(center);
+
+          const size = new THREE.Vector3();
+          boundingBox.getSize(size);
+          const maxDimension = Math.max(size.x, size.y, size.z);
+
+          // 모델 치수(mm) 콜백 전달
+          onDimensions?.({ x: size.x, y: size.y, z: size.z });
+
+          const scale = 2 / maxDimension;
+          geometry.scale(scale, scale, scale);
+          geometry.translate(-center.x * scale, -center.y * scale, -center.z * scale);
+
+          const mesh = new THREE.Mesh(geometry, material);
+          scene.add(mesh);
+        }
 
         // 카메라 위치 설정
         camera.position.set(3, 3, 3);
         camera.lookAt(0, 0, 0);
 
-        // OrbitControls 추가 (일반적인 3D 뷰어 컨트롤)
+        // OrbitControls
         const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true; // 부드러운 감쇠 효과
+        controls.enableDamping = true;
         controls.dampingFactor = 0.05;
         controls.screenSpacePanning = false;
         controls.minDistance = 1;
         controls.maxDistance = 10;
-        controls.maxPolarAngle = Math.PI / 2; // 바닥 아래로 못가게
+        controls.maxPolarAngle = Math.PI / 2;
 
-        // 애니메이션 루프
         const animate = () => {
           animationId = requestAnimationFrame(animate);
-
-          // OrbitControls 업데이트 (damping 효과를 위해)
           controls.update();
-
           if (renderer && scene && camera) {
             renderer.render(scene, camera);
           }
@@ -135,19 +178,10 @@ export default function STLViewer({ file, className }: STLViewerProps) {
         animate();
         setIsLoaded(true);
 
-        // 정리 함수 반환
         return () => {
-          if (animationId) {
-            cancelAnimationFrame(animationId);
-          }
-
-          if (controls) {
-            controls.dispose();
-          }
-
-          if (renderer) {
-            renderer.dispose();
-          }
+          if (animationId) cancelAnimationFrame(animationId);
+          controls.dispose();
+          if (renderer) renderer.dispose();
         };
 
       } catch (err) {
@@ -162,7 +196,24 @@ export default function STLViewer({ file, className }: STLViewerProps) {
     return () => {
       cleanup.then(cleanupFn => cleanupFn && cleanupFn());
     };
-  }, [file]);
+  }, [file]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 색상 변경 시 material만 업데이트 (모델 재로딩 없음)
+  useEffect(() => {
+    if (!materialRef.current) return;
+    const mat = materialRef.current;
+    if (modelColor === 'TRANSPARENT') {
+      mat.color.set(0xffffff);
+      mat.opacity = 0.25;
+    } else if (modelColor) {
+      mat.color.set(modelColor);
+      mat.opacity = 0.9;
+    } else {
+      mat.color.set(0x00AA88);
+      mat.opacity = 0.9;
+    }
+    mat.needsUpdate = true;
+  }, [modelColor]);
 
   if (!file) {
     return (
@@ -177,8 +228,30 @@ export default function STLViewer({ file, className }: STLViewerProps) {
         color: '#6c757d'
       }}>
         <div style={{ textAlign: 'center' }}>
-          <p>STL 파일을 업로드하면</p>
-          <p>3D 미리보기가 표시됩니다</p>
+          <p>3D 파일을 업로드하면</p>
+          <p>미리보기가 표시됩니다</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (unsupportedPreview) {
+    return (
+      <div className={className} style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '10px',
+        color: '#6c757d'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '32px', marginBottom: '12px' }}>📐</div>
+          <p style={{ fontWeight: 600 }}>{file.name}</p>
+          <p style={{ fontSize: '13px', marginTop: '8px' }}>STP/STEP 파일은 미리보기를 지원하지 않습니다</p>
+          <p style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>파일은 정상적으로 업로드됩니다</p>
         </div>
       </div>
     );
@@ -195,7 +268,7 @@ export default function STLViewer({ file, className }: STLViewerProps) {
           overflow: 'hidden'
         }}
       />
-      
+
       {!isLoaded && !error && (
         <div style={{
           position: 'absolute',
@@ -213,7 +286,7 @@ export default function STLViewer({ file, className }: STLViewerProps) {
           </div>
         </div>
       )}
-      
+
       {error && (
         <div style={{
           position: 'absolute',

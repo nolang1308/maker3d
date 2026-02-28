@@ -1,7 +1,8 @@
 'use client';
 
 import styles from './page.module.scss';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import type { UserAgreements } from '@/services/userService';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { createUserDocument } from '@/services/userService';
@@ -11,6 +12,7 @@ export default function RegisterPage() {
     const { signUp } = useAuth();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [savedAgreements, setSavedAgreements] = useState<Omit<UserAgreements, 'agreedAt'> | undefined>(undefined);
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -21,6 +23,14 @@ export default function RegisterPage() {
         birthMonth: '',
         birthDay: ''
     });
+
+    useEffect(() => {
+        const stored = sessionStorage.getItem('agreements');
+        if (stored) {
+            setSavedAgreements(JSON.parse(stored));
+            sessionStorage.removeItem('agreements');
+        }
+    }, []);
 
     const formatPhoneNumber = (value: string) => {
         // 숫자만 추출
@@ -78,7 +88,8 @@ export default function RegisterPage() {
                     undefined,
                     'user',
                     formData.name,
-                    formData.phone
+                    formData.phone,
+                    savedAgreements
                 );
             }
 

@@ -154,10 +154,20 @@ export default function SignupPage() {
                         >
                             취소
                         </button>
-                        <button 
+                        <button
                             className={`${styles.submitButton} ${isFormValid ? styles.active : ''}`}
                             disabled={!isFormValid}
-                            onClick={() => router.push('/register')}
+                            onClick={() => {
+                                sessionStorage.setItem('agreements', JSON.stringify({
+                                    terms: agreements.termsRequired,
+                                    privacy: agreements.privacyRequired,
+                                    marketing: agreements.marketingOptional,
+                                    message: agreements.messageOptional,
+                                    email: agreements.emailOptional,
+                                    ageVerified: agreements.ageRequired
+                                }));
+                                router.push('/register');
+                            }}
                         >
                             가입하기
                         </button>

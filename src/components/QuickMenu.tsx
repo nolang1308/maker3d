@@ -35,8 +35,7 @@ export default function QuickMenu() {
     };
 
     const handleKakaoClick = () => {
-        // TODO: 카카오톡 링크 추가 예정
-        alert('카카오톡 문의 링크가 곧 추가될 예정입니다.');
+        window.open('http://pf.kakao.com/_msWvG', '_blank', 'noopener,noreferrer');
     };
 
     const handleNaverTalkClick = () => {

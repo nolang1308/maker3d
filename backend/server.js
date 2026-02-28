@@ -119,10 +119,12 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/octet-stream' || file.originalname.endsWith('.stl')) {
+    const ext = file.originalname.toLowerCase();
+    if (file.mimetype === 'application/octet-stream' ||
+        ext.endsWith('.stl') || ext.endsWith('.obj') || ext.endsWith('.stp') || ext.endsWith('.step')) {
       cb(null, true);
     } else {
-      cb(new Error('STL 파일만 업로드 가능합니다.'), false);
+      cb(new Error('STL, OBJ, STP 파일만 업로드 가능합니다.'), false);
     }
   }
 });
@@ -146,10 +148,12 @@ const uploadOrder = multer({
     }
   }),
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/octet-stream' || file.originalname.endsWith('.stl')) {
+    const ext = file.originalname.toLowerCase();
+    if (file.mimetype === 'application/octet-stream' ||
+        ext.endsWith('.stl') || ext.endsWith('.obj') || ext.endsWith('.stp') || ext.endsWith('.step')) {
       cb(null, true);
     } else {
-      cb(new Error('STL 파일만 업로드 가능합니다.'), false);
+      cb(new Error('STL, OBJ, STP 파일만 업로드 가능합니다.'), false);
     }
   }
 });
@@ -251,11 +255,20 @@ const MATERIAL_PRICES = {
 
 // 색상별 추가 비용 (원)
 const COLOR_PRICES = {
-  'G40-JG': 5000,
-  '화이트': 0,
-  '블랙': 2000,
-  '그레이': 1000,
-  '투명': 3000
+  'G40-JG':   5000,
+  '화이트':      0,
+  '블랙':     2000,
+  '그레이':   1000,
+  '다크그레이': 1000,
+  '투명':     3000,
+  '빨강':     1500,
+  '파랑':     1500,
+  '네이비':   1500,
+  '초록':     1500,
+  '노랑':     1500,
+  '주황':     1500,
+  '보라':     1500,
+  '청록':     1500,
 };
 
 // 시간 문자열을 시간(숫자)로 변환하는 함수
@@ -346,10 +359,12 @@ const uploadSavedQuote = multer({
     }
   }),
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/octet-stream' || file.originalname.endsWith('.stl')) {
+    const ext = file.originalname.toLowerCase();
+    if (file.mimetype === 'application/octet-stream' ||
+        ext.endsWith('.stl') || ext.endsWith('.obj') || ext.endsWith('.stp') || ext.endsWith('.step')) {
       cb(null, true);
     } else {
-      cb(new Error('STL 파일만 업로드 가능합니다.'), false);
+      cb(new Error('STL, OBJ, STP 파일만 업로드 가능합니다.'), false);
     }
   }
 });

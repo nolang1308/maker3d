@@ -52,5 +52,14 @@ service cloud.firestore {
       // 수정/삭제: 로그인된 사용자만 허용
       allow update, delete: if request.auth != null;
     }
+
+    // popups 컬렉션 - 팝업 관리
+    match /popups/{popupId} {
+      // 읽기: 모든 사용자 허용 (메인 페이지 비로그인 접근)
+      allow read: if true;
+
+      // 생성/수정/삭제: 로그인된 사용자만 허용 (관리자)
+      allow create, update, delete: if request.auth != null;
+    }
   }
 }

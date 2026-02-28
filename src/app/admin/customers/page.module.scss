@@ -1,0 +1,663 @@
+@use 'sass:color';
+@import '../../../styles/style-system';
+
+$panel-top: 45px; // 주문관리 페이지와 동일
+
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  overflow: hidden;
+
+  .ManagerSignatureBar {
+    z-index: 999;
+    position: fixed;
+    top: 75px;
+    width: 100%;
+    height: 44px;
+    background-color: #333333;
+    display: flex;
+    align-items: center;
+    padding-left: 35px;
+    flex-direction: row;
+
+    p {
+      margin-left: 10px;
+      @include body-medium;
+      color: white;
+    }
+  }
+}
+
+// ─── 좌측 고객 목록 패널 ───────────────────────────────────────────────────
+
+.customerListPanel {
+  width: 280px;
+  min-width: 280px;
+  height: 100vh;
+  padding-top: $panel-top;
+  background-color: #1D1D1F;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .panelHeader {
+    padding: 24px 20px 16px;
+
+    .logoIcon {
+      object-fit: contain;
+      margin-bottom: 20px;
+    }
+
+    .panelTitle {
+      @include title-large;
+      color: #F5F5F7;
+      margin-bottom: 4px;
+    }
+
+    .customerCount {
+      @include body-small;
+      color: #86868B;
+    }
+
+    .exportButton {
+      margin-top: 14px;
+      width: 100%;
+      height: 38px;
+      background-color: #34C759;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 8px;
+      @include label-large;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+
+      &:hover {
+        opacity: 0.85;
+      }
+
+      &:disabled {
+        background-color: #48484A;
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+    }
+  }
+
+  .searchBox {
+    padding: 0 16px 12px;
+
+    .searchInput {
+      width: 100%;
+      height: 40px;
+      background-color: #2C2C2E;
+      border: 1px solid #48484A;
+      border-radius: 8px;
+      padding: 0 12px;
+      color: #F5F5F7;
+      @include body-medium;
+      outline: none;
+      transition: border-color 0.15s ease;
+
+      &::placeholder {
+        color: #86868B;
+      }
+
+      &:focus {
+        border-color: #007AFF;
+      }
+    }
+  }
+
+  .customerList {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 10px 16px;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: #48484A;
+      border-radius: 2px;
+    }
+  }
+
+  .stateText {
+    @include body-medium;
+    color: #86868B;
+    text-align: center;
+    padding: 32px 0;
+  }
+
+  .customerItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    margin-bottom: 2px;
+    border: 1px solid transparent;
+
+    &:hover {
+      background-color: #2C2C2E;
+    }
+
+    &.selected {
+      background-color: rgba(0, 122, 255, 0.12);
+      border-color: rgba(0, 122, 255, 0.3);
+    }
+
+    .customerAvatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #007AFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      @include title-small;
+      flex-shrink: 0;
+    }
+
+    .customerMeta {
+      flex: 1;
+      min-width: 0;
+
+      .customerName {
+        @include label-large;
+        color: #F5F5F7;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .customerEmail {
+        @include body-small;
+        color: #86868B;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-top: 2px;
+      }
+    }
+
+    .adminBadge {
+      @include label-small;
+      color: #FF9500;
+      background-color: rgba(255, 149, 0, 0.15);
+      border: 1px solid rgba(255, 149, 0, 0.3);
+      padding: 2px 8px;
+      border-radius: 100px;
+      flex-shrink: 0;
+    }
+  }
+}
+
+// ─── 우측 고객 상세 패널 ───────────────────────────────────────────────────
+
+.detailPanel {
+  flex: 1;
+  height: 100vh;
+  padding-top: $panel-top;
+  background-color: #F5F5F7;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  // 선택 전 빈 화면
+  .emptyDetail {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    .emptyIcon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-color: #EBEBF0;
+    }
+
+    .emptyDetailText {
+      @include title-medium;
+      color: #333333;
+    }
+
+    .emptyDetailSub {
+      @include body-medium;
+      color: #86868B;
+      text-align: center;
+      line-height: 1.6;
+    }
+  }
+
+  // 고객 헤더
+  .detailHeader {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 28px 48px 24px;
+    border-bottom: 1px solid #E5E5EA;
+    background-color: #FFFFFF;
+    flex-shrink: 0;
+
+    .detailAvatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: #007AFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      @include headline-medium;
+      flex-shrink: 0;
+    }
+
+    .detailHeaderInfo {
+      .detailName {
+        @include headline-large;
+        color: #121212;
+      }
+
+      .detailEmail {
+        @include body-medium;
+        color: #86868B;
+        margin-top: 4px;
+      }
+    }
+  }
+
+  // 탭바
+  .tabBar {
+    display: flex;
+    padding: 0 48px;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E5E5EA;
+    flex-shrink: 0;
+
+    .tab {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 0;
+      margin-right: 32px;
+      @include title-small;
+      color: #86868B;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: color 0.15s ease, border-color 0.15s ease;
+
+      &:hover {
+        color: #333333;
+      }
+
+      &.activeTab {
+        color: #007AFF;
+        border-bottom-color: #007AFF;
+      }
+
+      .orderCountBadge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 10px;
+        background-color: #007AFF;
+        color: #FFFFFF;
+        font-size: 11px;
+        font-weight: 600;
+      }
+    }
+  }
+
+  // 탭 콘텐츠 영역
+  .tabContent {
+    flex: 1;
+    padding: 32px 48px;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: #C7C7CC;
+      border-radius: 2px;
+    }
+  }
+}
+
+// ─── 고객 정보 탭 ─────────────────────────────────────────────────────────
+
+.infoGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.infoSection {
+  background-color: #FFFFFF;
+  border-radius: 14px;
+  padding: 28px 32px;
+  border: 1px solid #E5E5EA;
+
+  .sectionTitle {
+    @include title-medium;
+    color: #121212;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #F2F2F7;
+  }
+}
+
+.infoRows {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.infoRow {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+
+  .infoLabel {
+    width: 280px;
+    @include body-medium;
+    color: #86868B;
+    flex-shrink: 0;
+
+    .requiredTag {
+      color: #FF3B30;
+      font-size: 12px;
+    }
+
+    .optionalTag {
+      color: #AEAEB2;
+      font-size: 12px;
+    }
+  }
+
+  .infoValue {
+    @include body-medium;
+    color: #1D1D1F;
+
+    &.roleAdmin {
+      color: #FF9500;
+      font-weight: 700;
+    }
+
+    &.roleUser {
+      color: #34C759;
+    }
+
+    &.agreed {
+      color: #34C759;
+      font-weight: 600;
+    }
+
+    &.notAgreed {
+      color: #AEAEB2;
+    }
+  }
+}
+
+.noDataText {
+  @include body-medium;
+  color: #86868B;
+  padding: 20px 0;
+}
+
+// ─── 주문 이력 탭 ─────────────────────────────────────────────────────────
+
+.ordersTab {
+  .emptyOrders {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 0;
+
+    p {
+      @include body-medium;
+      color: #86868B;
+    }
+  }
+}
+
+.orderListHeader {
+  display: grid;
+  grid-template-columns: 2fr 1.8fr 0.7fr 1fr 1fr 1fr;
+  padding: 12px 20px;
+  background-color: #FFFFFF;
+  border-radius: 10px 10px 0 0;
+  border: 1px solid #E5E5EA;
+  border-bottom: none;
+
+  span {
+    @include label-large;
+    color: #86868B;
+  }
+}
+
+.orderItems {
+  border: 1px solid #E5E5EA;
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+
+  .orderItem {
+    display: grid;
+    grid-template-columns: 2fr 1.8fr 0.7fr 1fr 1fr 1fr;
+    padding: 16px 20px;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #F2F2F7;
+    align-items: center;
+    transition: background-color 0.1s ease;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background-color: #FAFAFA;
+    }
+
+    span {
+      @include body-medium;
+      color: #1D1D1F;
+    }
+
+    .orderNumber {
+      @include label-large;
+      color: #007AFF;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+    }
+
+    .orderPrice {
+      font-weight: 600;
+    }
+  }
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 100px;
+  @include label-small;
+  width: fit-content;
+
+  &.badgeSuccess {
+    background-color: rgba(52, 199, 89, 0.12);
+    color: #34C759;
+    border: 1px solid rgba(52, 199, 89, 0.3);
+  }
+
+  &.badgePending {
+    background-color: rgba(255, 149, 0, 0.12);
+    color: #FF9500;
+    border: 1px solid rgba(255, 149, 0, 0.3);
+  }
+
+  &.badgeError {
+    background-color: rgba(255, 59, 48, 0.12);
+    color: #FF3B30;
+    border: 1px solid rgba(255, 59, 48, 0.3);
+  }
+
+  &.badgeProcessing {
+    background-color: rgba(0, 122, 255, 0.12);
+    color: #007AFF;
+    border: 1px solid rgba(0, 122, 255, 0.3);
+  }
+}
+
+// ─── 엑셀 내보내기 필터 모달 ───────────────────────────────────────────────
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+.exportModalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.18s ease;
+}
+
+.exportModal {
+  width: 360px;
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  padding: 28px 28px 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.22s ease;
+}
+
+.exportModalTitle {
+  @include title-medium;
+  color: #121212;
+  margin-bottom: 20px;
+}
+
+.filterList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filterItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filterLabel {
+  @include body-medium;
+  color: #1D1D1F;
+}
+
+.toggleTrack {
+  position: relative;
+  width: 44px;
+  height: 26px;
+  border-radius: 100px;
+  background-color: #E5E5EA;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+
+  &.toggleOn {
+    background-color: #34C759;
+  }
+}
+
+.toggleThumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #FFFFFF;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+
+  .toggleOn & {
+    transform: translateX(18px);
+  }
+}
+
+.filterCount {
+  margin-top: 20px;
+  @include body-small;
+  color: #86868B;
+}
+
+.exportModalFooter {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.exportCancelBtn {
+  flex: 1;
+  height: 42px;
+  background-color: #F2F2F7;
+  color: #1D1D1F;
+  border: none;
+  border-radius: 10px;
+  @include label-large;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.75;
+  }
+}
+
+.exportConfirmBtn {
+  flex: 1;
+  height: 42px;
+  background-color: #34C759;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  @include label-large;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}

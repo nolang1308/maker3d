@@ -6,11 +6,19 @@ import {useState, useEffect} from 'react';
 import ReviewCard from "@/components/ReviewCard";
 import Link from 'next/link';
 import QuickMenu from '@/components/QuickMenu';
+import { getActivePopups, Popup } from '@/services/popupService';
+
+function normalizeUrl(url: string): string {
+    if (/^https?:\/\//i.test(url)) return url;
+    return `https://${url}`;
+}
 
 export default function Home() {
     const [activeButton, setActiveButton] = useState<number>(1);
     const [currentReviewIndex, setCurrentReviewIndex] = useState<number>(0);
     const [cardWidth, setCardWidth] = useState<number>(672);
+    const [activePopups, setActivePopups] = useState<Popup[]>([]);
+    const [closedPopupIds, setClosedPopupIds] = useState<Set<string>>(new Set());
 
     const reviews = [
         {
@@ -30,6 +38,24 @@ export default function Home() {
             name: "최지우"
         }
     ];
+
+    useEffect(() => {
+        getActivePopups().then((popups) => {
+            const today = new Date().toISOString().slice(0, 10);
+            const visible = popups.filter(
+                (p) => localStorage.getItem(`popup_hidden_${p.id}`) !== today
+            );
+            setActivePopups(visible);
+        });
+    }, []);
+
+    const closePopup = (id: string) => setClosedPopupIds((prev) => new Set(prev).add(id));
+    const hideToday = (id: string) => {
+        localStorage.setItem(`popup_hidden_${id}`, new Date().toISOString().slice(0, 10));
+        closePopup(id);
+    };
+
+    const visiblePopups = activePopups.filter((p) => !closedPopupIds.has(p.id));
 
     useEffect(() => {
         const updateCardWidth = () => {
@@ -93,6 +119,41 @@ export default function Home() {
     return (
         <>
             <QuickMenu />
+
+            {/* 팝업 오버레이 */}
+            {visiblePopups.length > 0 && (
+                <div className={styles.popupOverlay}>
+                    <div className={styles.popupCardsWrapper}>
+                        {visiblePopups.map((popup) => (
+                            <div key={popup.id} className={styles.popupCard}>
+                                {popup.linkUrl ? (
+                                    <a href={normalizeUrl(popup.linkUrl)} target="_blank" rel="noopener noreferrer">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={popup.imageUrl} alt="팝업" className={styles.popupImage} />
+                                    </a>
+                                ) : (
+                                    /* eslint-disable-next-line @next/next/no-img-element */
+                                    <img src={popup.imageUrl} alt="팝업" className={styles.popupImage} />
+                                )}
+                                <div className={styles.popupFooter}>
+                                    <button
+                                        className={styles.popupHideTodayBtn}
+                                        onClick={() => hideToday(popup.id)}
+                                    >
+                                        오늘 하루 보지 않기
+                                    </button>
+                                    <button
+                                        className={styles.popupCloseBtn}
+                                        onClick={() => closePopup(popup.id)}
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
             <div className={styles.container}>
             <div className={styles.innerContainer}>
                 <Image
@@ -122,7 +183,12 @@ export default function Home() {
                         <p className={styles.storeButtonText}>실시간 견적확인</p>
                     </Link>
 
-                    <div className={styles.kakaoRequestButton}>
+                    <a
+                        href="http://pf.kakao.com/_msWvG"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.kakaoRequestButton}
+                    >
                         <Image
                             src="/kakao.svg"
                             alt="MAKER 3D Logo"
@@ -130,7 +196,7 @@ export default function Home() {
                             height={22}
                         />
                         <p className={styles.storeButtonText}>카카오톡 상담하기</p>
-                    </div>
+                    </a>
 
                     <a
                         href="https://talk.naver.com/ct/w4e4gt?frm=psf"

@@ -3,17 +3,17 @@ service firebase.storage {
   match /b/{bucket}/o {
     // orders 폴더 - 인증된 사용자만 업로드 가능
     match /orders/{orderId}/{fileName} {
-      // 인증된 사용자는 파일 업로드 가능
       allow create: if request.auth != null &&
-                      request.resource.size < 50 * 1024 * 1024 && // 50MB 제한
+                      request.resource.size < 50 * 1024 * 1024 &&
                       request.resource.contentType.matches('application/.*|model/.*');
-
-      // 인증된 사용자는 파일 읽기 가능
       allow read: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
 
-      // 관리자만 파일 삭제 가능
-      allow delete: if request.auth != null &&
-                      request.auth.token.admin == true;
+    // popups 폴더 - 공개 읽기, 인증된 사용자(관리자)만 쓰기
+    match /popups/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null;
     }
 
     // 기타 파일은 인증된 사용자만 접근 가능
