@@ -61,5 +61,14 @@ service cloud.firestore {
       // 생성/수정/삭제: 로그인된 사용자만 허용 (관리자)
       allow create, update, delete: if request.auth != null;
     }
+
+    // materialColors 컬렉션 - 소재별 색상 관리
+    match /materialColors/{material} {
+      // 읽기: 모든 사용자 허용 (견적 페이지 비로그인 접근)
+      allow read: if true;
+
+      // 쓰기: 로그인된 사용자만 허용 (popups와 동일 패턴)
+      allow create, update, delete: if request.auth != null;
+    }
   }
 }

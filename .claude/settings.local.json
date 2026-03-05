@@ -49,7 +49,8 @@
       "Bash(/Users/dotory/google-cloud-sdk/bin/gcloud storage:*)",
       "Bash(ls:*)",
       "Bash(/Users/dotory/.npm-global/bin/firebase deploy:*)",
-      "Bash(/Users/dotory/.npm-global/bin/firebase login:list:*)"
+      "Bash(/Users/dotory/.npm-global/bin/firebase login:list:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

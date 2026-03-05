@@ -1,0 +1,386 @@
+@use 'sass:color';
+@import '../../../styles/style-system';
+
+.container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #F5F5F7;
+
+  .ManagerSignatureBar {
+    position: fixed;
+    top: 75px;
+    z-index: 999;
+    width: 100%;
+    height: 44px;
+    background-color: #333333;
+    display: flex;
+    align-items: center;
+    padding-left: 35px;
+    flex-direction: row;
+
+    p {
+      margin-left: 10px;
+      @include body-medium;
+      color: white;
+    }
+  }
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 140px 24px 60px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.title {
+  @include title-large;
+  color: #1D1D1F;
+  margin: 0;
+}
+
+// ─── 소재 탭 ────────────────────────────────────────────────────────────────
+
+.materialTabs {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  border-bottom: 1px solid #E5E5EA;
+  margin-bottom: 24px;
+}
+
+.materialTab {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  @include body-medium;
+  color: #86868B;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    color: #1D1D1F;
+  }
+
+  &.active {
+    color: #2493D8;
+    border-bottom-color: #2493D8;
+    font-weight: 600;
+  }
+}
+
+// ─── 2열 레이아웃 ────────────────────────────────────────────────────────────
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
+  align-items: start;
+}
+
+// ─── 색상 목록 ──────────────────────────────────────────────────────────────
+
+.colorListPanel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.colorListScroll {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 4px;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #D1D1D6;
+    border-radius: 4px;
+  }
+}
+
+.colorList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.colorItem {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: #FFFFFF;
+  border-radius: 10px;
+  border: 1px solid #E5E5EA;
+}
+
+.colorLeft {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.colorPreview {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #D0D0D0;
+  flex-shrink: 0;
+
+  &.transparent {
+    background-color: #ffffff;
+    background-image:
+      linear-gradient(45deg, #cce8f4 25%, transparent 25%),
+      linear-gradient(-45deg, #cce8f4 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #cce8f4 75%),
+      linear-gradient(-45deg, transparent 75%, #cce8f4 75%);
+    background-size: 8px 8px;
+    background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+  }
+}
+
+.colorMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .colorName {
+    @include body-medium;
+    font-weight: 600;
+    color: #1D1D1F;
+  }
+
+  .colorHex {
+    @include body-small;
+    color: #86868B;
+  }
+}
+
+.colorActions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+// ─── 토글 스위치 ─────────────────────────────────────────────────────────────
+
+.toggleWrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.toggleLabel {
+  @include body-small;
+  color: #86868B;
+  min-width: 36px;
+
+  &.on {
+    color: #2493D8;
+    font-weight: 600;
+  }
+}
+
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+
+    &:checked + .toggleSlider {
+      background-color: #2493D8;
+    }
+
+    &:checked + .toggleSlider::before {
+      transform: translateX(20px);
+    }
+  }
+
+  .toggleSlider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: #C7C7CC;
+    border-radius: 24px;
+    transition: background-color 0.2s ease;
+
+    &::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 3px;
+      top: 3px;
+      background-color: #FFFFFF;
+      border-radius: 50%;
+      transition: transform 0.2s ease;
+    }
+  }
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #FF3B30;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
+  @include body-medium;
+  font-weight: 600;
+
+  &:hover {
+    background-color: rgba(255, 59, 48, 0.1);
+  }
+}
+
+// ─── 색상 추가 폼 ─────────────────────────────────────────────────────────────
+
+.addForm {
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  border: 1px solid #E5E5EA;
+  padding: 24px;
+
+  h2 {
+    @include body-medium;
+    font-weight: 600;
+    color: #1D1D1F;
+    margin: 0 0 20px 0;
+  }
+}
+
+.formRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+
+  label {
+    @include body-small;
+    color: #86868B;
+    font-weight: 500;
+  }
+
+  input[type='text'] {
+    height: 40px;
+    border: 1px solid #D1D1D6;
+    border-radius: 8px;
+    padding: 0 12px;
+    @include body-medium;
+    color: #1D1D1F;
+    background-color: #F5F5F7;
+    outline: none;
+    transition: border-color 0.15s ease;
+
+    &:focus {
+      border-color: #2493D8;
+      background-color: #FFFFFF;
+    }
+  }
+}
+
+.hexInputRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+
+  input[type='text'] {
+    flex: 1;
+  }
+}
+
+.hexPreview {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #D0D0D0;
+  flex-shrink: 0;
+
+  &.transparent {
+    background-color: #ffffff;
+    background-image:
+      linear-gradient(45deg, #cce8f4 25%, transparent 25%),
+      linear-gradient(-45deg, #cce8f4 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #cce8f4 75%),
+      linear-gradient(-45deg, transparent 75%, #cce8f4 75%);
+    background-size: 8px 8px;
+    background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+  }
+}
+
+.checkboxRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+
+  input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  label {
+    @include body-medium;
+    color: #1D1D1F;
+    cursor: pointer;
+  }
+}
+
+.addBtn {
+  width: 100%;
+  height: 44px;
+  background-color: #2493D8;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  @include body-medium;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.stateText {
+  @include body-medium;
+  color: #86868B;
+  text-align: center;
+  padding: 40px 0;
+}

@@ -10,7 +10,14 @@ const execAsync = promisify(exec);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function getPrintTime(stlFilePath) {
+const MATERIAL_INI_MAP = {
+  'PLA':  'PrusaSlicer_config_bundle(PLA).ini',
+  'ABS':  'PrusaSlicer_config_bundle(ABS).ini',
+  'PETG': 'PrusaSlicer_config_bundle(PETG).ini',
+  'TPU':  'PrusaSlicer_config_bundle(TPU).ini',
+};
+
+async function getPrintTime(stlFilePath, material) {
   const tempDir = path.join(__dirname, 'temp');
   const outputFileName = `output-${Date.now()}.gcode`;
   const outputFilePath = path.join(tempDir, outputFileName);
@@ -39,8 +46,12 @@ async function getPrintTime(stlFilePath) {
       }
     }
 
-    // 설정 파일이 있으면 사용, 없으면 개별 설정 사용
-    const configFile = path.join(__dirname, 'prusa-config.ini');
+    // 소재별 ini 파일 선택, 없으면 기본 config 사용
+    const iniFileName = MATERIAL_INI_MAP[material];
+    const configFile = iniFileName
+      ? path.join(__dirname, 'ini', iniFileName)
+      : path.join(__dirname, 'prusa-config.ini');
+    console.log(`소재: ${material}, 설정 파일: ${configFile}`);
     let command;
 
     if (fs.existsSync(configFile)) {

@@ -115,6 +115,7 @@ const Header = () => {
                                 <Link href="/admin/notice" className={styles.dropdownItem}>공지사항</Link>
                                 <Link href="/admin/customers" className={styles.dropdownItem}>고객정보관리</Link>
                                 <Link href="/admin/popup" className={styles.dropdownItem}>팝업관리</Link>
+                                <Link href="/admin/colors" className={styles.dropdownItem}>색상관리</Link>
                             </div>
                         </div>
                     )}
@@ -195,6 +196,7 @@ const Header = () => {
                                     <Link href="/admin/notice" className={styles.mobileDropdownItem} onClick={closeMobileMenu}>공지사항</Link>
                                     <Link href="/admin/customers" className={styles.mobileDropdownItem} onClick={closeMobileMenu}>고객정보관리</Link>
                                     <Link href="/admin/popup" className={styles.mobileDropdownItem} onClick={closeMobileMenu}>팝업관리</Link>
+                                    <Link href="/admin/colors" className={styles.mobileDropdownItem} onClick={closeMobileMenu}>색상관리</Link>
                                 </div>
                             </div>
                         </>

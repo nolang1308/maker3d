@@ -10,6 +10,7 @@ import OrderModal, { CustomerInfo } from '@/components/OrderModal';
 import { generateOrderNumber, uploadSTLFiles, saveOrder, OrderData } from '@/utils/orderUtils';
 import { db } from '@/config/firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { getAllMaterialColors, ColorOption, TRANSPARENT_SENTINEL } from '@/services/colorService';
 
 interface FileItem {
     id: number;
@@ -21,84 +22,6 @@ interface FileItem {
     file: File | null;
     savedFilePath?: string; // 백엔드에 저장된 파일 경로
 }
-
-interface ColorOption {
-    name: string;
-    code: string;
-    hex: string;
-    available: boolean;
-}
-
-const TRANSPARENT_SENTINEL = 'TRANSPARENT';
-
-const MATERIAL_COLORS: Record<string, ColorOption[]> = {
-    '광경화성 레진': [
-        { name: '화이트',    code: 'W001', hex: '#F5F5F0', available: true },
-        { name: '블랙',      code: 'B001', hex: '#1A1A1A', available: true },
-        { name: '그레이',    code: 'G001', hex: '#9E9E9E', available: true },
-        { name: '다크그레이', code: 'G002', hex: '#424242', available: true },
-        { name: '빨강',      code: 'R001', hex: '#D32F2F', available: true },
-        { name: '파랑',      code: 'B002', hex: '#1976D2', available: true },
-        { name: '네이비',    code: 'N001', hex: '#0D2859', available: true },
-        { name: '초록',      code: 'GR01', hex: '#2E7D32', available: true },
-        { name: '노랑',      code: 'Y001', hex: '#FDD835', available: true },
-        { name: '주황',      code: 'O001', hex: '#F57C00', available: true },
-        { name: '보라',      code: 'P001', hex: '#6A1B9A', available: true },
-        { name: '청록',      code: 'C001', hex: '#00838F', available: true },
-        { name: '투명',      code: 'T001', hex: TRANSPARENT_SENTINEL, available: true },
-    ],
-    'PLA': [
-        { name: '화이트',    code: 'W001', hex: '#F5F5F0', available: true },
-        { name: '블랙',      code: 'B001', hex: '#1A1A1A', available: true },
-        { name: '그레이',    code: 'G001', hex: '#9E9E9E', available: true },
-        { name: '다크그레이', code: 'G002', hex: '#424242', available: true },
-        { name: '빨강',      code: 'R001', hex: '#D32F2F', available: true },
-        { name: '파랑',      code: 'B002', hex: '#1976D2', available: true },
-        { name: '네이비',    code: 'N001', hex: '#0D2859', available: true },
-        { name: '초록',      code: 'GR01', hex: '#2E7D32', available: true },
-        { name: '노랑',      code: 'Y001', hex: '#FDD835', available: true },
-        { name: '주황',      code: 'O001', hex: '#F57C00', available: true },
-        { name: '보라',      code: 'P001', hex: '#6A1B9A', available: true },
-        { name: '청록',      code: 'C001', hex: '#00838F', available: true },
-    ],
-    'ABS': [
-        { name: '화이트',    code: 'W001', hex: '#F5F5F0', available: true },
-        { name: '블랙',      code: 'B001', hex: '#1A1A1A', available: true },
-        { name: '그레이',    code: 'G001', hex: '#9E9E9E', available: true },
-        { name: '다크그레이', code: 'G002', hex: '#424242', available: true },
-        { name: '빨강',      code: 'R001', hex: '#D32F2F', available: true },
-        { name: '파랑',      code: 'B002', hex: '#1976D2', available: true },
-        { name: '네이비',    code: 'N001', hex: '#0D2859', available: true },
-        { name: '초록',      code: 'GR01', hex: '#2E7D32', available: true },
-        { name: '노랑',      code: 'Y001', hex: '#FDD835', available: true },
-        { name: '주황',      code: 'O001', hex: '#F57C00', available: true },
-        { name: '보라',      code: 'P001', hex: '#6A1B9A', available: true },
-        { name: '청록',      code: 'C001', hex: '#00838F', available: true },
-    ],
-    'PETG': [
-        { name: '화이트',    code: 'W001', hex: '#F5F5F0', available: true },
-        { name: '블랙',      code: 'B001', hex: '#1A1A1A', available: true },
-        { name: '그레이',    code: 'G001', hex: '#9E9E9E', available: true },
-        { name: '다크그레이', code: 'G002', hex: '#424242', available: true },
-        { name: '빨강',      code: 'R001', hex: '#D32F2F', available: true },
-        { name: '파랑',      code: 'B002', hex: '#1976D2', available: true },
-        { name: '네이비',    code: 'N001', hex: '#0D2859', available: true },
-        { name: '초록',      code: 'GR01', hex: '#2E7D32', available: true },
-        { name: '노랑',      code: 'Y001', hex: '#FDD835', available: true },
-        { name: '주황',      code: 'O001', hex: '#F57C00', available: true },
-        { name: '보라',      code: 'P001', hex: '#6A1B9A', available: true },
-        { name: '청록',      code: 'C001', hex: '#00838F', available: true },
-        { name: '투명',      code: 'T001', hex: TRANSPARENT_SENTINEL, available: true },
-    ],
-    'TPU': [
-        { name: '화이트',    code: 'W001', hex: '#F5F5F0', available: true },
-        { name: '블랙',      code: 'B001', hex: '#1A1A1A', available: true },
-        { name: '그레이',    code: 'G001', hex: '#9E9E9E', available: true },
-        { name: '빨강',      code: 'R001', hex: '#D32F2F', available: true },
-        { name: '파랑',      code: 'B002', hex: '#1976D2', available: true },
-        { name: '초록',      code: 'GR01', hex: '#2E7D32', available: true },
-    ],
-};
 
 export default function QuotePage() {
     const router = useRouter();
@@ -126,6 +49,7 @@ export default function QuotePage() {
     const [isPrivacyPolicyExpanded, setIsPrivacyPolicyExpanded] = useState(false); // 개인정보처리방침 확장 상태
     const [isShippingPolicyExpanded, setIsShippingPolicyExpanded] = useState(false); // 배송 및 환불 정책 확장 상태
     const [activeShoppingGuideTab, setActiveShoppingGuideTab] = useState('상품결제정보'); // 쇼핑가이드 탭 상태
+    const [materialColors, setMaterialColors] = useState<Record<string, ColorOption[]>>({});
 
     // 로그인 체크 제거 - 견적 계산은 로그인 없이 가능
 
@@ -166,14 +90,19 @@ export default function QuotePage() {
         }
     }, [user, loading]);
 
+    // 소재별 색상 Firestore에서 로드
+    useEffect(() => {
+        getAllMaterialColors().then(setMaterialColors);
+    }, []);
+
     useEffect(() => {
         if (!material) { setColor(''); return; }
-        const available = MATERIAL_COLORS[material] ?? [];
+        const available = materialColors[material] ?? [];
         if (!available.some((c) => c.name === color && c.available)) {
             setColor('');
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [material]);
+    }, [material, materialColors]);
 
     const increaseQuantity = () => {
         setQuantity(prev => prev + 1);
@@ -900,7 +829,7 @@ export default function QuotePage() {
                                 onDimensions={handleDimensions}
                                 modelColor={
                                     color && material
-                                        ? (MATERIAL_COLORS[material] ?? []).find((c) => c.name === color)?.hex
+                                        ? (materialColors[material] ?? []).find((c) => c.name === color)?.hex
                                         : undefined
                                 }
                             />
@@ -922,7 +851,6 @@ export default function QuotePage() {
                                 onChange={(e) => setMaterial(e.target.value)}
                             >
                                 <option value="">선택해주세요</option>
-                                <option value="광경화성 레진">광경화성 레진</option>
                                 <option value="PLA">PLA</option>
                                 <option value="ABS">ABS</option>
                                 <option value="PETG">PETG</option>
@@ -934,7 +862,7 @@ export default function QuotePage() {
                             <div className={styles.colorPickerHeader}>
                                 <span>색상 <span style={{ color: '#FF4040', marginLeft: '2px' }}>*</span></span>
                                 {color && material && (() => {
-                                    const found = (MATERIAL_COLORS[material] ?? []).find((c) => c.name === color);
+                                    const found = (materialColors[material] ?? []).find((c) => c.name === color);
                                     return found
                                         ? <span className={styles.colorSelectedLabel}>{found.hex === TRANSPARENT_SENTINEL ? found.name : `${found.name}(${found.hex})`}</span>
                                         : null;
@@ -942,9 +870,9 @@ export default function QuotePage() {
                                 {!color && <span className={styles.colorPlaceholder}>선택해주세요</span>}
                             </div>
 
-                            {material && (MATERIAL_COLORS[material] ?? []).length > 0 ? (
+                            {material && (materialColors[material] ?? []).length > 0 ? (
                                 <div className={styles.colorGrid}>
-                                    {(MATERIAL_COLORS[material] ?? []).map((colorOption) => {
+                                    {(materialColors[material] ?? []).map((colorOption) => {
                                         const isSelected = color === colorOption.name;
                                         const isTransparent = colorOption.hex === TRANSPARENT_SENTINEL;
                                         const circleClasses = [
@@ -1211,7 +1139,7 @@ export default function QuotePage() {
                         {/* 이용약관 섹션 - 유의사항 아래로 이동 */}
                         <div className={styles.termsSection}>
                             <div className={styles.termsHeader}>
-                                <h3 className={styles.termsTitle}>Maker 3D 쇼핑몰 이용약관</h3>
+                                <h3 className={styles.termsTitle}>Maker 3D 쇼핑몰이용약관</h3>
                                 <button
                                     className={styles.termsToggleBtn}
                                     onClick={() => setIsTermsExpanded(!isTermsExpanded)}
@@ -1293,12 +1221,7 @@ export default function QuotePage() {
 
                                 <div className={styles.termsItem}>
                                     <h4>부칙</h4>
-                                    <p>본 약관은 2025년 12월 30일부터 시행합니다.</p>
-                                </div>
-
-                                <div className={styles.termsItem}>
-                                    <h4>고객지원</h4>
-                                    <p>문의사항이 있으시면 고객센터 (054-462-4140)로 연락주시기 바랍니다.</p>
+                                    <p>본 약관은 2026년 03월 01일부터 시행합니다.</p>
                                 </div>
                             </div>
                         </div>

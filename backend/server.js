@@ -293,7 +293,7 @@ app.post('/api/upload-stl', upload.single('stlFile'), async (req, res) => {
     console.log('견적 정보:', { material, color });
 
     // PrusaSlicer로 프린팅 시간 계산
-    const printTime = await getPrintTime(filePath);
+    const printTime = await getPrintTime(filePath, material);
     console.log('프린팅 시간:', printTime);
 
     // 가격 계산 (개당 가격)
