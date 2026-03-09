@@ -86,6 +86,78 @@ function checkModelSize(stlFilePath) {
   };
 }
 
+// STL 파일의 모든 꼭짓점을 원점(0,0,0) 기준으로 이동시켜 임시 파일 생성
+function translateSTLToOrigin(inputPath) {
+  const buffer = fs.readFileSync(inputPath);
+  const triangleCount = buffer.readUInt32LE(80);
+  const expectedBinarySize = 84 + triangleCount * 50;
+  const isBinary = buffer.length === expectedBinarySize && triangleCount > 0;
+
+  let minX = Infinity, minY = Infinity, minZ = Infinity;
+
+  if (isBinary) {
+    for (let i = 0; i < triangleCount; i++) {
+      const base = 84 + i * 50 + 12;
+      for (let v = 0; v < 3; v++) {
+        const off = base + v * 12;
+        const x = buffer.readFloatLE(off);
+        const y = buffer.readFloatLE(off + 4);
+        const z = buffer.readFloatLE(off + 8);
+        if (isFinite(x)) minX = Math.min(minX, x);
+        if (isFinite(y)) minY = Math.min(minY, y);
+        if (isFinite(z)) minZ = Math.min(minZ, z);
+      }
+    }
+
+    if (Math.abs(minX) < 0.01 && Math.abs(minY) < 0.01 && Math.abs(minZ) < 0.01) {
+      return { path: inputPath, isTemp: false };
+    }
+
+    const newBuf = Buffer.from(buffer);
+    for (let i = 0; i < triangleCount; i++) {
+      const base = 84 + i * 50 + 12;
+      for (let v = 0; v < 3; v++) {
+        const off = base + v * 12;
+        newBuf.writeFloatLE(buffer.readFloatLE(off) - minX, off);
+        newBuf.writeFloatLE(buffer.readFloatLE(off + 4) - minY, off + 4);
+        newBuf.writeFloatLE(buffer.readFloatLE(off + 8) - minZ, off + 8);
+      }
+    }
+
+    const tempPath = inputPath + '_centered.stl';
+    fs.writeFileSync(tempPath, newBuf);
+    return { path: tempPath, isTemp: true };
+
+  } else {
+    // ASCII STL
+    const content = buffer.toString('utf8');
+    const vertexRegex = /vertex\s+([-\d.eE+]+)\s+([-\d.eE+]+)\s+([-\d.eE+]+)/g;
+    let match;
+    while ((match = vertexRegex.exec(content)) !== null) {
+      const x = parseFloat(match[1]);
+      const y = parseFloat(match[2]);
+      const z = parseFloat(match[3]);
+      if (isFinite(x)) minX = Math.min(minX, x);
+      if (isFinite(y)) minY = Math.min(minY, y);
+      if (isFinite(z)) minZ = Math.min(minZ, z);
+    }
+
+    if (Math.abs(minX) < 0.01 && Math.abs(minY) < 0.01 && Math.abs(minZ) < 0.01) {
+      return { path: inputPath, isTemp: false };
+    }
+
+    const translated = content.replace(
+      /vertex\s+([-\d.eE+]+)\s+([-\d.eE+]+)\s+([-\d.eE+]+)/g,
+      (_, x, y, z) =>
+        `vertex ${(parseFloat(x) - minX).toFixed(6)} ${(parseFloat(y) - minY).toFixed(6)} ${(parseFloat(z) - minZ).toFixed(6)}`
+    );
+
+    const tempPath = inputPath + '_centered.stl';
+    fs.writeFileSync(tempPath, translated, 'utf8');
+    return { path: tempPath, isTemp: true };
+  }
+}
+
 async function getPrintTime(stlFilePath, material) {
   const tempDir = path.join(__dirname, 'temp');
   const outputFileName = `output-${Date.now()}.gcode`;
@@ -121,12 +193,17 @@ async function getPrintTime(stlFilePath, material) {
       ? path.join(__dirname, 'ini', iniFileName)
       : path.join(__dirname, 'prusa-config.ini');
     console.log(`소재: ${material}, 설정 파일: ${configFile}`);
-    let command;
 
+    // STL 파일을 원점으로 이동 (좌표가 프린트 볼륨 밖에 있을 경우 대비)
+    const centered = translateSTLToOrigin(stlFilePath);
+    const stlToProcess = centered.path;
+    console.log(`STL 원점 이동: ${centered.isTemp ? '임시 파일 생성됨' : '이미 원점 근처'}`);
+
+    let command;
     if (fs.existsSync(configFile)) {
-      command = `"${prusaSlicerPath}" --export-gcode --center 0,0 --output "${outputFilePath}" --load "${configFile}" "${stlFilePath}"`;
+      command = `"${prusaSlicerPath}" --export-gcode --output "${outputFilePath}" --load "${configFile}" "${stlToProcess}"`;
     } else {
-      command = `"${prusaSlicerPath}" --export-gcode --center 0,0 --output "${outputFilePath}" --print-settings "0.20mm STRUCTURAL @XLIS 0.4" --fill-density 100% "${stlFilePath}"`;
+      command = `"${prusaSlicerPath}" --export-gcode --output "${outputFilePath}" --print-settings "0.20mm STRUCTURAL @XLIS 0.4" --fill-density 100% "${stlToProcess}"`;
     }
 
     console.log(`PrusaSlicer 실행 중: ${command}`);
@@ -134,6 +211,11 @@ async function getPrintTime(stlFilePath, material) {
     const { stdout, stderr } = await execAsync(command, {
       timeout: 60000
     });
+
+    // 임시 centered STL 파일 삭제
+    if (centered.isTemp && fs.existsSync(centered.path)) {
+      fs.unlinkSync(centered.path);
+    }
 
     if (stderr && !stderr.includes('Loading')) {
       console.warn('PrusaSlicer stderr:', stderr);
