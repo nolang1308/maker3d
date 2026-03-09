@@ -220,6 +220,21 @@ export default function NoticePage() {
                 workStatus: 'processing'
             });
 
+            try {
+                await fetch('/api/send-status-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderNumber: selectedOrder.orderNumber,
+                        customerName: selectedOrder.customerName,
+                        email: selectedOrder.email,
+                        status: 'processing',
+                    }),
+                });
+            } catch (emailError) {
+                console.error('상태 이메일 발송 오류:', emailError);
+            }
+
             setIsModalOpen(false);
             setSelectedOrder(null);
         } catch (error) {
@@ -280,6 +295,21 @@ export default function NoticePage() {
                 workStatus: 'completed'
             });
 
+            try {
+                await fetch('/api/send-status-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderNumber: completeOrder.orderNumber,
+                        customerName: completeOrder.customerName,
+                        email: completeOrder.email,
+                        status: 'completed',
+                    }),
+                });
+            } catch (emailError) {
+                console.error('상태 이메일 발송 오류:', emailError);
+            }
+
             setIsCompleteModalOpen(false);
             setCompleteOrder(null);
         } catch (error) {
@@ -309,6 +339,21 @@ export default function NoticePage() {
             await updateDoc(orderRef, {
                 paymentStatus: 'completed'
             });
+
+            try {
+                await fetch('/api/send-status-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderNumber: paymentOrder.orderNumber,
+                        customerName: paymentOrder.customerName,
+                        email: paymentOrder.email,
+                        status: 'payment_completed',
+                    }),
+                });
+            } catch (emailError) {
+                console.error('상태 이메일 발송 오류:', emailError);
+            }
 
             setIsPaymentModalOpen(false);
             setPaymentOrder(null);

@@ -55,9 +55,9 @@ async function getPrintTime(stlFilePath, material) {
     let command;
 
     if (fs.existsSync(configFile)) {
-      command = `"${prusaSlicerPath}" --export-gcode --output "${outputFilePath}" --load "${configFile}" "${stlFilePath}"`;
+      command = `"${prusaSlicerPath}" --export-gcode --center 0,0 --output "${outputFilePath}" --load "${configFile}" "${stlFilePath}"`;
     } else {
-      command = `"${prusaSlicerPath}" --export-gcode --output "${outputFilePath}" --print-settings "0.20mm STRUCTURAL @XLIS 0.4" --fill-density 100% "${stlFilePath}"`;
+      command = `"${prusaSlicerPath}" --export-gcode --center 0,0 --output "${outputFilePath}" --print-settings "0.20mm STRUCTURAL @XLIS 0.4" --fill-density 100% "${stlFilePath}"`;
     }
 
     console.log(`PrusaSlicer 실행 중: ${command}`);
