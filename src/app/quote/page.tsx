@@ -41,6 +41,7 @@ export default function QuotePage() {
     const [isProcessingOrder, setIsProcessingOrder] = useState(false);
     const [hasCalculatedEstimate, setHasCalculatedEstimate] = useState(false); // 견적 계산 완료 상태
     const [isFileSizeModalOpen, setIsFileSizeModalOpen] = useState(false); // 파일 용량 초과 모달
+    const [isEstimateErrorModalOpen, setIsEstimateErrorModalOpen] = useState(false); // 견적 오류 모달
     const [isPrintSizeModalOpen, setIsPrintSizeModalOpen] = useState(false); // 출력 크기 초과 모달
     const [isPrintSizeExceeded, setIsPrintSizeExceeded] = useState(false); // 출력 크기 초과 여부 (버튼 차단)
     const [overSizeDimensions, setOverSizeDimensions] = useState<{ x: number; y: number; z: number } | null>(null); // 초과된 치수
@@ -221,7 +222,7 @@ export default function QuotePage() {
                 setIsPrintSizeModalOpen(true);
             } else {
                 console.error('견적 계산 오류:', result.error);
-                alert('견적 계산에 실패했습니다. 다시 시도해주세요.');
+                setIsEstimateErrorModalOpen(true);
             }
         } catch (error) {
             console.error('네트워크 오류:', error);
@@ -1493,6 +1494,67 @@ export default function QuotePage() {
                             }}
                         >
                             확인
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* 견적 계산 오류 모달 */}
+            {isEstimateErrorModalOpen && (
+                <div
+                    onClick={() => setIsEstimateErrorModalOpen(false)}
+                    style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(0,0,0,0.5)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        zIndex: 9999
+                    }}
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            background: 'white', borderRadius: '16px',
+                            width: '90%', maxWidth: '420px',
+                            padding: '40px 32px',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center',
+                            textAlign: 'center',
+                            boxShadow: '0 4px 24px rgba(0,0,0,0.18)'
+                        }}
+                    >
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚨</div>
+                        <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#111827', margin: '0 0 12px 0' }}>
+                            견적 계산 오류
+                        </h3>
+                        <p style={{ fontSize: '15px', color: '#4B5563', lineHeight: 1.6, margin: '0 0 24px 0' }}>
+                            견적 계산 중 오류가 발생했습니다.<br />
+                            아래 톡톡으로 문의해 주세요.
+                        </p>
+                        <a
+                            href="https://talk.naver.com/ct/w4e4gt?frm=psf&resizeTo=1710,952nidref="
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                display: 'inline-block',
+                                fontSize: '15px', fontWeight: 600,
+                                color: 'white', background: '#03C75A',
+                                border: 'none', borderRadius: '8px',
+                                padding: '12px 28px', textDecoration: 'none',
+                                marginBottom: '16px'
+                            }}
+                        >
+                            네이버 톡톡으로 문의하기
+                        </a>
+                        <button
+                            onClick={() => setIsEstimateErrorModalOpen(false)}
+                            style={{
+                                width: '100%', height: '48px',
+                                background: '#F3F4F6', color: '#374151',
+                                fontSize: '16px', fontWeight: 600,
+                                border: 'none', borderRadius: '8px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            닫기
                         </button>
                     </div>
                 </div>

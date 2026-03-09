@@ -151,6 +151,9 @@ export default function STLViewer({ file, className, onDimensions, modelColor }:
           geometry.translate(-center.x * scale, -center.y * scale, -center.z * scale);
 
           const mesh = new THREE.Mesh(geometry, material);
+          mesh.rotation.x = -Math.PI / 2; // STL은 Z-up 좌표계, Three.js는 Y-up
+          // 회전 후 모델 바닥을 그리드(y=-1)에 맞춤
+          mesh.position.y = (size.z * scale) / 2 - 1;
           scene.add(mesh);
         }
 
