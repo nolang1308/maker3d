@@ -210,6 +210,15 @@ export default function QuotePage() {
                 setPrintTime(result.printTime);
                 setEstimatedPrice(result.estimatedPrice);
                 setHasCalculatedEstimate(true); // 견적 계산 완료 표시
+            } else if (result.error === '출력 크기 초과') {
+                const dim = result.dimensions;
+                setOverSizeDimensions({
+                    x: parseFloat(dim.x),
+                    y: parseFloat(dim.y),
+                    z: parseFloat(dim.z),
+                });
+                setIsPrintSizeExceeded(true);
+                setIsPrintSizeModalOpen(true);
             } else {
                 console.error('견적 계산 오류:', result.error);
                 alert('견적 계산에 실패했습니다. 다시 시도해주세요.');

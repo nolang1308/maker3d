@@ -17,6 +17,75 @@ const MATERIAL_INI_MAP = {
   'TPU':  'PrusaSlicer_config_bundle(TPU).ini',
 };
 
+const MAX_PRINT_SIZE_MM = 350; // 최대 출력 가능 크기 (mm)
+
+function getModelDimensions(stlFilePath) {
+  const buffer = fs.readFileSync(stlFilePath);
+
+  let minX = Infinity, minY = Infinity, minZ = Infinity;
+  let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+
+  // binary STL 여부 판별: 파일 크기 = 84 + triangleCount * 50
+  const triangleCountFromBinary = buffer.readUInt32LE(80);
+  const expectedBinarySize = 84 + triangleCountFromBinary * 50;
+  const isBinary = buffer.length === expectedBinarySize;
+
+  if (isBinary) {
+    for (let i = 0; i < triangleCountFromBinary; i++) {
+      const offset = 84 + i * 50;
+      for (let v = 0; v < 3; v++) {
+        const vOffset = offset + 12 + v * 12;
+        const x = buffer.readFloatLE(vOffset);
+        const y = buffer.readFloatLE(vOffset + 4);
+        const z = buffer.readFloatLE(vOffset + 8);
+        if (!isFinite(x) || !isFinite(y) || !isFinite(z)) continue;
+        minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+        minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z);
+      }
+    }
+  } else {
+    // ASCII STL
+    const content = buffer.toString('utf8');
+    const vertexRegex = /vertex\s+([-\d.eE+]+)\s+([-\d.eE+]+)\s+([-\d.eE+]+)/g;
+    let match;
+    while ((match = vertexRegex.exec(content)) !== null) {
+      const x = parseFloat(match[1]);
+      const y = parseFloat(match[2]);
+      const z = parseFloat(match[3]);
+      if (!isFinite(x) || !isFinite(y) || !isFinite(z)) continue;
+      minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+      minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z);
+    }
+  }
+
+  if (!isFinite(minX)) {
+    throw new Error('STL 파일에서 좌표 데이터를 읽을 수 없습니다.');
+  }
+
+  return {
+    x: Math.abs(maxX - minX),
+    y: Math.abs(maxY - minY),
+    z: Math.abs(maxZ - minZ),
+  };
+}
+
+function checkModelSize(stlFilePath) {
+  const dimensions = getModelDimensions(stlFilePath);
+  const exceeded = [];
+
+  if (dimensions.x > MAX_PRINT_SIZE_MM) exceeded.push(`X: ${dimensions.x.toFixed(1)}mm`);
+  if (dimensions.y > MAX_PRINT_SIZE_MM) exceeded.push(`Y: ${dimensions.y.toFixed(1)}mm`);
+  if (dimensions.z > MAX_PRINT_SIZE_MM) exceeded.push(`Z: ${dimensions.z.toFixed(1)}mm`);
+
+  return {
+    dimensions,
+    isValid: exceeded.length === 0,
+    exceeded,
+  };
+}
+
 async function getPrintTime(stlFilePath, material) {
   const tempDir = path.join(__dirname, 'temp');
   const outputFileName = `output-${Date.now()}.gcode`;
@@ -181,4 +250,4 @@ function formatTime(seconds) {
   }
 }
 
-export { getPrintTime };
+export { getPrintTime, checkModelSize };

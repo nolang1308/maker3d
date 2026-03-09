@@ -6,7 +6,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { getPrintTime } from './prusaClicer.js';
+import { getPrintTime, checkModelSize } from './prusaClicer.js';
 import archiver from 'archiver';
 
 // ES module에서 __dirname 구현
@@ -291,6 +291,22 @@ app.post('/api/upload-stl', upload.single('stlFile'), async (req, res) => {
 
     console.log('STL 파일 업로드됨:', filePath);
     console.log('견적 정보:', { material, color });
+
+    // 모델 크기 검사 (최대 350mm)
+    const sizeCheck = checkModelSize(filePath);
+    if (!sizeCheck.isValid) {
+      fs.unlinkSync(filePath);
+      return res.status(400).json({
+        error: '출력 크기 초과',
+        message: `모델 크기가 최대 출력 가능 크기(350mm)를 초과합니다.\n초과 항목: ${sizeCheck.exceeded.join(', ')}`,
+        dimensions: {
+          x: sizeCheck.dimensions.x.toFixed(1),
+          y: sizeCheck.dimensions.y.toFixed(1),
+          z: sizeCheck.dimensions.z.toFixed(1),
+        },
+      });
+    }
+    console.log('모델 크기 검사 통과:', sizeCheck.dimensions);
 
     // PrusaSlicer로 프린팅 시간 계산
     const printTime = await getPrintTime(filePath, material);
