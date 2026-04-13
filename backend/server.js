@@ -244,40 +244,26 @@ app.post('/api/upload', async (req, res) => {
 });
 
 // STL 파일 업로드 및 프린팅 시간 계산 API
-// 소재별 기본 가격 (원/시간)
+
+// ========================================================
+// ✅ 소재별 가격 설정 (원/분) — 여기서 단가를 수정하세요
+// ========================================================
 const MATERIAL_PRICES = {
-  '광경화성 레진': 15000,
-  'PLA': 8000,
-  'ABS': 10000,
-  'PETG': 12000,
-  'TPU': 18000
+  '광경화성 레진': 1000,
+  'PLA': 1000,
+  'ABS': 1000,
+  'PETG': 1000,
+  'TPU': 1000,
 };
+// ========================================================
 
-// 색상별 추가 비용 (원)
-const COLOR_PRICES = {
-  'G40-JG':   5000,
-  '화이트':      0,
-  '블랙':     2000,
-  '그레이':   1000,
-  '다크그레이': 1000,
-  '투명':     3000,
-  '빨강':     1500,
-  '파랑':     1500,
-  '네이비':   1500,
-  '초록':     1500,
-  '노랑':     1500,
-  '주황':     1500,
-  '보라':     1500,
-  '청록':     1500,
-};
-
-// 시간 문자열을 시간(숫자)로 변환하는 함수
-function parseTimeToHours(timeString) {
+// 시간 문자열을 분(숫자)로 변환하는 함수
+function parseTimeToMinutes(timeString) {
   const hours = timeString.match(/(\d+)h/)?.[1] || '0';
   const minutes = timeString.match(/(\d+)m/)?.[1] || '0';
   const seconds = timeString.match(/(\d+)s/)?.[1] || '0';
 
-  return parseInt(hours) + parseInt(minutes) / 60 + parseInt(seconds) / 3600;
+  return parseInt(hours) * 60 + parseInt(minutes) + parseInt(seconds) / 60;
 }
 
 app.post('/api/upload-stl', upload.single('stlFile'), async (req, res) => {
@@ -287,10 +273,10 @@ app.post('/api/upload-stl', upload.single('stlFile'), async (req, res) => {
     }
 
     const filePath = req.file.path;
-    const { material, color } = req.body;
+    const { material } = req.body;
 
     console.log('STL 파일 업로드됨:', filePath);
-    console.log('견적 정보:', { material, color });
+    console.log('견적 정보:', { material });
 
     // 모델 크기 검사 (최대 350mm)
     const sizeCheck = checkModelSize(filePath);
@@ -313,19 +299,15 @@ app.post('/api/upload-stl', upload.single('stlFile'), async (req, res) => {
     console.log('프린팅 시간:', printTime);
 
     // 가격 계산 (개당 가격)
-    const printHours = parseTimeToHours(printTime);
-    const materialPrice = MATERIAL_PRICES[material] || 10000;
-    const colorPrice = COLOR_PRICES[color] || 0;
+    const printMinutes = parseTimeToMinutes(printTime);
+    const materialPrice = MATERIAL_PRICES[material] || 167;
 
-    // 개당 가격 = (프린팅 시간 * 소재 시간당 가격) + 색상 추가 비용 + 기본 재료비
-    const baseMaterialCost = 20000; // 기본 재료비
-    const estimatedPrice = Math.round((printHours * materialPrice) + colorPrice + baseMaterialCost);
+    // 개당 가격 = 프린팅 시간(분) × 소재 분당 가격
+    const estimatedPrice = Math.round(printMinutes * materialPrice);
 
     console.log('가격 계산:', {
-      printHours: printHours.toFixed(2),
+      printMinutes: printMinutes.toFixed(2),
       materialPrice,
-      colorPrice,
-      baseMaterialCost,
       estimatedPrice
     });
 
@@ -338,9 +320,8 @@ app.post('/api/upload-stl', upload.single('stlFile'), async (req, res) => {
       estimatedPrice: estimatedPrice,
       originalName: req.file.originalname,
       calculation: {
-        printHours: printHours.toFixed(2),
+        printMinutes: printMinutes.toFixed(2),
         material: material,
-        color: color
       }
     });
 

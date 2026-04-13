@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, ReactElement } from 'react';
+import { useState, ReactElement, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import styles from './page.module.scss';
 import QnACard from '@/components/QnACard';
 
@@ -17,11 +18,13 @@ interface GuideCategory {
     questions: GuideQuestion[];
 }
 
-export default function ContactPage() {
+function ContactContent() {
     const [activeCategory, setActiveCategory] = useState('질문TOP');
     const [searchTerm, setSearchTerm] = useState('');
     const [expandedItems, setExpandedItems] = useState<number[]>([]);
     const [selectedQuestion, setSelectedQuestion] = useState<GuideQuestion | null>(null);
+    const [toastVisible, setToastVisible] = useState(false);
+    const searchParams = useSearchParams();
 
     const guideCategories: GuideCategory[] = [
         {
@@ -181,6 +184,28 @@ export default function ContactPage() {
         },
 
     ];
+
+    useEffect(() => {
+        const questionId = searchParams.get('questionId');
+        if (questionId) {
+            const id = parseInt(questionId);
+            const allQuestions = guideCategories.flatMap(cat => cat.questions);
+            const found = allQuestions.find(q => q.id === id);
+            if (found) {
+                const category = guideCategories.find(cat => cat.questions.some(q => q.id === id));
+                if (category) setActiveCategory(category.id);
+                setSelectedQuestion(found);
+            }
+        }
+    }, [searchParams]);
+
+    const handleShare = (question: GuideQuestion) => {
+        const url = `${window.location.origin}/contact?questionId=${question.id}`;
+        navigator.clipboard.writeText(url).then(() => {
+            setToastVisible(true);
+            setTimeout(() => setToastVisible(false), 2000);
+        });
+    };
 
     const getCurrentQuestions = () => {
         const currentCategory = guideCategories.find(cat => cat.id === activeCategory);
@@ -342,6 +367,15 @@ export default function ContactPage() {
 
     return (
         <div className={styles.container}>
+            {toastVisible && (
+                <div style={{
+                    position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
+                    background: '#333', color: '#fff', padding: '12px 24px',
+                    borderRadius: 8, zIndex: 9999, fontSize: 14
+                }}>
+                    링크가 복사됐습니다
+                </div>
+            )}
             <div className={styles.contactContainer}>
                 <p className={styles.title_1}>안녕하세요?</p>
                 <p className={styles.title_2}>Maker 3D는 고객 입장으로 생각합니다.</p>
@@ -403,7 +437,7 @@ export default function ContactPage() {
                                             </div>
                                             
                                             <div className={styles.answerActions}>
-                                                <button className={styles.shareButton}>
+                                                <button className={styles.shareButton} onClick={() => handleShare(selectedQuestion)}>
                                                     공유
                                                 </button>
                                             </div>
@@ -473,7 +507,7 @@ export default function ContactPage() {
                         </div>
                         
                         <div className={styles.serviceButtons}>
-                            <button className={styles.consultButton}>
+                            <button className={styles.consultButton} onClick={() => window.open('https://talk.naver.com/ct/w4e4gt?frm=psf', '_blank')}>
                                 1:1 문의
                             </button>
                         </div>
@@ -490,5 +524,13 @@ export default function ContactPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function ContactPage() {
+    return (
+        <Suspense>
+            <ContactContent />
+        </Suspense>
     );
 }

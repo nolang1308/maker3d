@@ -3,8 +3,10 @@
 import styles from './page.module.scss';
 import Image from 'next/image';
 import {useState} from 'react';
+import {useRouter} from 'next/navigation';
 
 export default function IntroPage() {
+    const router = useRouter();
 
 
     return (
@@ -70,7 +72,7 @@ export default function IntroPage() {
                         />
 
                     </div>
-                    <div className={styles.button}>
+                    <div className={styles.button} onClick={() => router.push('/store')} style={{cursor: 'pointer'}}>
                         <p className={styles.buttonTitle}>스토어 바로가기</p>
                         <Image
                             src="/arrow-right.svg"
