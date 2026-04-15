@@ -99,7 +99,7 @@ export default function IntroPage() {
                 <div className={styles.boldLine}></div>
                 <div className={styles.addressWrapper}>
                     <p className={styles.address}>주소</p>
-                    <p className={styles.info}>경상북도 구미시 수출대로 225-40 ㈜비트텍</p>
+                    <p className={styles.info}>경상북도 구미시 수출대로 152 세원테크노밸리 301호 ㈜비트텍</p>
                 </div>
                 <div className={styles.thinLine}></div>
                 <div className={styles.addressWrapper}>

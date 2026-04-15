@@ -3,6 +3,9 @@
 import styles from './page.module.scss';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import termsContent from '@/constants/agreements/terms';
+import privacyContent from '@/constants/agreements/privacy';
+import marketingContent from '@/constants/agreements/marketing';
 
 export default function SignupPage() {
     const router = useRouter();
@@ -41,7 +44,16 @@ export default function SignupPage() {
 
     const isFormValid = agreements.termsRequired && agreements.privacyRequired && agreements.ageRequired;
 
+    const [viewModal, setViewModal] = useState<{ title: string; content: string } | null>(null);
+
+    const agreementModals = {
+        terms: { title: '이용약관 동의', content: termsContent },
+        privacy: { title: '개인정보 수집 및 이용 동의', content: privacyContent },
+        marketing: { title: '마케팅 활용 동의 및 광고 수신 동의', content: marketingContent },
+    };
+
     return (
+        <>
         <div className={styles.container}>
             <div className={styles.signupContainer}>
                 <div className={styles.signupForm}>
@@ -71,14 +83,21 @@ export default function SignupPage() {
                             />
                             <label htmlFor="termsRequired" className={styles.checkboxLabel}>
                                 이용약관 동의 <span className={styles.required}>(필수)</span>
+
                             </label>
                         </div>
-                        <div className={styles.textBox}>
+                        <div className={styles.textBoxWrapper}>
+                            <div className={styles.textBox}>
+                                <pre>{termsContent}</pre>
+                            </div>
+                            <button className={styles.viewAllBtn} onClick={() => setViewModal(agreementModals.terms)}>
+                                전체보기
+                            </button>
                         </div>
 
                         <div className={styles.checkboxGroup}>
-                            <input 
-                                type="checkbox" 
+                            <input
+                                type="checkbox"
                                 id="privacyRequired"
                                 checked={agreements.privacyRequired}
                                 onChange={(e) => handleIndividualAgree('privacyRequired', e.target.checked)}
@@ -88,13 +107,18 @@ export default function SignupPage() {
                                 개인정보 수집 및 이용 동의 <span className={styles.required}>(필수)</span>
                             </label>
                         </div>
-                        <div className={styles.textBox}>
-
+                        <div className={styles.textBoxWrapper}>
+                            <div className={styles.textBox}>
+                                <pre>{privacyContent}</pre>
+                            </div>
+                            <button className={styles.viewAllBtn} onClick={() => setViewModal(agreementModals.privacy)}>
+                                전체보기
+                            </button>
                         </div>
 
                         <div className={styles.checkboxGroup}>
-                            <input 
-                                type="checkbox" 
+                            <input
+                                type="checkbox"
                                 id="marketingOptional"
                                 checked={agreements.marketingOptional}
                                 onChange={(e) => handleIndividualAgree('marketingOptional', e.target.checked)}
@@ -104,12 +128,18 @@ export default function SignupPage() {
                                 마케팅 활용 동의 및 광고 수신 동의
                             </label>
                         </div>
-                        <div className={styles.textBox}>
+                        <div className={styles.textBoxWrapper}>
+                            <div className={styles.textBox}>
+                                <pre>{marketingContent}</pre>
+                            </div>
+                            <button className={styles.viewAllBtn} onClick={() => setViewModal(agreementModals.marketing)}>
+                                전체보기
+                            </button>
                         </div>
 
                         <div className={styles.checkboxGroup}>
-                            <input 
-                                type="checkbox" 
+                            <input
+                                type="checkbox"
                                 id="messageOptional"
                                 checked={agreements.messageOptional}
                                 onChange={(e) => handleIndividualAgree('messageOptional', e.target.checked)}
@@ -175,5 +205,21 @@ export default function SignupPage() {
                 </div>
             </div>
         </div>
+
+            {/* 전체보기 모달 */}
+            {viewModal && (
+                <div className={styles.modalOverlay} onClick={() => setViewModal(null)}>
+                    <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h2 className={styles.modalTitle}>{viewModal.title}</h2>
+                            <button className={styles.modalCloseBtn} onClick={() => setViewModal(null)}>✕</button>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <pre>{viewModal.content}</pre>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     );
 }

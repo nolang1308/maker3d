@@ -31,7 +31,7 @@ const Footer = () => {
                                     <span>대표이사 : 장재영</span>
                                 </div>
                                 <div className={styles.infoRow}>
-                                    <span>주소 : 경상북도 구미시 수출대로 225-40, 2층</span>
+                                    <span>주소 : 경상북도 구미시 수출대로 152 세원테크노밸리 301호</span>
                                 </div>
                                 <div className={styles.infoRow}>
                                     <span>사업자번호 : 299-86-02451</span>

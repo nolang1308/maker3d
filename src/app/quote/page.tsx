@@ -41,6 +41,7 @@ export default function QuotePage() {
     const [isProcessingOrder, setIsProcessingOrder] = useState(false);
     const [hasCalculatedEstimate, setHasCalculatedEstimate] = useState(false); // 견적 계산 완료 상태
     const [isFileSizeModalOpen, setIsFileSizeModalOpen] = useState(false); // 파일 용량 초과 모달
+    const [emailCopied, setEmailCopied] = useState(false); // 이메일 복사 상태
     const [isEstimateErrorModalOpen, setIsEstimateErrorModalOpen] = useState(false); // 견적 오류 모달
     const [isPrintSizeModalOpen, setIsPrintSizeModalOpen] = useState(false); // 출력 크기 초과 모달
     const [isPrintSizeExceeded, setIsPrintSizeExceeded] = useState(false); // 출력 크기 초과 여부 (버튼 차단)
@@ -1444,7 +1445,7 @@ export default function QuotePage() {
             {/* 파일 용량 초과 모달 */}
             {isFileSizeModalOpen && (
                 <div
-                    onClick={() => setIsFileSizeModalOpen(false)}
+                    onClick={() => { setIsFileSizeModalOpen(false); setEmailCopied(false); }}
                     style={{
                         position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
                         background: 'rgba(0,0,0,0.5)',
@@ -1470,21 +1471,53 @@ export default function QuotePage() {
                         <p style={{ fontSize: '15px', color: '#4B5563', lineHeight: 1.6, margin: '0 0 20px 0' }}>
                             64MB 이상 파일은 아래 이메일로 파일을 보내주세요!
                         </p>
-                        <a
-                            href="mailto:3dstore@bittech3d.com"
+                        <button
+                            onClick={() => {
+                                navigator.clipboard.writeText('3dstore@bittech3d.com');
+                                setEmailCopied(true);
+                                setTimeout(() => setEmailCopied(false), 2000);
+                            }}
                             style={{
-                                display: 'inline-block',
+                                display: 'inline-flex', alignItems: 'center', gap: '8px',
                                 fontSize: '15px', fontWeight: 600,
-                                color: '#2493D8', background: '#F0F9FF',
-                                border: '1px solid #2493D8', borderRadius: '8px',
-                                padding: '10px 24px', textDecoration: 'none',
-                                marginBottom: '24px'
+                                color: '#2493D8',
+                                background: '#F0F9FF',
+                                border: '1px solid #2493D8',
+                                borderRadius: '8px',
+                                padding: '10px 24px',
+                                marginBottom: '8px',
+                                cursor: 'pointer',
                             }}
                         >
-                            3dstore@bittech3d.com
+                            📋 3dstore@bittech3d.com
+                        </button>
+                        <div style={{ height: '20px', marginBottom: '12px' }}>
+                            {emailCopied && (
+                                <p style={{ fontSize: '13px', color: '#059669', margin: 0, fontWeight: 600 }}>
+                                    ✓ 이메일 주소가 복사되었습니다
+                                </p>
+                            )}
+                        </div>
+                        <a
+                            href="https://talk.naver.com/ct/w4e4gt?frm=psf"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => setIsFileSizeModalOpen(false)}
+                            style={{
+                                display: 'block', width: '100%', height: '48px',
+                                lineHeight: '48px',
+                                background: '#F9FAFB', color: '#374151',
+                                fontSize: '15px', fontWeight: 600,
+                                border: '1px solid #D1D5DB', borderRadius: '8px',
+                                textDecoration: 'none',
+                                marginBottom: '10px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            1:1 문의하기
                         </a>
                         <button
-                            onClick={() => setIsFileSizeModalOpen(false)}
+                            onClick={() => { setIsFileSizeModalOpen(false); setEmailCopied(false); }}
                             style={{
                                 width: '100%', height: '48px',
                                 background: '#2493D8', color: 'white',

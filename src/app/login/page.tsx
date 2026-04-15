@@ -61,12 +61,13 @@ export default function LoginPage() {
 
                     <div className={styles.inputGroup}>
                         <label className={styles.label}>이메일</label>
-                        <input 
-                            type="email" 
+                        <input
+                            type="email"
                             className={styles.input}
                             placeholder="이메일을 입력해주세요."
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleLogin(); }}
                         />
                         {email && !validateEmail(email) && (
                             <div className={styles.fieldError}>
@@ -74,15 +75,16 @@ export default function LoginPage() {
                             </div>
                         )}
                     </div>
-                    
+
                     <div className={styles.inputGroup}>
                         <label className={styles.label}>비밀번호</label>
-                        <input 
-                            type="password" 
+                        <input
+                            type="password"
                             className={styles.input}
                             placeholder="영문, 숫자, 특수문자 포함 8자 이상"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleLogin(); }}
                         />
                     </div>
 
