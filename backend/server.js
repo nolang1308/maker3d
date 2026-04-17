@@ -246,15 +246,26 @@ app.post('/api/upload', async (req, res) => {
 // STL 파일 업로드 및 프린팅 시간 계산 API
 
 // ========================================================
-// ✅ 소재별 가격 설정 (원/분) — 여기서 단가를 수정하세요
+// ✅ 소재별 가격 계산 함수 — 여기서 단가를 수정하세요
 // ========================================================
-const MATERIAL_PRICES = {
-  '광경화성 레진': 1000,
-  'PLA': 1000,
-  'ABS': 1000,
-  'PETG': 1000,
-  'TPU': 1000,
-};
+function calculatePrice(material, printMinutes) {
+  const hours = printMinutes / 60;
+
+  if (material === 'PLA' || material === 'PETG') {
+    if (hours < 1) return 12000;
+    if (hours < 5) return Math.round(hours * 7000);
+    if (hours < 20) return Math.round(hours * 6000);
+    return Math.round(hours * 5000);
+  }
+
+  if (material === 'ABS' || material === 'TPU') {
+    if (hours < 1) return 12000;
+    return Math.round(hours * 8000);
+  }
+
+  // 광경화성 레진 또는 알 수 없는 소재 fallback
+  return Math.round(printMinutes * 167);
+}
 // ========================================================
 
 // 시간 문자열을 분(숫자)로 변환하는 함수
@@ -300,14 +311,11 @@ app.post('/api/upload-stl', upload.single('stlFile'), async (req, res) => {
 
     // 가격 계산 (개당 가격)
     const printMinutes = parseTimeToMinutes(printTime);
-    const materialPrice = MATERIAL_PRICES[material] || 167;
-
-    // 개당 가격 = 프린팅 시간(분) × 소재 분당 가격
-    const estimatedPrice = Math.round(printMinutes * materialPrice);
+    const estimatedPrice = calculatePrice(material, printMinutes);
 
     console.log('가격 계산:', {
       printMinutes: printMinutes.toFixed(2),
-      materialPrice,
+      material,
       estimatedPrice
     });
 
