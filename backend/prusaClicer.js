@@ -71,8 +71,14 @@ function getModelDimensions(stlFilePath) {
   };
 }
 
-function checkModelSize(stlFilePath) {
-  const dimensions = getModelDimensions(stlFilePath);
+function checkModelSize(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext !== '.stl') {
+    // OBJ/STP/STEP은 PrusaSlicer가 직접 처리하므로 크기 검사 생략
+    return { dimensions: { x: 0, y: 0, z: 0 }, isValid: true, exceeded: [] };
+  }
+
+  const dimensions = getModelDimensions(filePath);
   const exceeded = [];
 
   if (dimensions.x > MAX_PRINT_SIZE_MM) exceeded.push(`X: ${dimensions.x.toFixed(1)}mm`);
@@ -88,6 +94,12 @@ function checkModelSize(stlFilePath) {
 
 // STL 파일의 모든 꼭짓점을 원점(0,0,0) 기준으로 이동시켜 임시 파일 생성
 function translateSTLToOrigin(inputPath) {
+  const ext = path.extname(inputPath).toLowerCase();
+  if (ext !== '.stl') {
+    // OBJ/STP/STEP은 PrusaSlicer가 직접 처리하므로 변환 생략
+    return { path: inputPath, isTemp: false };
+  }
+
   const buffer = fs.readFileSync(inputPath);
   const triangleCount = buffer.readUInt32LE(80);
   const expectedBinarySize = 84 + triangleCount * 50;
