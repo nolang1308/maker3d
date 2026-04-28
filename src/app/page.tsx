@@ -225,49 +225,53 @@ export default function Home() {
                 </div>
                 <p className={styles.processTitle}>Maker 3D의 간단한 3D 프린팅 견적 진행 방법</p>
                 <div className={styles.processButtonWrapper}>
-                    <div
-                        className={`${styles.processButton} ${activeButton === 1 ? styles.active : ''}`}
-                        onClick={() => setActiveButton(1)}
-                    >
-                        <div className={styles.circle}>1</div>
-                        <p className={styles.processButtonText}>실시간 견적 확인하러가기</p>
-                    </div>
-                    <div
-                        className={`${styles.processButton} ${activeButton === 2 ? styles.active : ''}`}
-                        onClick={() => setActiveButton(2)}
-                    >
-                        <div className={styles.circle}>2</div>
-                        <p className={styles.processButtonText}>3D 모델링 파일 가져오기</p>
-                    </div>
-                    <div
-                        className={`${styles.processButton} ${activeButton === 3 ? styles.active : ''}`}
-                        onClick={() => setActiveButton(3)}
-                    >
-                        <div className={styles.circle}>3</div>
-                        <p className={styles.processButtonText}>색상 및 수량 선택하기</p>
-                    </div>
-                    <div
-                        className={`${styles.processButton} ${activeButton === 4 ? styles.active : ''}`}
-                        onClick={() => setActiveButton(4)}
-                    >
-                        <div className={styles.circle}>4</div>
-                        <p className={styles.processButtonText}>견적 요청 작성하기</p>
-                    </div>
-                    <div
-                        className={`${styles.processButton} ${activeButton === 5 ? styles.active : ''}`}
-                        onClick={() => setActiveButton(5)}
-                    >
-                        <div className={styles.circle}>5</div>
-                        <p className={styles.processButtonText}>온라인 결제하기</p>
-                    </div>
+                        <div
+                            className={`${styles.processButton} ${activeButton === 1 ? styles.active : ''}`}
+                            onClick={() => setActiveButton(1)}
+                        >
+                            <div className={styles.circle}>1</div>
+                            <p className={styles.processButtonText}>실시간 견적 확인하러가기</p>
+                        </div>
+                        <div
+                            className={`${styles.processButton} ${activeButton === 2 ? styles.active : ''}`}
+                            onClick={() => setActiveButton(2)}
+                        >
+                            <div className={styles.circle}>2</div>
+                            <p className={styles.processButtonText}>3D 모델링 파일 가져오기</p>
+                        </div>
+                        <div
+                            className={`${styles.processButton} ${activeButton === 3 ? styles.active : ''}`}
+                            onClick={() => setActiveButton(3)}
+                        >
+                            <div className={styles.circle}>3</div>
+                            <p className={styles.processButtonText}>색상 및 수량 선택하기</p>
+                        </div>
+                        <div
+                            className={`${styles.processButton} ${activeButton === 4 ? styles.active : ''}`}
+                            onClick={() => setActiveButton(4)}
+                        >
+                            <div className={styles.circle}>4</div>
+                            <p className={styles.processButtonText}>주문 정보 입력하기</p>
+                        </div>
+                        <div
+                            className={`${styles.processButton} ${activeButton === 5 ? styles.active : ''}`}
+                            onClick={() => setActiveButton(5)}
+                        >
+                            <div className={styles.circle}>5</div>
+                            <p className={styles.processButtonText}>견적 요청 후 완료문의 보내기</p>
+                        </div>
+
                 </div>
                 <div className={styles.processView}>
-                    <Image
-                        src={getProcessImage()}
-                        alt={`Process step ${activeButton}`}
-                        width={1044}
-                        height={587}
-                        className={styles.processImage}
+                    <video
+                        key={activeButton}
+                        src={`/process${activeButton}.mp4`}
+                        className={styles.processVideo}
+                        autoPlay
+                        muted
+                        playsInline
+                        loop
+                        controls
                     />
                 </div>
                 <div className={styles.image}>
