@@ -68,9 +68,54 @@ const pretendard = localFont({
   display: "swap",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://maker3d.co.kr';
+
 export const metadata: Metadata = {
-  title: "MAKER3D",
-  description: "3D프린팅 전문기업 - 당신의 상상력을 현실로 만드는 MAKER3D",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: 'MAKER3D | 3D 프린팅 전문 서비스',
+    template: '%s | MAKER3D',
+  },
+  description: '고품질 3D 프린팅 전문 서비스 MAKER3D. PLA·ABS·PETG·TPU·광경화성 레진 출력, 빠른 출하, 합리적인 가격으로 당신의 아이디어를 현실로 만들어 드립니다.',
+  keywords: ['3D 프린팅', '3D 프린터', '3D 출력', 'PLA', 'ABS', 'PETG', 'TPU', '광경화성 레진', '레진 출력', '시제품 제작', '소량생산', '구미 3D 프린팅', '경북 3D 프린팅', 'MAKER3D', '비트텍', '메이커3D'],
+  authors: [{ name: '(주)비트텍' }],
+  creator: '(주)비트텍',
+  publisher: '(주)비트텍',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'ko_KR',
+    url: SITE_URL,
+    siteName: 'MAKER3D',
+    title: 'MAKER3D | 3D 프린팅 전문 서비스',
+    description: '고품질 3D 프린팅 전문 서비스 MAKER3D. PLA·ABS·PETG·TPU·광경화성 레진 출력, 빠른 출하, 합리적인 가격.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'MAKER3D 3D 프린팅 전문 서비스',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'MAKER3D | 3D 프린팅 전문 서비스',
+    description: '고품질 3D 프린팅 전문 서비스 MAKER3D.',
+    images: ['/og-image.png'],
+  },
+  alternates: {
+    canonical: SITE_URL,
+  },
 };
 
 export default function RootLayout({
@@ -78,8 +123,41 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: 'MAKER3D',
+    alternateName: '(주)비트텍',
+    url: SITE_URL,
+    logo: `${SITE_URL}/logo.svg`,
+    image: `${SITE_URL}/og-image.png`,
+    description: '고품질 3D 프린팅 전문 서비스. PLA·ABS·PETG·TPU·광경화성 레진 출력.',
+    telephone: '054-462-4140',
+    email: '3dstore@bittech3d.com',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: '수출대로 152 세원테크노밸리 301호',
+      addressLocality: '구미시',
+      addressRegion: '경상북도',
+      addressCountry: 'KR',
+    },
+    openingHoursSpecification: {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      opens: '08:30',
+      closes: '19:00',
+    },
+    sameAs: [`https://talk.naver.com/ct/w4e4gt`],
+  };
+
   return (
-    <html lang="en">
+    <html lang="ko">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body
         className={`${pretendard.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
