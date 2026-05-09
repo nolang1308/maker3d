@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://maker3d.co.kr';
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://maker3d.co.kr').replace(/\/$/, '');
 
   return [
     {

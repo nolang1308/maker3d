@@ -51,7 +51,7 @@ const Header = () => {
                 <a href="/" className={styles.logo}>
                     <Image
                         src="/logo.svg"
-                        alt="MAKER 3D Logo"
+                        alt="MAKER 3D"
                         width={32}
                         height={32}
                         className={styles.logoIcon}

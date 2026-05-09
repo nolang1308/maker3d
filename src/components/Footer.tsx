@@ -9,7 +9,7 @@ const Footer = () => {
                 <div className={styles.logo}>
                     <Image
                         src="/logo.svg"
-                        alt="MAKER 3D Logo"
+                        alt="MAKER 3D"
                         width={185}
                         height={20}
                         className={styles.logoIcon}
