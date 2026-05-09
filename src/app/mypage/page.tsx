@@ -18,6 +18,7 @@ interface Order {
         fileName: string;
         material: string;
         color: string;
+        colorHex?: string;
         quantity: number;
         price: number;
     }[];
@@ -136,19 +137,36 @@ function OrdersSection({ userEmail }: { userEmail: string }) {
 
                         <div className={styles.filesList}>
                             <h4>주문 파일</h4>
-                            {order.files.map((file, index) => (
-                                <div key={index} className={styles.fileItem}>
-                                    <div className={styles.fileInfo}>
-                                        <span className={styles.fileName}>{file.fileName}</span>
-                                        <span className={styles.fileDetails}>
-                                            {file.material} | {file.color} | 수량: {file.quantity}개
+                            {order.files.map((file, index) => {
+                                const isTransparent = file.colorHex === 'TRANSPARENT' || !file.colorHex;
+                                return (
+                                    <div key={index} className={styles.fileItem}>
+                                        <div className={styles.fileInfo}>
+                                            <span className={styles.fileName}>{file.fileName}</span>
+                                            <span className={styles.fileDetails}>
+                                                {file.material} | 수량: {file.quantity}개
+                                            </span>
+                                            <div className={styles.colorRow}>
+                                                {isTransparent ? (
+                                                    <span className={styles.colorDotTransparent} />
+                                                ) : (
+                                                    <span
+                                                        className={styles.colorDot}
+                                                        style={{ backgroundColor: file.colorHex }}
+                                                    />
+                                                )}
+                                                <span className={styles.colorName}>{file.color}</span>
+                                                {!isTransparent && file.colorHex && (
+                                                    <span className={styles.colorHex}>{file.colorHex}</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <span className={styles.filePrice}>
+                                            ₩{(file.price * file.quantity).toLocaleString()}
                                         </span>
                                     </div>
-                                    <span className={styles.filePrice}>
-                                        ₩{(file.price * file.quantity).toLocaleString()}
-                                    </span>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
                         <div className={styles.totalPrice}>

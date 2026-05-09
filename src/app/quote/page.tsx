@@ -17,6 +17,7 @@ interface FileItem {
     fileName: string;
     material: string;
     color: string;
+    colorHex: string;
     quantity: number;
     price: number;
     file: File | null;
@@ -73,10 +74,11 @@ export default function QuotePage() {
                             fileName: quote.fileName,
                             material: quote.material,
                             color: quote.color,
+                            colorHex: quote.colorHex ?? '',
                             quantity: quote.quantity,
                             price: quote.price,
-                            file: null, // 파일은 백엔드에 저장되어 있음
-                            savedFilePath: quote.savedFilePath // 백엔드 파일 경로
+                            file: null,
+                            savedFilePath: quote.savedFilePath
                         }));
 
                         setFileItems(loadedItems);
@@ -327,11 +329,13 @@ export default function QuotePage() {
                 }
 
                 // 2. FileItem 생성 (savedFilePath 포함)
+                const selectedColorHex = (materialColors[material] ?? []).find((c) => c.name === color)?.hex ?? '';
                 const newItems: FileItem[] = uploadedFiles.map((file, index) => ({
                     id: Date.now() + index,
                     fileName: file.name,
                     material,
                     color,
+                    colorHex: selectedColorHex,
                     quantity,
                     price: estimatedPrice || Math.floor(Math.random() * 200000) + 50000,
                     file: file,
@@ -349,6 +353,7 @@ export default function QuotePage() {
                         fileName: item.fileName,
                         material: item.material,
                         color: item.color,
+                        colorHex: item.colorHex,
                         quantity: item.quantity,
                         price: item.price,
                         savedFilePath: item.savedFilePath,
@@ -474,10 +479,11 @@ export default function QuotePage() {
                 orderEmail: customerInfo.email, // 주문 시 입력한 이메일
                 userEmail: user?.email || '', // 로그인한 사용자의 계정 이메일
                 fileUrls: fileUrls,
-                files: fileItems.map((item, index) => ({
+                files: fileItems.map((item) => ({
                     fileName: item.fileName,
                     material: item.material,
                     color: item.color,
+                    colorHex: item.colorHex,
                     quantity: item.quantity,
                     price: item.price
                 })),
@@ -598,10 +604,11 @@ export default function QuotePage() {
                 orderEmail: customerInfo.email,
                 userEmail: user?.email || '',
                 fileUrls: fileUrls,
-                files: fileItems.map((item, index) => ({
+                files: fileItems.map((item) => ({
                     fileName: item.fileName,
                     material: item.material,
                     color: item.color,
+                    colorHex: item.colorHex,
                     quantity: item.quantity,
                     price: item.price
                 })),
@@ -631,6 +638,7 @@ export default function QuotePage() {
                             fileName: item.fileName,
                             material: item.material,
                             color: item.color,
+                            colorHex: item.colorHex,
                             quantity: item.quantity,
                             price: item.price
                         })),

@@ -3,12 +3,24 @@
 import React from 'react';
 import styles from './index.module.scss';
 
+const TRANSPARENT_SENTINEL = 'TRANSPARENT';
+
+interface OrderFile {
+    fileName?: string;
+    material: string;
+    color: string;
+    colorHex?: string;
+    quantity: number;
+    price?: number;
+}
+
 interface OrderListItemProps {
     orderNumber: string;
     customerName: string;
     phoneNumber: string;
     email: string;
     fileUrls: string[];
+    files?: OrderFile[];
     paymentAmount: number;
     paymentStatus: string;
     orderDate: string;
@@ -27,6 +39,7 @@ export default function OrderListItem({
     phoneNumber,
     email,
     fileUrls,
+    files = [],
     paymentAmount,
     paymentStatus,
     orderDate,
@@ -156,6 +169,31 @@ export default function OrderListItem({
                         다운로드
                     </button>
                 </div>
+            </div>
+
+            {/* 색상 컬럼 */}
+            <div className={styles.colorColumn}>
+                {files.length > 0 ? files.map((f, i) => {
+                    const isTransparent = f.colorHex === TRANSPARENT_SENTINEL || !f.colorHex;
+                    return (
+                        <div key={i} className={styles.colorRow}>
+                            {isTransparent ? (
+                                <span className={styles.colorDotTransparent} />
+                            ) : (
+                                <span
+                                    className={styles.colorDot}
+                                    style={{ backgroundColor: f.colorHex }}
+                                />
+                            )}
+                            <span className={styles.colorName}>{f.color}</span>
+                            {!isTransparent && f.colorHex && (
+                                <span className={styles.colorHex}>{f.colorHex}</span>
+                            )}
+                        </div>
+                    );
+                }) : (
+                    <span className={styles.colorEmpty}>-</span>
+                )}
             </div>
 
             {/* 결제 금액 컬럼 */}

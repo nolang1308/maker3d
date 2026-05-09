@@ -21,6 +21,8 @@
   max-width: 500px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   animation: slideUp 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .modalHeader {
@@ -99,27 +101,63 @@
     background-color: #F5F5F7;
     color: #1D1D1F;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background-color: #E5E5EA;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
   }
 
   .confirmButton {
     background-color: #007AFF;
     color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background-color: #0056CC;
+    }
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
     }
 
     &.dangerButton {
       background-color: #FF3B30;
 
-      &:hover {
+      &:hover:not(:disabled) {
         background-color: #D32F2F;
       }
     }
   }
+
+}
+
+.loadingOverlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+  z-index: 10;
+}
+
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 @keyframes fadeIn {

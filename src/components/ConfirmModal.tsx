@@ -5,6 +5,7 @@ import styles from './ConfirmModal.module.scss';
 
 interface ConfirmModalProps {
     isOpen: boolean;
+    loading?: boolean;
     title?: string;
     message?: string;
     orderNumber: string;
@@ -19,6 +20,7 @@ interface ConfirmModalProps {
 
 export default function ConfirmModal({
     isOpen,
+    loading = false,
     title = '주문 처리 확인',
     message = '해당 주문을 진행하시겠습니까?',
     orderNumber,
@@ -33,7 +35,7 @@ export default function ConfirmModal({
     if (!isOpen) return null;
 
     return (
-        <div className={styles.modalOverlay} onClick={onCancel}>
+        <div className={styles.modalOverlay} onClick={loading ? undefined : onCancel}>
             <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
                 <div className={styles.modalHeader}>
                     <h2>{title}</h2>
@@ -69,16 +71,20 @@ export default function ConfirmModal({
                     <button
                         className={styles.cancelButton}
                         onClick={onCancel}
+                        disabled={loading}
                     >
                         취소
                     </button>
                     <button
                         className={`${styles.confirmButton} ${confirmButtonColor === 'danger' ? styles.dangerButton : ''}`}
                         onClick={onConfirm}
+                        disabled={loading}
                     >
-                        {confirmButtonText}
+                        {loading ? <span className={styles.spinner} /> : confirmButtonText}
                     </button>
                 </div>
+
+                {loading && <div className={styles.loadingOverlay} />}
             </div>
         </div>
     );

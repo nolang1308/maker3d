@@ -277,23 +277,28 @@
           flex: 1;
           text-align: left;
         }
-        
-        &:nth-child(4) { // 결제 금액
+
+        &:nth-child(4) { // 색상
+          flex: 1.2;
+          text-align: left;
+        }
+
+        &:nth-child(5) { // 결제 금액
           flex: 1;
           text-align: left;
         }
-        
-        &:nth-child(5) { // 주문 시간
+
+        &:nth-child(6) { // 주문 시간
           flex: 1;
           text-align: left;
         }
-        
-        &:nth-child(6) { // 작업
+
+        &:nth-child(7) { // 작업
           flex: 1;
           text-align: left;
         }
-        
-        &:nth-child(7) { // 취소 (빈 공간)
+
+        &:nth-child(8) { // 취소 (빈 공간)
           flex: 0.5;
           text-align: left;
         }

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
+const TRANSPARENT_SENTINEL = 'TRANSPARENT';
+
 interface OrderEmailData {
   orderNumber: string;
   customerName: string;
@@ -11,10 +13,30 @@ interface OrderEmailData {
     fileName: string;
     material: string;
     color: string;
+    colorHex?: string;
     quantity: number;
     price: number;
   }[];
   orderDate: string;
+}
+
+function buildColorCell(color: string, colorHex?: string): string {
+  const isTransparent = colorHex === TRANSPARENT_SENTINEL || !colorHex;
+
+  const circle = isTransparent
+    ? `<span style="display:inline-block; width:14px; height:14px; border-radius:50%;
+                    border: 2px solid #d1d5db;
+                    background: linear-gradient(135deg, #fff 40%, #d1d5db 100%);
+                    vertical-align: middle; margin-right: 5px;"></span>`
+    : `<span style="display:inline-block; width:14px; height:14px; border-radius:50%;
+                    background:${colorHex}; border: 1px solid rgba(0,0,0,0.12);
+                    vertical-align: middle; margin-right: 5px;"></span>`;
+
+  const hexLabel = (!isTransparent && colorHex)
+    ? ` <span style="color:#9ca3af; font-size:11px;">${colorHex}</span>`
+    : '';
+
+  return `${circle}${color}${hexLabel}`;
 }
 
 export async function POST(request: NextRequest) {
@@ -34,7 +56,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Gmail SMTP 설정
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -43,13 +64,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // 파일 목록 HTML 생성
     const filesHtml = data.files.map((file, index) => `
       <tr>
         <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${index + 1}</td>
         <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${file.fileName}</td>
         <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${file.material}</td>
-        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${file.color}</td>
+        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${buildColorCell(file.color, file.colorHex)}</td>
         <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${file.quantity}개</td>
         <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">₩${file.price.toLocaleString()}</td>
       </tr>
@@ -58,7 +78,7 @@ export async function POST(request: NextRequest) {
     // 이메일 HTML 템플릿
     const emailHtml = `
     <!DOCTYPE html>
-    <html>
+    <html lang="ko">
     <head>
       <meta charset="utf-8">
       <style>
@@ -142,7 +162,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('이메일 발송 오류:', error);
     return NextResponse.json(
-      { success: false, message: '이메일 발송 실패', error: String(error) },
+      { success: false, message: '이메일 발송 실패' },
       { status: 500 }
     );
   }

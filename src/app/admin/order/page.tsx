@@ -9,12 +9,22 @@ import ConfirmModal from '../../../components/ConfirmModal';
 import { db } from '@/config/firebase';
 import { collection, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 
+interface OrderFile {
+    fileName?: string;
+    material: string;
+    color: string;
+    colorHex?: string;
+    quantity: number;
+    price?: number;
+}
+
 interface Order {
     orderNumber: string;
     customerName: string;
     phoneNumber: string;
     email: string;
     fileUrls: string[];
+    files: OrderFile[];
     paymentAmount: number;
     paymentStatus: string;
     orderDate: string;
@@ -36,6 +46,7 @@ export default function NoticePage() {
     const [completeOrder, setCompleteOrder] = useState<Order | null>(null);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [paymentOrder, setPaymentOrder] = useState<Order | null>(null);
+    const [isActionLoading, setIsActionLoading] = useState(false);
 
     // 페이지별 칩 설정
     const quoteChips = ['전체', '결제대기'];
@@ -80,6 +91,7 @@ export default function NoticePage() {
                     phoneNumber: data.phoneNumber || '',
                     email: data.orderEmail || data.email || '',
                     fileUrls: data.fileUrls || [],
+                    files: data.files || [],
                     paymentAmount: data.totalPrice || 0,
                     paymentStatus: paymentStatusText,
                     orderDate: data.orderDate ? data.orderDate.split(' ')[0] : '',
@@ -212,8 +224,8 @@ export default function NoticePage() {
 
     // 모달 확인 버튼 핸들러
     const handleConfirm = async () => {
-        if (!selectedOrder) return;
-
+        if (!selectedOrder || isActionLoading) return;
+        setIsActionLoading(true);
         try {
             const orderRef = doc(db, 'orders', selectedOrder.orderNumber);
             await updateDoc(orderRef, {
@@ -229,6 +241,14 @@ export default function NoticePage() {
                         customerName: selectedOrder.customerName,
                         email: selectedOrder.email,
                         status: 'processing',
+                        orderItems: selectedOrder.files.map((f) => ({
+                            fileName: f.fileName,
+                            material: f.material,
+                            color: f.color,
+                            colorHex: f.colorHex,
+                            quantity: f.quantity,
+                            price: f.price,
+                        })),
                     }),
                 });
             } catch (emailError) {
@@ -240,6 +260,8 @@ export default function NoticePage() {
         } catch (error) {
             console.error('주문 상태 변경 오류:', error);
             alert('주문 상태 변경에 실패했습니다.');
+        } finally {
+            setIsActionLoading(false);
         }
     };
 
@@ -257,8 +279,8 @@ export default function NoticePage() {
 
     // 주문 취소 확인 핸들러
     const handleConfirmCancel = async () => {
-        if (!cancelOrder) return;
-
+        if (!cancelOrder || isActionLoading) return;
+        setIsActionLoading(true);
         try {
             const orderRef = doc(db, 'orders', cancelOrder.orderNumber);
             await updateDoc(orderRef, {
@@ -270,6 +292,8 @@ export default function NoticePage() {
         } catch (error) {
             console.error('주문 취소 오류:', error);
             alert('주문 취소에 실패했습니다.');
+        } finally {
+            setIsActionLoading(false);
         }
     };
 
@@ -287,8 +311,8 @@ export default function NoticePage() {
 
     // 처리완료 확인 핸들러
     const handleConfirmComplete = async () => {
-        if (!completeOrder) return;
-
+        if (!completeOrder || isActionLoading) return;
+        setIsActionLoading(true);
         try {
             const orderRef = doc(db, 'orders', completeOrder.orderNumber);
             await updateDoc(orderRef, {
@@ -304,6 +328,14 @@ export default function NoticePage() {
                         customerName: completeOrder.customerName,
                         email: completeOrder.email,
                         status: 'completed',
+                        orderItems: completeOrder.files.map((f) => ({
+                            fileName: f.fileName,
+                            material: f.material,
+                            color: f.color,
+                            colorHex: f.colorHex,
+                            quantity: f.quantity,
+                            price: f.price,
+                        })),
                     }),
                 });
             } catch (emailError) {
@@ -315,6 +347,8 @@ export default function NoticePage() {
         } catch (error) {
             console.error('주문 완료 처리 오류:', error);
             alert('주문 완료 처리에 실패했습니다.');
+        } finally {
+            setIsActionLoading(false);
         }
     };
 
@@ -332,8 +366,8 @@ export default function NoticePage() {
 
     // 결제완료 처리 확인 핸들러
     const handleConfirmPayment = async () => {
-        if (!paymentOrder) return;
-
+        if (!paymentOrder || isActionLoading) return;
+        setIsActionLoading(true);
         try {
             const orderRef = doc(db, 'orders', paymentOrder.orderNumber);
             await updateDoc(orderRef, {
@@ -349,6 +383,14 @@ export default function NoticePage() {
                         customerName: paymentOrder.customerName,
                         email: paymentOrder.email,
                         status: 'payment_completed',
+                        orderItems: paymentOrder.files.map((f) => ({
+                            fileName: f.fileName,
+                            material: f.material,
+                            color: f.color,
+                            colorHex: f.colorHex,
+                            quantity: f.quantity,
+                            price: f.price,
+                        })),
                     }),
                 });
             } catch (emailError) {
@@ -360,6 +402,8 @@ export default function NoticePage() {
         } catch (error) {
             console.error('결제 완료 처리 오류:', error);
             alert('결제 완료 처리에 실패했습니다.');
+        } finally {
+            setIsActionLoading(false);
         }
     };
 
@@ -446,6 +490,7 @@ export default function NoticePage() {
                     <p>주문번호</p>
                     <p>고객 정보</p>
                     <p>파일</p>
+                    <p>색상</p>
                     <p>결제 금액</p>
                     <p>주문 시간</p>
                     <p>작업</p>
@@ -471,6 +516,7 @@ export default function NoticePage() {
                                 phoneNumber={order.phoneNumber}
                                 email={order.email}
                                 fileUrls={order.fileUrls}
+                                files={order.files}
                                 paymentAmount={order.paymentAmount}
                                 paymentStatus={order.paymentStatus}
                                 orderDate={order.orderDate}
@@ -491,6 +537,7 @@ export default function NoticePage() {
             {/* 처리 시작 확인 모달 */}
             <ConfirmModal
                 isOpen={isModalOpen}
+                loading={isActionLoading}
                 title="주문 처리 확인"
                 message="해당 주문을 진행하시겠습니까?"
                 orderNumber={selectedOrder?.orderNumber || ''}
@@ -506,6 +553,7 @@ export default function NoticePage() {
             {/* 주문 취소 확인 모달 */}
             <ConfirmModal
                 isOpen={isCancelModalOpen}
+                loading={isActionLoading}
                 title="주문 취소 확인"
                 message="해당 주문을 취소하시겠습니까?"
                 orderNumber={cancelOrder?.orderNumber || ''}
@@ -521,6 +569,7 @@ export default function NoticePage() {
             {/* 처리완료 확인 모달 */}
             <ConfirmModal
                 isOpen={isCompleteModalOpen}
+                loading={isActionLoading}
                 title="주문 완료 확인"
                 message="해당 주문을 완료 처리하시겠습니까?"
                 orderNumber={completeOrder?.orderNumber || ''}
@@ -536,6 +585,7 @@ export default function NoticePage() {
             {/* 결제완료 처리 확인 모달 */}
             <ConfirmModal
                 isOpen={isPaymentModalOpen}
+                loading={isActionLoading}
                 title="결제 완료 확인"
                 message="해당 견적의 결제를 완료 처리하시겠습니까?"
                 orderNumber={paymentOrder?.orderNumber || ''}
