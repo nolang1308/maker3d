@@ -1,16 +1,5 @@
 @use 'sass:color';
 @import '../styles/style-system';
-.hiddenBox{
-  position: absolute;
-  width: 100px;
-  height: 100px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  //background-color: #1a1a1a;
-  border: 0;
-}
 
 .container {
   display: flex;
@@ -671,6 +660,78 @@
       }
 
     }
+    .searchSection {
+      margin-top: 140px;
+      width: 100%;
+      max-width: 1320px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+
+      @media (max-width: 1024px) {
+        margin-top: 100px;
+        padding: 0 20px;
+      }
+
+      @media (max-width: 800px) {
+        margin-top: 80px;
+        gap: 20px;
+        padding: 0;
+      }
+
+      .searchSectionTitle {
+        @include headline-medium();
+        color: #0a0a0a;
+        text-align: center;
+
+        @media (max-width: 1024px) {
+          @include headline-small();
+        }
+
+        @media (max-width: 800px) {
+          font-size: 18px;
+        }
+      }
+
+      .hashtagWrapper {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+
+        @media (max-width: 800px) {
+          gap: 8px;
+        }
+      }
+
+      .hashtag {
+        @include body-large();
+        color: #2493D8;
+        background-color: rgba(36, 147, 216, 0.08);
+        border: 1.5px solid rgba(36, 147, 216, 0.3);
+        border-radius: 100px;
+        padding: 10px 22px;
+        cursor: default;
+        transition: background-color 0.2s ease, border-color 0.2s ease;
+        user-select: none;
+
+        &::before {
+          content: '#';
+        }
+
+        &:hover {
+          background-color: rgba(36, 147, 216, 0.15);
+          border-color: #2493D8;
+        }
+
+        @media (max-width: 800px) {
+          font-size: 13px;
+          padding: 8px 16px;
+        }
+      }
+    }
+
     .reviewWrapper{
       margin-top: 187px;
       width: 100%;

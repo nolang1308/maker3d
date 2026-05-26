@@ -119,7 +119,6 @@ export default function Home() {
     return (
         <>
             <QuickMenu />
-            <h1 className={styles.hiddenBox}>비트텍,메이커3d,3d프린터, 3d프린팅, 3프린터,구미3d프린터, 구미3d프린팅, 3d 프린트 외주</h1>
 
             {/* 팝업 오버레이 */}
             {visiblePopups.length > 0 && (
@@ -346,6 +345,19 @@ export default function Home() {
                     height={863}
                     className={styles.mainPhoto4}
                 />
+
+                <div className={styles.searchSection}>
+                    <p className={styles.searchSectionTitle}>지금 바로 검색창에 검색하세요!</p>
+                    <div className={styles.hashtagWrapper}>
+                        {[
+                            '3D프린터', '구미3D프린터', '3D프린팅', '3D출력',
+                            '시제품제작', '소량생산', '3D제작', 'PLA출력',
+                            '경북3D프린팅', 'MAKER3D', '메이커3D',
+                        ].map((tag) => (
+                            <span key={tag} className={styles.hashtag}>{tag}</span>
+                        ))}
+                    </div>
+                </div>
 
                 <div className={styles.reviewWrapper}>
                     <p className={styles.reviewTitle}>고객님들의 생생 리얼 후기!!</p>
