@@ -22,7 +22,7 @@ export default function Home() {
 
     const reviews = [
         {
-            review: "너무 마음에 들어요!! 10여년 전, 3D프린터 품질을 생각하고 반신반의하면서 의뢰를 드렸는데 출력물이 너무 잘 나와서 깜짝 놀랐네요. 자주 이용할 것 같아요!",
+            review: "너무 마음에 들어요!! 3D프린터 품질을 생각하고 반신반의하면서 의뢰를 드렸는데 출력물이 너무 잘 나와서 깜짝 놀랐네요. 자주 이용할 것 같아요!",
             name: "김철수"
         },
         {
@@ -119,6 +119,7 @@ export default function Home() {
     return (
         <>
             <QuickMenu />
+            <h1 className={styles.hiddenBox}>비트텍,메이커3d,3d프린터, 3d프린팅, 3프린터,구미3d프린터, 구미3d프린팅, 3d 프린트 외주</h1>
 
             {/* 팝업 오버레이 */}
             {visiblePopups.length > 0 && (
@@ -158,7 +159,7 @@ export default function Home() {
             <div className={styles.innerContainer}>
                 <Image
                     src="/mainPhoto.png"
-                    alt="MAKER 3D Logo"
+                    alt="MAKER3D 3D 프린팅 전문 서비스 메인 배너"
                     width={1600}
                     height={689}
                     className={styles.logoIcon}
@@ -167,7 +168,7 @@ export default function Home() {
                     <Link href="/store" className={styles.storeButton}>
                         <Image
                             src="/store.svg"
-                            alt="MAKER 3D Logo"
+                            alt="스토어"
                             width={19}
                             height={22}
                         />
@@ -176,7 +177,7 @@ export default function Home() {
                     <Link href="/quote" className={styles.checkQuoteButton}>
                         <Image
                             src="/checkQuote.svg"
-                            alt="MAKER 3D Logo"
+                            alt="견적 확인"
                             width={19}
                             height={22}
                         />
@@ -191,7 +192,7 @@ export default function Home() {
                     >
                         <Image
                             src="/kakao.svg"
-                            alt="MAKER 3D Logo"
+                            alt="카카오톡 상담"
                             width={19}
                             height={22}
                         />
@@ -218,12 +219,14 @@ export default function Home() {
                 <div className={styles.underArrow}>
                     <Image
                         src="/underArrow.svg"
-                        alt="MAKER 3D Logo"
+                        alt="아래로 스크롤"
                         width={22}
                         height={50}
                     />
                 </div>
-                <p className={styles.processTitle}>Maker 3D의 간단한 3D 프린팅 견적 진행 방법</p>
+                <h1 className={styles.processTitle}>Maker 3D의 간단한 3D 프린팅 견적 진행 방법
+
+                </h1>
                 <div className={styles.processButtonWrapper}>
                         <div
                             className={`${styles.processButton} ${activeButton === 1 ? styles.active : ''}`}
@@ -277,7 +280,7 @@ export default function Home() {
                 <div className={styles.image}>
                     <Image
                         src="/image.png"
-                        alt="MAKER 3D Logo"
+                        alt="MAKER3D 3D 프린팅 굿즈제작 스토어"
                         width={1434}
                         height={701}
                         className={styles.logoIcon}
@@ -296,14 +299,14 @@ export default function Home() {
                 </div>
                 <Image
                     src="/mainPhoto2.svg"
-                    alt="MAKER 3D Logo"
+                    alt="MAKER3D 3D 프린팅 서비스 소개"
                     width={1200}
                     height={790}
                     className={styles.mainPhoto2}
                 />
                 <Image
                     src="/mainPhoto3.svg"
-                    alt="MAKER 3D Logo"
+                    alt="MAKER3D PLA ABS PETG TPU 레진 소재 안내"
                     width={874}
                     height={166}
                     className={styles.mainPhoto3}
@@ -314,7 +317,7 @@ export default function Home() {
                         <div className={styles.box}>
                             <p className={styles.boxTitle}>제품을 대량생산 해야하는 고객</p>
                             <p className={styles.boxSubTitle}>PLA, ABS, PETG, TPU, 레진 소재가 기반이 되는 제품의</p>
-                            <p className={styles.boxSubTitle}>대량샌상이 필요한 고객에게 추천합니다.</p>
+                            <p className={styles.boxSubTitle}>대량생산이 필요한 고객에게 추천합니다.</p>
                         </div>
                         <div className={styles.box}>
                             <p className={styles.boxTitle}>시제품을 제작해야하는 고객</p>
@@ -338,7 +341,7 @@ export default function Home() {
                 </div>
                 <Image
                     src="/mainPhoto4.svg"
-                    alt="MAKER 3D Logo"
+                    alt="MAKER3D 3D 프린팅 포트폴리오"
                     width={1198}
                     height={863}
                     className={styles.mainPhoto4}
@@ -351,7 +354,7 @@ export default function Home() {
                         <div className={styles.reviewBtn} onClick={handlePrevReview}>
                             <Image
                                 src="/arrowLeft.svg"
-                                alt="MAKER 3D Logo"
+                                alt="이전 리뷰"
                                 width={10}
                                 height={19}
                             />
@@ -360,7 +363,7 @@ export default function Home() {
                         <div className={styles.reviewBtn} onClick={handleNextReview}>
                             <Image
                                 src="/arrowRight.svg"
-                                alt="MAKER 3D Logo"
+                                alt="다음 리뷰"
                                 width={10}
                                 height={19}
                             />

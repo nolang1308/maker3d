@@ -1,5 +1,16 @@
 @use 'sass:color';
 @import '../styles/style-system';
+.hiddenBox{
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  //background-color: #1a1a1a;
+  border: 0;
+}
 
 .container {
   display: flex;
@@ -199,7 +210,10 @@
       @include display-large();
       color: #0a0a0a;
       margin-top: 120px;
+      margin-bottom: 0;
       text-align: center;
+      font-weight: 900;
+
 
       @media (max-width: 1024px) {
         @include headline-medium();
