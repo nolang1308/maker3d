@@ -1,5 +1,23 @@
 @use 'sass:color';
-@import '../../styles/style-system';
+@use '../../styles/style-system' as *;
+
+$primary: #2493D8;
+$primary-dark: #1976c7;
+$text: #222222;
+$muted: #6b7280;
+$border: #e5e5e5;
+$panel: #f7f9fb;
+$tint: #ebf5ff;
+
+// 빠르게 나타나 부드럽게 멈춘다
+$ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+// 움직임을 줄여 달라고 한 사용자에게는 움직이지 않고 바로 보여준다
+@mixin motion {
+  @media (prefers-reduced-motion: no-preference) {
+    @content;
+  }
+}
 
 .container {
   width: 100%;
@@ -7,630 +25,1786 @@
   justify-content: center;
   background-color: #ffffff;
   padding-top: 90px;
-  .contactContainer {
-    padding: 15px;
+  // 머리 부분의 그림이 살짝 삐져나와도 가로로 넘기지 않게
+  overflow-x: clip;
+
+  @media (max-width: 768px) {
+    padding-top: 48px;
+  }
+}
+
+.contactContainer {
+  padding: 15px;
+  width: 100%;
+  max-width: 1200px;
+  // 한글은 단어 중간에서 끊기지 않게 한다
+  word-break: keep-all;
+}
+
+// ---------------------------------------------------------------------------
+// 머리 부분: 인사말 + 바로 가기 + 대화 그림
+// ---------------------------------------------------------------------------
+
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.heroText {
+  flex: 1;
+  min-width: 0;
+}
+
+.title_1,
+.title_2,
+.title_3 {
+  color: $text;
+
+  // 처음부터 보이되(첫 화면이 늦게 뜨지 않게) 흐릿한 채 아래에서 올라오며 또렷해진다
+  @include motion {
+    animation: lineIn 0.9s $ease-out both;
+  }
+}
+
+.title_1 {
+  @include headline-large();
+}
+
+.title_2 {
+  margin-top: 40px;
+  @include display-large();
+
+  @include motion {
+    animation-delay: 0.12s;
+  }
+
+  @media (max-width: 768px) {
+    margin-top: 24px;
+  }
+}
+
+.title_3 {
+  margin-top: 50px;
+  @include display-large();
+
+  @include motion {
+    animation-delay: 0.24s;
+  }
+
+  @media (max-width: 768px) {
+    margin-top: 28px;
+  }
+}
+
+@keyframes lineIn {
+  from {
+    transform: translateY(26px);
+    filter: blur(10px);
+  }
+
+  to {
+    transform: none;
+    filter: none;
+  }
+}
+
+// 바로 가기 버튼 세 개: "무엇을 도와드릴까요?" 에 바로 답한다
+.quickRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 32px;
+
+  @media (max-width: 768px) {
+    margin-top: 24px;
+  }
+
+  // 좁은 화면: 가장 많이 쓸 "가이드에서 찾기"를 한 줄 가득, 나머지 둘을 나란히
+  @media (max-width: 480px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+}
+
+.quickButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 20px;
+  border: 1px solid #d5dbe2;
+  border-radius: 999px;
+  background: #fff;
+  color: $text;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 0.25s $ease-out,
+    border-color 0.2s,
+    color 0.2s,
+    background-color 0.2s,
+    box-shadow 0.25s;
+
+  @include motion {
+    animation: popIn 0.6s $ease-out both;
+
+    &:nth-child(1) {
+      animation-delay: 0.42s;
+    }
+
+    &:nth-child(2) {
+      animation-delay: 0.5s;
+    }
+
+    &:nth-child(3) {
+      animation-delay: 0.58s;
+    }
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.3s $ease-out;
+  }
+
+  &:hover,
+  &:focus-visible {
+    border-color: $primary;
+    color: $primary;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba($primary, 0.16);
+    outline: none;
+
+    svg {
+      transform: scale(1.15) rotate(-8deg);
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  @media (max-width: 480px) {
+    justify-content: center;
+    height: 46px;
+    padding: 0 12px;
+    font-size: 14px;
+  }
+}
+
+.quickPrimary {
+  border-color: $primary;
+  background: $primary;
+  color: #fff;
+
+  @media (max-width: 480px) {
+    grid-column: 1 / -1;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: $primary-dark;
+    border-color: $primary-dark;
+    color: #fff;
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// 대화 그림: 실제 가이드의 문답이 번갈아 나온다. 넓은 화면에서만 보인다
+.heroTalk {
+  --px: 0;
+  --py: 0;
+  position: relative;
+  flex: none;
+  width: 380px;
+  height: 300px;
+
+  @media (max-width: 1024px) {
+    display: none;
+  }
+}
+
+.heroBubbles {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  // 답의 길이가 달라도 질문 말풍선이 늘 같은 자리에 오도록 위에서부터 놓는다
+  justify-content: flex-start;
+  gap: 14px;
+  padding: 72px 0 0;
+  border: none;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  // 마우스를 따라 살짝 움직인다
+  transform: translate(calc(var(--px) * 8px), calc(var(--py) * 6px));
+
+  &:focus-visible {
+    outline: 2px solid $primary;
+    outline-offset: 6px;
+    border-radius: 20px;
+  }
+}
+
+.bubbleAsk,
+.bubbleReply,
+.bubbleTyping {
+  max-width: 290px;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.bubbleAsk {
+  align-self: flex-end;
+  padding: 14px 20px;
+  border-bottom-right-radius: 6px;
+  background: $primary;
+  color: #fff;
+  box-shadow: 0 12px 24px rgba($primary, 0.28);
+  transform-origin: 100% 100%;
+
+  @include motion {
+    animation: bubbleIn 0.5s $ease-out both;
+  }
+}
+
+// 답을 쓰는 중: 점 세 개가 통통 튀다가 답 말풍선에 자리를 내준다
+.bubbleTyping {
+  display: none;
+  align-self: flex-start;
+  align-items: center;
+  gap: 6px;
+  height: 50px;
+  padding: 0 20px;
+  border-bottom-left-radius: 6px;
+  background: #eef1f4;
+  transform-origin: 0 100%;
+
+  @include motion {
+    display: inline-flex;
+    position: absolute;
+    left: 0;
+    top: 138px;
+    animation: typingShow 1.5s ease 0.5s both;
+  }
+
+  i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #9aa4b1;
+    animation: typingDot 0.9s ease-in-out infinite;
+
+    &:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    &:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+  }
+}
+
+.bubbleReply {
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 20px;
+  border-bottom-left-radius: 6px;
+  background: #fff;
+  color: $text;
+  border: 1px solid #e3e8ee;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.1);
+  transform-origin: 0 100%;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.25s;
+
+  @include motion {
+    animation: bubbleIn 0.55s $ease-out 1.9s both;
+  }
+
+  .heroBubbles:hover & {
+    border-color: $primary;
+    box-shadow: 0 16px 30px rgba($primary, 0.2);
+  }
+}
+
+.bubbleName {
+  font-size: 12px;
+  font-weight: 700;
+  color: $primary;
+}
+
+.bubbleMore {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: $muted;
+  transition: color 0.2s;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.25s $ease-out;
+  }
+
+  .heroBubbles:hover & {
+    color: $primary;
+
+    svg {
+      transform: translateX(4px);
+    }
+  }
+}
+
+@keyframes bubbleIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.6);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes typingShow {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+
+  18%,
+  82% {
+    opacity: 1;
+    transform: none;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+@keyframes typingDot {
+  0%,
+  60%,
+  100% {
+    transform: none;
+    opacity: 0.5;
+  }
+
+  30% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+}
+
+// 지금 몇 번째 문답인지
+.heroDots {
+  position: absolute;
+  left: 0;
+  bottom: 4px;
+  display: flex;
+  gap: 6px;
+
+  span {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: #d5dbe2;
+    transition:
+      width 0.4s $ease-out,
+      background-color 0.3s;
+  }
+
+  .heroDotOn {
+    width: 22px;
+    background: $primary;
+  }
+}
+
+// 뒤에 떠 있는 도형들: 마우스를 따라 저마다 다른 만큼 움직여 깊이감이 생긴다
+.heroShape {
+  position: absolute;
+  pointer-events: none;
+}
+
+.heroShapeRing {
+  top: 6px;
+  left: 18px;
+  width: 84px;
+  height: 84px;
+  border: 2px dashed rgba($primary, 0.35);
+  border-radius: 50%;
+  translate: calc(var(--px) * -14px) calc(var(--py) * -10px);
+
+  @include motion {
+    animation: spin 26s linear infinite;
+  }
+}
+
+.heroShapeDot {
+  right: 26px;
+  bottom: 22px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffc94d;
+  translate: calc(var(--px) * 18px) calc(var(--py) * 14px);
+
+  @include motion {
+    animation: bob 3.6s ease-in-out infinite;
+  }
+}
+
+.heroShapeCube {
+  right: 2px;
+  top: 10px;
+  width: 40px;
+  height: 40px;
+  border: 2px solid rgba($primary, 0.45);
+  border-radius: 9px;
+  translate: calc(var(--px) * 24px) calc(var(--py) * -16px);
+
+  @include motion {
+    animation: tilt 7s ease-in-out infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: none;
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes tilt {
+  0%,
+  100% {
+    rotate: 12deg;
+  }
+
+  50% {
+    rotate: -10deg;
+  }
+}
+
+// 인사말 아래의 선: 왼쪽에서 오른쪽으로 그어진다
+.line {
+  width: 100%;
+  height: 1px;
+  background-color: #0a0a0a;
+  margin-top: 48px;
+  transform-origin: 0 50%;
+
+  @include motion {
+    animation: lineDraw 1.1s $ease-out 0.5s both;
+  }
+
+  @media (max-width: 768px) {
+    margin-top: 32px;
+  }
+}
+
+@keyframes lineDraw {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: none;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 가이드
+// ---------------------------------------------------------------------------
+
+.guideSection {
+  // 첫 화면에서 질문 목록이 조금이라도 빨리 보이도록 선과의 간격을 줄였다 (원래 60px)
+  margin-top: 28px;
+  padding: 40px 0;
+  border-bottom: 1px solid $border;
+  // 머리 부분의 버튼으로 내려왔을 때 고정된 머리말(75px)에 가리지 않게
+  scroll-margin-top: 80px;
+
+  @media (max-width: 768px) {
+    margin-top: 24px;
+    padding: 32px 0;
+  }
+}
+
+.guideTitle {
+  @include display-medium();
+  color: $text;
+  margin-bottom: 24px;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    margin-bottom: 20px;
+  }
+}
+
+.searchBox {
+  display: flex;
+  justify-content: center;
+}
+
+.searchField {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  transition: max-width 0.45s $ease-out;
+
+  // 쓰기 시작하면 살짝 넓어진다
+  &.searchFocused {
+    max-width: 580px;
+  }
+}
+
+.searchIcon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  display: flex;
+  color: #9ca3af;
+  transform: translateY(-50%);
+  transition: color 0.2s;
+  pointer-events: none;
+
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .searchFocused & {
+    color: $primary;
+  }
+}
+
+.searchInput {
+  width: 100%;
+  height: 52px;
+  padding: 0 46px 0 46px;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  font-size: 16px;
+  color: #374151;
+  background-color: #ffffff;
+  transition:
+    border-color 0.25s,
+    box-shadow 0.25s;
+  appearance: none;
+
+  &::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 4px rgba($primary, 0.14);
+  }
+}
+
+// 비어 있을 때 번갈아 나오는 안내 문구
+.searchHint {
+  position: absolute;
+  left: 47px;
+  right: 46px;
+  top: 50%;
+  overflow: hidden;
+  color: #9ca3af;
+  font-size: 16px;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transform: translateY(-50%);
+  pointer-events: none;
+
+  @include motion {
+    animation: hintIn 0.5s $ease-out both;
+  }
+}
+
+@keyframes hintIn {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-50% + 12px));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(-50%);
+  }
+}
+
+.searchClear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: #eef1f4;
+  color: #6b7280;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    rotate 0.3s $ease-out;
+
+  &:hover {
+    background: $tint;
+    color: $primary;
+    rotate: 90deg;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+  }
+}
+
+// 많이 찾는 검색어
+.keywordRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 14px 0 28px;
+
+  @media (max-width: 768px) {
+    margin-bottom: 24px;
+  }
+}
+
+.keywordLabel {
+  margin-right: 4px;
+  font-size: 13px;
+  color: $muted;
+
+  @media (max-width: 480px) {
     width: 100%;
-    max-width: 1200px;
-    .title_1{
-      color: #222222;
-      @include headline-large();
+    margin: 0;
+    text-align: center;
+  }
+}
 
+.keyword {
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: $panel;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    transform 0.25s $ease-out,
+    background-color 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+
+  // 가이드가 화면에 들어오면 하나씩 톡톡 나타난다
+  @include motion {
+    opacity: 0;
+    scale: 0.8;
+
+    [data-shown='true'] & {
+      animation: keywordIn 0.45s $ease-out calc(0.25s + var(--i) * 0.05s) both;
     }
-    .title_2{
-      margin-top: 40px;
-      color: #222222;
-      @include display-large();
+  }
 
+  &:hover {
+    background: $tint;
+    color: $primary;
+    transform: translateY(-2px);
+  }
+}
+
+.keywordOn {
+  background: $primary;
+  color: #fff;
+
+  &:hover {
+    background: $primary-dark;
+    color: #fff;
+  }
+}
+
+@keyframes keywordIn {
+  from {
+    opacity: 0;
+    scale: 0.8;
+  }
+
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+.guideContent {
+  display: flex;
+  gap: 24px;
+  min-height: 420px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 16px;
+    min-height: 0;
+  }
+}
+
+// 왼쪽 분류. 고른 분류 뒤의 색 띠(.categoryPill)가 그 자리로 미끄러진다
+.categoryList {
+  position: relative;
+  flex: none;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  align-self: flex-start;
+  gap: 8px;
+  border-right: 1px solid $border;
+  padding-right: 24px;
+  min-height: 420px;
+
+  // 좁은 화면: 옆으로 넘기는 한 줄
+  @media (max-width: 768px) {
+    flex-direction: row;
+    align-self: stretch;
+    gap: 6px;
+    min-width: 0;
+    min-height: 0;
+    margin: 0 -15px;
+    padding: 0 15px 12px;
+    border-right: none;
+    border-bottom: 1px solid $border;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+      display: none;
     }
-    .title_3{
-      margin-top: 50px;
+  }
+}
 
-      color: #222222;
-      @include display-large();
+.categoryPill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 8px;
+  background: $tint;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.45s $ease-out,
+    width 0.45s $ease-out,
+    height 0.45s $ease-out,
+    opacity 0.25s;
 
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.categoryButton {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  color: #666666;
+  @include body-medium();
+  cursor: pointer;
+  transition:
+    color 0.25s,
+    background-color 0.25s;
+  text-align: left;
+  border-radius: 8px;
+  white-space: nowrap;
+
+  &:hover {
+    color: $primary;
+    background-color: rgba(248, 250, 252, 0.9);
+  }
+
+  &.active {
+    color: $primary;
+    font-weight: 600;
+    background: none;
+  }
+
+  @media (max-width: 768px) {
+    flex: none;
+    padding: 10px 14px;
+  }
+}
+
+.categoryCount {
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #f1f3f5;
+  color: #8a94a3;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+  transition:
+    background-color 0.25s,
+    color 0.25s;
+
+  .active & {
+    background: $primary;
+    color: #fff;
+  }
+}
+
+.questionContent {
+  flex: 1;
+  min-width: 0;
+  padding-left: 24px;
+  scroll-margin-top: 96px;
+
+  @media (max-width: 768px) {
+    padding-left: 0;
+  }
+}
+
+// 검색 결과 요약
+.resultSummary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 6px;
+  margin: 0 0 14px;
+  font-size: 15px;
+  color: #374151;
+
+  strong {
+    color: $primary;
+    font-weight: 700;
+  }
+
+  span {
+    margin-left: 4px;
+    font-size: 13px;
+    color: $muted;
+  }
+}
+
+.questionList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.questionItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 20px;
+  background-color: #ffffff;
+  border: 1px solid $border;
+  border-radius: 8px;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.3s $ease-out,
+    background-color 0.25s,
+    border-color 0.25s,
+    box-shadow 0.3s;
+
+  // 위에서부터 차례로 나타난다
+  @include motion {
+    animation: itemIn 0.5s $ease-out calc(var(--i, 0) * 0.055s) both;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background-color: #f8fafc;
+    border-color: $primary;
+    transform: translateX(6px);
+    box-shadow: 0 8px 18px rgba($primary, 0.1);
+    outline: none;
+
+    .questionIcon {
+      scale: 1.1;
+      rotate: -8deg;
     }
-    .line{
-      width: 100%;
-      height: 1px;
-      background-color: #0A0A0A;
-      margin-top: 48px;
+
+    .questionArrow {
+      opacity: 1;
+      transform: none;
     }
+  }
 
+  @media (max-width: 480px) {
+    padding: 14px;
+  }
+}
 
+@keyframes itemIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
 
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
 
+.questionIcon {
+  width: 32px;
+  height: 32px;
+  background-color: $primary;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  flex-shrink: 0;
+  transition:
+    scale 0.3s $ease-out,
+    rotate 0.3s $ease-out;
+}
 
-    .qnaSection {
-      margin-top: 60px;
-      padding: 40px 0;
-    }
+.questionBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
-    .qnaTitle {
-      color: #222222;
-      @include display-medium();
-      margin-bottom: 32px;
-    }
+.questionText {
+  @include body-large();
+  color: #1f2937;
+  font-weight: 500;
+  line-height: 1.5;
 
-    .qnaList {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
+  // 검색어와 같은 부분
+  mark {
+    padding: 0 2px;
+    border-radius: 4px;
+    background: #fff1b8;
+    color: inherit;
+  }
+}
 
-    .customerServiceSection {
-      margin-top: 51px;
-      margin-bottom: 100px;
-      border-radius: 12px;
-      max-width: 713px;
-      min-height: 200px;
-      .serviceHeader {
-        display: flex;
-        align-items: baseline;
-        gap: 12px;
+.categoryTag {
+  padding: 2px 8px;
+  background-color: $tint;
+  color: $primary;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  align-self: flex-start;
+}
+
+// 마우스를 올리면 나타나는 화살표
+.questionArrow {
+  display: flex;
+  flex: none;
+  color: $primary;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition:
+    opacity 0.25s,
+    transform 0.3s $ease-out;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  // 손가락으로 쓰는 화면에는 올려놓기가 없으므로 늘 보여준다
+  @media (hover: none) {
+    opacity: 0.55;
+    transform: none;
+  }
+}
+
+// 찾는 내용이 없을 때
+.emptyResult {
+  padding: 44px 20px;
+  border: 1px dashed #d5dbe2;
+  border-radius: 12px;
+  text-align: center;
+
+  @include motion {
+    animation: itemIn 0.45s $ease-out both;
+  }
+}
+
+.emptyTitle {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.emptyText {
+  margin: 0 0 18px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: $muted;
+}
+
+.emptyActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.emptyButton {
+  display: inline-flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 18px;
+  border: 1px solid #d5dbe2;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    background-color 0.2s;
+
+  &:hover {
+    border-color: $primary;
+    color: $primary;
+  }
+}
+
+.emptyPrimary {
+  border-color: $primary;
+  background: $primary;
+  color: #fff;
+
+  &:hover {
+    background: $primary-dark;
+    border-color: $primary-dark;
+    color: #fff;
+  }
+}
+
+// 질문 하나를 열었을 때
+.questionDetail {
+  @include motion {
+    animation: detailIn 0.5s $ease-out both;
+  }
+}
+
+@keyframes detailIn {
+  from {
+    opacity: 0;
+    transform: translateX(22px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.backButton {
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  color: $primary;
+  @include body-medium();
+  cursor: pointer;
+  margin-bottom: 24px;
+  transition:
+    background-color 0.25s,
+    transform 0.25s $ease-out;
+  border-radius: 6px;
+
+  &:hover {
+    background-color: #f0f9ff;
+    transform: translateX(-4px);
+  }
+}
+
+.detailCategory {
+  display: inline-block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: $primary;
+}
+
+.detailQuestion {
+  @include title-large();
+  color: #1f2937;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.questionTags {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+// 누르면 그 낱말로 검색한다
+.tag {
+  padding: 4px 12px;
+  border: none;
+  background-color: $tint;
+  color: $primary;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    transform 0.25s $ease-out;
+
+  &:hover {
+    background: $primary;
+    color: #fff;
+    transform: translateY(-2px);
+  }
+}
+
+.answerSection {
+  border-top: 1px solid $border;
+  padding-top: 24px;
+}
+
+.answerContent {
+  margin-bottom: 24px;
+
+  // 문단이 차례로 떠오른다
+  > * {
+    @include motion {
+      animation: itemIn 0.5s $ease-out both;
+
+      @for $i from 1 through 8 {
+        &:nth-child(#{$i}) {
+          animation-delay: #{0.1 + $i * 0.06}s;
+        }
       }
+    }
+  }
 
-      .serviceTitle {
-        @include title-large();
-        color: #222222;
-      }
+  p {
+    @include body-medium();
+    color: #4b5563;
+    line-height: 1.6;
+    margin: 0 0 16px 0;
 
-      .serviceTime {
-        @include title-large();
-        color: #2493D8;
-      }
-      @media (max-width: 1024px) {
-        flex-direction: column;
-        display: flex;
-        gap: 15px;
-    
-
-      }
-
-
+    &:last-child {
+      margin-bottom: 0;
     }
 
-
-    .serviceContent {
-      margin-top: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-
-      @media (max-width: 1024px) {
-        flex-direction: column;
-      }
+    &:empty {
+      margin: 0;
     }
+  }
 
-    .contactInfo {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+  h4 {
+    margin: 16px 0 8px;
+    font-weight: 700;
+  }
 
-    .contactItem {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
+  .bullet {
+    margin: 4px 0;
+    padding-left: 16px;
+  }
 
-    .contactLabel {
-      @include title-small();
-      color: #555555;
-      min-width: 80px;
+  // 좁은 화면에서 표가 페이지를 옆으로 밀지 않게, 표만 옆으로 넘긴다
+  .tableWrap {
+    margin: 16px 0;
+    border: 1px solid $border;
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+      padding: 12px 16px;
       text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid $border;
+      @include body-medium();
+    }
+
+    th {
+      background-color: #f8fafc;
+      font-weight: 600;
+      color: #374151;
+      white-space: nowrap;
+    }
+
+    td {
+      color: #4b5563;
+      line-height: 1.6;
+
+      &:first-child {
+        font-weight: 600;
+        color: #374151;
+        white-space: nowrap;
+      }
+    }
+
+    tr:last-child {
+      th,
+      td {
+        border-bottom: none;
+      }
+    }
+
+    tbody tr {
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: #f9fafb;
+      }
+    }
+
+    @media (max-width: 480px) {
+      th,
+      td {
+        padding: 10px 12px;
+      }
+
+      td:first-child {
+        white-space: normal;
+        min-width: 76px;
+      }
+    }
+  }
+}
+
+.answerActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.answerHelp {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: $muted;
+
+  a {
+    color: $primary;
+    font-weight: 600;
+    text-underline-offset: 3px;
+  }
+}
+
+.shareButton {
+  flex: none;
+  padding: 8px 20px;
+  background-color: $primary;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  @include body-medium();
+  cursor: pointer;
+  transition:
+    background-color 0.25s,
+    transform 0.25s $ease-out;
+
+  &:hover {
+    background-color: $primary-dark;
+    transform: translateY(-2px);
+  }
+}
+
+// 같은 분류의 다른 질문
+.related {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid $border;
+}
+
+.relatedTitle {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: $muted;
+}
+
+.relatedItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: #374151;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    transform 0.25s $ease-out;
+
+  svg {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin-left: auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.4;
+    transition:
+      transform 0.25s $ease-out,
+      opacity 0.2s;
+  }
+
+  &:hover {
+    background: $panel;
+    color: $primary;
+
+    svg {
+      opacity: 1;
+      transform: translateX(4px);
+    }
+  }
+}
+
+.relatedQ {
+  flex: none;
+  font-weight: 700;
+  color: $primary;
+}
+
+// ---------------------------------------------------------------------------
+// 고객센터
+// ---------------------------------------------------------------------------
+
+.centerAnchor {
+  scroll-margin-top: 90px;
+}
+
+.customerServiceSection {
+  margin-top: 51px;
+  margin-bottom: 100px;
+  padding: 32px 36px;
+  border-radius: 16px;
+  background: $panel;
+
+  @media (max-width: 768px) {
+    margin-top: 36px;
+    margin-bottom: 64px;
+    padding: 24px 20px;
+  }
+}
+
+// 화면에 들어오면 안의 내용이 차례로 떠오른다
+.serviceHeader,
+.contactItem,
+.serviceButtons,
+.serviceNotice {
+  @include motion {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.6s ease,
+      transform 0.7s $ease-out;
+
+    [data-shown='true'] & {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+.serviceHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.serviceTitle {
+  @include title-large();
+  color: $text;
+}
+
+.serviceTime {
+  @include title-large();
+  color: $primary;
+}
+
+.serviceContent {
+  margin-top: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.contactInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+// 누르면 전화 · 메일로 바로 이어진다
+.contactItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: -10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: inherit;
+  text-decoration: none;
+
+  @include motion {
+    transition:
+      opacity 0.6s ease,
+      transform 0.7s $ease-out,
+      background-color 0.2s;
+
+    &:nth-child(1) {
+      transition-delay: 0.08s, 0.08s, 0s;
+    }
+
+    &:nth-child(2) {
+      transition-delay: 0.16s, 0.16s, 0s;
+    }
+
+    &:nth-child(3) {
+      transition-delay: 0.24s, 0.24s, 0s;
+    }
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: #fff;
+    outline: none;
+
+    .contactIcon {
+      background: $primary;
+      color: #fff;
+      rotate: -8deg;
     }
 
     .contactValue {
-      @include body-large();
-      color: #000000;
-      font-weight: 500;
-    }
-
-    .serviceButtons {
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;
-      margin-top: 8px;
-
-      @media (max-width: 1024px) {
-        justify-content: center;
-        margin-top: 24px;
-      }
-    }
-
-    .consultButton {
-      width: 146px;
-      height: 56px;
-      border-radius: 12px;
-      background-color: #2493D8;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      @include title-small();
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-
-      &:hover {
-        background-color: #1976c7;
-      }
-    }
-
-    .serviceNotice {
-      margin-top: 24px;
-      padding-top: 16px;
-      border-top: 1px solid #E5E5E5;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .noticeItem {
-      @include body-medium();
-      color: #666666;
-      line-height: 1.5;
-    }
-
-  }
-
-  // FAQ 가이드 섹션
-  .guideSection {
-    margin-top: 60px;
-    padding: 40px 0;
-    border-bottom: 1px solid #E5E5E5;
-  }
-
-  .guideTitle {
-    @include display-medium();
-    color: #222222;
-    margin-bottom: 32px;
-    text-align: left;
-  }
-
-  .searchBox {
-    margin-bottom: 32px;
-  }
-
-  .searchInput {
-    width: 100%;
-    max-width: 500px;
-    height: 48px;
-    padding: 0 16px;
-    border: 1px solid #D1D5DB;
-    border-radius: 8px;
-    font-size: 16px;
-    color: #374151;
-    background-color: #FFFFFF;
-    transition: all 0.3s ease;
-
-    &::placeholder {
-      color: #9CA3AF;
-    }
-
-    &:focus {
-      outline: none;
-      border-color: #2493D8;
-      box-shadow: 0 0 0 3px rgba(36, 147, 216, 0.1);
+      color: $primary;
     }
   }
-
-  .categoryWrapper {
-    margin-bottom: 24px;
-  }
-
-  .categoryTabs {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    border-bottom: 1px solid #E5E5E5;
-  }
-
-  .categoryTab {
-    padding: 12px 20px;
-    border: none;
-    background: none;
-    color: #666666;
-    @include body-medium();
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-bottom: 2px solid transparent;
-    white-space: nowrap;
-
-    &:hover {
-      color: #2493D8;
-      background-color: #F8FAFC;
-    }
-
-    &.active {
-      color: #2493D8;
-      border-bottom-color: #2493D8;
-      font-weight: 600;
-    }
-  }
-
-  .faqList {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    background-color: #E5E5E5;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .faqItem {
-    background-color: #FFFFFF;
-    transition: all 0.3s ease;
-
-    &:hover {
-      background-color: #F8FAFC;
-    }
-
-    &.expanded {
-      .faqQuestion {
-        background-color: #F1F5F9;
-        border-bottom: 1px solid #E5E5E5;
-      }
-    }
-  }
-
-  .faqQuestion {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 24px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-
-    &:hover {
-      background-color: #F8FAFC;
-    }
-  }
-
-  .questionText {
-    @include body-large();
-    color: #1F2937;
-    font-weight: 500;
-    margin: 0;
-    flex: 1;
-    line-height: 1.5;
-  }
-
-  .expandIcon {
-    font-size: 20px;
-    font-weight: bold;
-    color: #2493D8;
-    margin-left: 16px;
-    transition: transform 0.3s ease;
-  }
-
-  .faqAnswer {
-    background-color: #FFFFFF;
-    border-top: 1px solid #E5E5E5;
-    animation: slideDown 0.3s ease;
-  }
-
-  .answerContent {
-    padding: 24px;
-    
-    p {
-      @include body-medium();
-      color: #4B5563;
-      line-height: 1.6;
-      margin: 0 0 16px 0;
-    }
-  }
-
-  .answerDate {
-    @include body-small();
-    color: #9CA3AF;
-    font-style: italic;
-  }
-
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      max-height: 0;
-    }
-    to {
-      opacity: 1;
-      max-height: 200px;
-    }
-  }
-
-  .guideSection {
-    margin-top: 60px;
-    padding: 40px 0;
-    border-bottom: 1px solid #E5E5E5;
-
-    .guideTitle {
-      @include display-medium();
-      color: #222222;
-      margin-bottom: 32px;
-      text-align: center;
-    }
-
-    .searchBox {
-      margin-bottom: 32px;
-      display: flex;
-      justify-content: center;
-
-      .searchInput {
-        width: 100%;
-        max-width: 500px;
-        height: 48px;
-        padding: 0 16px;
-        border: 1px solid #D1D5DB;
-        border-radius: 8px;
-        font-size: 16px;
-        color: #374151;
-        background-color: #FFFFFF;
-        transition: all 0.3s ease;
-
-        &::placeholder {
-          color: #9CA3AF;
-        }
-
-        &:focus {
-          outline: none;
-          border-color: #2493D8;
-          box-shadow: 0 0 0 3px rgba(36, 147, 216, 0.1);
-        }
-      }
-    }
-
-    .guideContent {
-      display: flex;
-      gap: 24px;
-      min-height: 500px;
-
-      @media (max-width: 768px) {
-        flex-direction: column;
-        gap: 16px;
-      }
-
-      .categoryList {
-        min-width: 200px;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        border-right: 1px solid #E5E5E5;
-        padding-right: 24px;
-
-        @media (max-width: 768px) {
-          border-right: none;
-          border-bottom: 1px solid #E5E5E5;
-          padding-right: 0;
-          padding-bottom: 16px;
-          flex-direction: row;
-          flex-wrap: wrap;
-          min-width: auto;
-        }
-
-        .categoryButton {
-          padding: 12px 16px;
-          border: none;
-          background: none;
-          color: #666666;
-          @include body-medium();
-          cursor: pointer;
-          transition: all 0.3s ease;
-          text-align: left;
-          border-radius: 8px;
-          white-space: nowrap;
-
-          &:hover {
-            color: #2493D8;
-            background-color: #F8FAFC;
-          }
-
-          &.active {
-            color: #2493D8;
-            background-color: #EBF5FF;
-            font-weight: 600;
-          }
-
-          @media (max-width: 768px) {
-            text-align: center;
-            flex: 1;
-            min-width: 120px;
-          }
-        }
-      }
-
-      .questionContent {
-        flex: 1;
-        padding-left: 24px;
-
-        @media (max-width: 768px) {
-          padding-left: 0;
-        }
-
-        .questionList {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-
-          .questionItem {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 16px 20px;
-            background-color: #FFFFFF;
-            border: 1px solid #E5E5E5;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-
-            &:hover {
-              background-color: #F8FAFC;
-              border-color: #2493D8;
-            }
-
-            .questionIcon {
-              width: 32px;
-              height: 32px;
-              background-color: #2493D8;
-              color: white;
-              border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-weight: bold;
-              font-size: 14px;
-              flex-shrink: 0;
-            }
-
-            .questionContent {
-              flex: 1;
-              display: flex;
-              flex-direction: column;
-              gap: 4px;
-            }
-
-            .questionText {
-              @include body-large();
-              color: #1F2937;
-              font-weight: 500;
-              line-height: 1.5;
-            }
-
-            .categoryTag {
-              padding: 2px 8px;
-              background-color: #EBF5FF;
-              color: #2493D8;
-              border-radius: 12px;
-              font-size: 12px;
-              font-weight: 500;
-              align-self: flex-start;
-            }
-          }
-        }
-
-        .questionDetail {
-          .backButton {
-            padding: 8px 16px;
-            background: none;
-            border: none;
-            color: #2493D8;
-            @include body-medium();
-            cursor: pointer;
-            margin-bottom: 24px;
-            transition: all 0.3s ease;
-            border-radius: 6px;
-
-            &:hover {
-              background-color: #F0F9FF;
-            }
-          }
-
-          .questionDetailContent {
-            .detailQuestion {
-              @include title-large();
-              color: #1F2937;
-              margin-bottom: 16px;
-              line-height: 1.4;
-            }
-
-            .questionTags {
-              display: flex;
-              gap: 8px;
-              margin-bottom: 24px;
-              flex-wrap: wrap;
-
-              .tag {
-                padding: 4px 12px;
-                background-color: #EBF5FF;
-                color: #2493D8;
-                border-radius: 16px;
-                font-size: 12px;
-                font-weight: 500;
-              }
-            }
-
-            .answerSection {
-              border-top: 1px solid #E5E5E5;
-              padding-top: 24px;
-
-              .answerContent {
-                margin-bottom: 24px;
-
-                p {
-                  @include body-medium();
-                  color: #4B5563;
-                  line-height: 1.6;
-                  margin: 0 0 16px 0;
-
-                  &:last-child {
-                    margin-bottom: 0;
-                  }
-
-                  &:empty {
-                    margin: 0;
-                  }
-                }
-
-                table {
-                  width: 100%;
-                  border-collapse: collapse;
-                  margin: 16px 0;
-                  border: 1px solid #E5E5E5;
-                  border-radius: 8px;
-                  overflow: hidden;
-
-                  th, td {
-                    padding: 12px 16px;
-                    text-align: left;
-                    border-bottom: 1px solid #E5E5E5;
-                    @include body-medium();
-                  }
-
-                  th {
-                    background-color: #F8FAFC;
-                    font-weight: 600;
-                    color: #374151;
-                  }
-
-                  td {
-                    color: #4B5563;
-                  }
-
-                  tr:last-child {
-                    th, td {
-                      border-bottom: none;
-                    }
-                  }
-
-                  tr:hover {
-                    background-color: #F9FAFB;
-                  }
-                }
-              }
-
-              .answerActions {
-                display: flex;
-                justify-content: flex-end;
-
-                .shareButton {
-                  padding: 8px 20px;
-                  background-color: #2493D8;
-                  color: white;
-                  border: none;
-                  border-radius: 6px;
-                  @include body-medium();
-                  cursor: pointer;
-                  transition: background-color 0.3s ease;
-
-                  &:hover {
-                    background-color: #1976c7;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
 }
 
+.contactIcon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #fff;
+  color: $primary;
+  transition:
+    background-color 0.25s,
+    color 0.25s,
+    rotate 0.3s $ease-out;
+
+  svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.contactLabel {
+  @include title-small();
+  color: #555555;
+  min-width: 64px;
+  text-align: left;
+}
+
+.contactValue {
+  @include body-large();
+  color: #000000;
+  font-weight: 500;
+  word-break: break-all;
+  transition: color 0.2s;
+}
+
+.serviceButtons {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  @include motion {
+    transition-delay: 0.3s;
+  }
+}
+
+.consultButton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 168px;
+  height: 56px;
+  border-radius: 12px;
+  background-color: $primary;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  @include title-small();
+  cursor: pointer;
+  transition:
+    background-color 0.3s ease,
+    transform 0.3s $ease-out,
+    box-shadow 0.3s;
+
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  // 은은하게 퍼지는 테두리로 눈에 띄게 한다
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 2px solid $primary;
+    opacity: 0;
+    pointer-events: none;
+
+    @include motion {
+      animation: ring 2.6s ease-out infinite;
+    }
+  }
+
+  &:hover {
+    background-color: $primary-dark;
+    transform: translateY(-3px);
+    box-shadow: 0 12px 22px rgba($primary, 0.28);
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+@keyframes ring {
+  0% {
+    opacity: 0.55;
+    transform: none;
+  }
+
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.12, 1.3);
+  }
+}
+
+.consultNote {
+  font-size: 12px;
+  color: $muted;
+}
+
+.serviceNotice {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid $border;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  @include motion {
+    transition-delay: 0.38s;
+  }
+}
+
+.noticeItem {
+  @include body-medium();
+  color: #666666;
+  line-height: 1.5;
+}
+
+// ---------------------------------------------------------------------------
+// 고객 질문(Q&A) 목록 자리: 아직 쓰지 않는다 (QnACard 로 보여줄 예정이던 구역)
+// ---------------------------------------------------------------------------
+
+.qnaSection {
+  margin-top: 60px;
+  padding: 40px 0;
+}
+
+.qnaTitle {
+  color: $text;
+  @include display-medium();
+  margin-bottom: 32px;
+}
+
+.qnaList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// ---------------------------------------------------------------------------
+// 알림
+// ---------------------------------------------------------------------------
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  z-index: 9999;
+  padding: 12px 24px;
+  border-radius: 8px;
+  background: #333;
+  color: #fff;
+  font-size: 14px;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  animation: toastIn 0.35s $ease-out both;
+
+  @media (max-width: 480px) {
+    white-space: normal;
+    width: max-content;
+    max-width: calc(100vw - 32px);
+    text-align: center;
+  }
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
