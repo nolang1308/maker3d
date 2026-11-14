@@ -200,7 +200,7 @@ function buildProceduralCaseGeometry(layout: ClickerLayout): THREE.BufferGeometr
 }
 
 /** 키링을 거는 고리: 옆면에 세로로 선 작은 고리. 구멍은 옆면과 나란한 방향으로 뚫린다 */
-function buildLugGeometry(lug: ClickerLug): THREE.BufferGeometry {
+export function buildLugGeometry(lug: ClickerLug): THREE.BufferGeometry {
   const { hole } = lug;
   const outerRadius = lug.length - hole.offset;
   // (바깥 방향, 높이) 평면에 그린 모양을 두께만큼 밀어낸다. 안쪽 끝은 몸체 속으로 조금 들어가게 한다
@@ -262,7 +262,7 @@ function buildKeycapFaceGeometry(): THREE.BufferGeometry {
   return b.build();
 }
 
-function buildSwitchGeometry(): THREE.BufferGeometry {
+export function buildSwitchGeometry(): THREE.BufferGeometry {
   const C = CLICKER;
   const base = C.switchBase / 2;
   const shoulder = base - 0.8;

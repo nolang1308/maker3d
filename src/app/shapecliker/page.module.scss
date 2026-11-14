@@ -1,0 +1,269 @@
+// 쉐이프 클리커 만들기: 화면 뼈대와 버튼 · 카드는 ../cliker/page.module.scss 를 그대로 쓰고,
+// 여기에는 이 페이지에만 있는 것(올린 로고, 슬라이더 묶음, 위에서 본 모습)만 둔다.
+
+$primary: #2493D8;
+$text: #0a0a0a;
+$muted: #6b7280;
+$border: #e5e7eb;
+$panel: #f7f9fb;
+
+// ---------------------------------------------------------------------------
+// 무대 (3D 화면)
+// ---------------------------------------------------------------------------
+
+// 좁은 화면의 모양 다듬기 단계: 3D 를 위에 붙여 두고 아래의 조절 항목만 넘긴다 (슬라이더를 움직이면 바로 보이게).
+// 같은 요소에 붙는 cliker 쪽 규칙보다 앞서도록 선택자를 겹쳐 쓴다
+.stageSticky.stageSticky {
+  @media (max-width: 1100px) {
+    position: sticky;
+    top: 75px;
+    z-index: 5;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1);
+  }
+}
+
+.stageCompact.stageCompact {
+  @media (max-width: 1100px) {
+    height: min(36vh, 320px);
+  }
+}
+
+.footerHideNarrow.footerHideNarrow {
+  @media (max-width: 1100px) {
+    display: none;
+  }
+}
+
+// "분해해서 보기"가 켜져 있을 때
+.ghostOn.ghostOn {
+  border-color: $primary;
+  background: $primary;
+  color: #fff;
+}
+
+// ---------------------------------------------------------------------------
+// 1단계: 로고
+// ---------------------------------------------------------------------------
+
+.logoRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid $border;
+  border-radius: 12px;
+}
+
+.logoThumb {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  object-fit: contain;
+  // 투명한 배경이 보이도록 바둑판 무늬를 깐다
+  background-color: #fff;
+  background-image:
+    linear-gradient(45deg, #e9edf1 25%, transparent 25%, transparent 75%, #e9edf1 75%),
+    linear-gradient(45deg, #e9edf1 25%, transparent 25%, transparent 75%, #e9edf1 75%);
+  background-size: 12px 12px;
+  background-position:
+    0 0,
+    6px 6px;
+}
+
+.logoText {
+  min-width: 0;
+}
+
+.logoName {
+  margin: 0 0 2px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: $text;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 그림이 작아 흐려 보일 수 있다는 안내
+.caution {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff7e6;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #7a4b00;
+}
+
+.sampleRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 16px;
+}
+
+// ---------------------------------------------------------------------------
+// 2단계: 크기 · 여백 · 고리 위치
+// ---------------------------------------------------------------------------
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  input[type='range'] {
+    width: 100%;
+    margin: 0;
+    accent-color: $primary;
+    cursor: pointer;
+    // 좁은 화면에서 손가락으로 끌 때 화면이 같이 넘어가지 않게
+    touch-action: pan-y;
+  }
+}
+
+.fieldTop {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid $border;
+}
+
+.fieldHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 24px;
+}
+
+.fieldValue {
+  font-size: 14px;
+  font-weight: 700;
+  color: $primary;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------------------------------------------------------------------------
+// 위에서 본 모습
+// ---------------------------------------------------------------------------
+
+.topView {
+  display: block;
+  width: 100%;
+  // 길쭉한 로고도, 높은 로고도 카드 안에 들어오게
+  height: clamp(170px, 24vh, 240px);
+  border-radius: 12px;
+  background: $panel;
+  cursor: grab;
+  touch-action: none;
+  outline: none;
+  user-select: none;
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px $primary;
+  }
+}
+
+.topBody {
+  stroke: rgba(15, 23, 42, 0.18);
+  stroke-width: 0.25;
+}
+
+.topHole {
+  fill: $panel;
+}
+
+// 누르는 곳과 벽 사이의 틈
+.topGap {
+  fill: #2b3038;
+}
+
+.topArt {
+  pointer-events: none;
+}
+
+.topSwitch {
+  fill: rgba($primary, 0.16);
+  stroke: $primary;
+  stroke-width: 0.45;
+  stroke-dasharray: 1.4 1;
+}
+
+.topSwitchMark {
+  fill: none;
+  stroke: $primary;
+  stroke-width: 0.5;
+  stroke-linecap: round;
+}
+
+.topEmpty {
+  margin: 0;
+  padding: 40px 16px;
+  border-radius: 12px;
+  background: $panel;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.6;
+  color: $muted;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #374151;
+  }
+}
+
+.legendDot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+}
+
+.legendSwitch {
+  background: rgba($primary, 0.16);
+  border: 1px dashed $primary;
+}
+
+// 자동으로 고친 것을 알려 주는 줄
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 12px 0 0;
+  padding: 10px 12px 10px 28px;
+  border-radius: 10px;
+  background: rgba($primary, 0.08);
+
+  li {
+    font-size: 12px;
+    line-height: 1.6;
+    color: #1f4f73;
+  }
+}
