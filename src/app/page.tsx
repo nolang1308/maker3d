@@ -1,11 +1,24 @@
 'use client';
 
 import styles from './page.module.scss';
-import Image from 'next/image';
 import {useState, useEffect} from 'react';
 import ReviewCard from "@/components/ReviewCard";
 import Link from 'next/link';
 import QuickMenu from '@/components/QuickMenu';
+import HeroBanner from '@/components/home/HeroBanner';
+import {
+    ChevronIcon,
+    KakaoIcon,
+    ModelingSection,
+    ProcessVideo,
+    QuoteIcon,
+    RecommendTitle,
+    Reveal,
+    ScrollArrow,
+    StoreIcon,
+    StoreScene,
+    StrengthSection,
+} from '@/components/home/HomeSections';
 import { getActivePopups, Popup } from '@/services/popupService';
 
 function normalizeUrl(url: string): string {
@@ -99,23 +112,6 @@ export default function Home() {
         });
     };
 
-    const getProcessImage = () => {
-        switch (activeButton) {
-            case 1:
-                return '/process1.svg'; // 실시간 견적 확인
-            case 2:
-                return '/process2.svg'; // 3D 모델링 파일 드래그
-            case 3:
-                return '/process3.svg'; // 색상 및 수량 선택
-            case 4:
-                return '/process4.svg'; // 견적 요청 작성
-            case 5:
-                return '/process5.svg'; // 온라인 결제
-            default:
-                return '/process1.svg';
-        }
-    };
-
     return (
         <>
             <QuickMenu />
@@ -156,30 +152,14 @@ export default function Home() {
             )}
             <div className={styles.container}>
             <div className={styles.innerContainer}>
-                <Image
-                    src="/mainPhoto.png"
-                    alt="MAKER3D 3D 프린팅 전문 서비스 메인 배너"
-                    width={1600}
-                    height={689}
-                    className={styles.logoIcon}
-                />
+                <HeroBanner />
                 <div className={styles.buttonWrapper}>
                     <Link href="/store" className={styles.storeButton}>
-                        <Image
-                            src="/store.svg"
-                            alt="스토어"
-                            width={19}
-                            height={22}
-                        />
+                        <StoreIcon />
                         <p className={styles.storeButtonText}>스토어</p>
                     </Link>
                     <Link href="/quote" className={styles.checkQuoteButton}>
-                        <Image
-                            src="/checkQuote.svg"
-                            alt="견적 확인"
-                            width={19}
-                            height={22}
-                        />
+                        <QuoteIcon />
                         <p className={styles.storeButtonText}>실시간 견적확인</p>
                     </Link>
 
@@ -189,12 +169,7 @@ export default function Home() {
                         rel="noopener noreferrer"
                         className={styles.kakaoRequestButton}
                     >
-                        <Image
-                            src="/kakao.svg"
-                            alt="카카오톡 상담"
-                            width={19}
-                            height={22}
-                        />
+                        <KakaoIcon />
                         <p className={styles.storeButtonText}>카카오톡 상담하기</p>
                     </a>
 
@@ -216,12 +191,7 @@ export default function Home() {
                     </a>
                 </div>
                 <div className={styles.underArrow}>
-                    <Image
-                        src="/underArrow.svg"
-                        alt="아래로 스크롤"
-                        width={22}
-                        height={50}
-                    />
+                    <ScrollArrow />
                 </div>
                 <h1 className={styles.processTitle}>Maker 3D의 간단한 3D 프린팅 견적 진행 방법
 
@@ -265,25 +235,10 @@ export default function Home() {
 
                 </div>
                 <div className={styles.processView}>
-                    <video
-                        key={activeButton}
-                        src={`/process${activeButton}.mp4`}
-                        className={styles.processVideo}
-                        autoPlay
-                        muted
-                        playsInline
-                        loop
-                        controls
-                    />
+                    <ProcessVideo step={activeButton} />
                 </div>
-                <div className={styles.image}>
-                    <Image
-                        src="/image.png"
-                        alt="MAKER3D 3D 프린팅 굿즈제작 스토어"
-                        width={1434}
-                        height={701}
-                        className={styles.logoIcon}
-                    />
+                <Reveal className={styles.image}>
+                    <StoreScene />
                     <div className={styles.blur}></div>
                     <p className={styles.imageTitle}>
                         3D 프린팅<br/>
@@ -295,90 +250,72 @@ export default function Home() {
                     <Link href="/store" className={styles.goToStore}>
                         <p className={styles.storeButtonText}>스토어 바로가기</p>
                     </Link>
-                </div>
-                <Image
-                    src="/mainPhoto2.svg"
-                    alt="MAKER3D 3D 프린팅 서비스 소개"
-                    width={1200}
-                    height={790}
-                    className={styles.mainPhoto2}
-                />
-                <Image
-                    src="/mainPhoto3.svg"
-                    alt="MAKER3D PLA ABS PETG TPU 레진 소재 안내"
-                    width={874}
-                    height={166}
-                    className={styles.mainPhoto3}
-                />
-                <div className={styles.columnLine}></div>
+                </Reveal>
+                <StrengthSection />
+                <RecommendTitle />
+                <Reveal className={styles.columnLineWrap}>
+                    <div className={styles.columnLine}></div>
+                </Reveal>
                 <div className={styles.boxWrapper}>
                     <div className={styles.top}>
+                        <Reveal delay={0.0}>
                         <div className={styles.box}>
                             <p className={styles.boxTitle}>제품을 대량생산 해야하는 고객</p>
                             <p className={styles.boxSubTitle}>PLA, ABS, PETG, TPU, 레진 소재가 기반이 되는 제품의</p>
                             <p className={styles.boxSubTitle}>대량생산이 필요한 고객에게 추천합니다.</p>
                         </div>
+                        </Reveal>
+                        <Reveal delay={0.14}>
                         <div className={styles.box}>
                             <p className={styles.boxTitle}>시제품을 제작해야하는 고객</p>
                             <p className={styles.boxSubTitle}>제품 양산 전, 시제품을 제작하여 완제품에 대한 테스트를</p>
                             <p className={styles.boxSubTitle}>행해보고자 하는 고객에게 추천합니다.</p>
                         </div>
+                        </Reveal>
                     </div>
                     <div className={styles.top}>
+                        <Reveal delay={0.0}>
                         <div className={styles.box}>
                             <p className={styles.boxTitle}>학교 과제품, 졸업작품을 만들어야하는 고객</p>
                             <p className={styles.boxSubTitle}>디자인, 설계 도면만이 아닌 실사출력을 통해 학교 과제물이나</p>
                             <p className={styles.boxSubTitle}>졸업작품을 만들어야 하는 고객분에게 추천합니다.</p>
                         </div>
+                        </Reveal>
+                        <Reveal delay={0.14}>
                         <div className={styles.box}>
                             <p className={styles.boxTitle}>나만의 제품을 만들고 싶은 고객</p>
                             <p className={styles.boxSubTitle}>커스텀 제작, 생활용품, 피규어, 촬영소품 등 나만의 제품을</p>
                             <p className={styles.boxSubTitle}>만들고 싶은 고객분들에게 추천합니다.</p>
                         </div>
+                        </Reveal>
                     </div>
 
                 </div>
-                <Image
-                    src="/mainPhoto4.svg"
-                    alt="MAKER3D 3D 프린팅 포트폴리오"
-                    width={1198}
-                    height={863}
-                    className={styles.mainPhoto4}
-                />
+                <ModelingSection />
 
-                <div className={styles.searchSection}>
+                <Reveal className={styles.searchSection}>
                     <p className={styles.searchSectionTitle}>지금 바로 검색창에 검색하세요!</p>
                     <div className={styles.hashtagWrapper}>
                         {[
                             '3D프린터', '구미3D프린터', '3D프린팅', '3D출력',
                             '시제품제작', '소량생산', '3D제작', 'PLA출력',
                             '경북3D프린팅', 'MAKER3D', '메이커3D',
-                        ].map((tag) => (
-                            <span key={tag} className={styles.hashtag}>{tag}</span>
+                        ].map((tag, index) => (
+                            <span key={tag} className={styles.hashtag} style={{ '--i': index } as React.CSSProperties}>{tag}</span>
                         ))}
                     </div>
-                </div>
+                </Reveal>
 
                 <div className={styles.reviewWrapper}>
                     <p className={styles.reviewTitle}>고객님들의 생생 리얼 후기!!</p>
                     <div className={styles.reviewBtnWrapper}>
 
                         <div className={styles.reviewBtn} onClick={handlePrevReview}>
-                            <Image
-                                src="/arrowLeft.svg"
-                                alt="이전 리뷰"
-                                width={10}
-                                height={19}
-                            />
+                            <ChevronIcon direction="left" />
 
                         </div>
                         <div className={styles.reviewBtn} onClick={handleNextReview}>
-                            <Image
-                                src="/arrowRight.svg"
-                                alt="다음 리뷰"
-                                width={10}
-                                height={19}
-                            />
+                            <ChevronIcon direction="right" />
 
                         </div>
                     </div>

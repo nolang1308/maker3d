@@ -1,0 +1,2032 @@
+@use 'sass:color';
+@use '../../styles/style-system' as *;
+
+$primary: #2493D8;
+$primary-dark: #1b7ab5;
+$text: #0a0a0a;
+$muted: #6b7280;
+$border: #e5e7eb;
+$panel: #f7f9fb;
+$danger: #d93025;
+$stage: #f3f5f7;
+
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  // 제작 화면에는 사이트 푸터가 없다. 헤더(75px) 아래를 꽉 채워서 이전/다음 줄이 늘 화면 맨 아래에 온다
+  min-height: calc(100vh - 75px);
+  min-height: calc(100dvh - 75px);
+
+  .innerContainer {
+    width: 100%;
+    max-width: 1500px;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 28px 20px 0;
+    // 한글은 단어 중간에서 끊기지 않게 한다
+    word-break: keep-all;
+
+    @media (max-width: 800px) {
+      padding: 18px 16px 0;
+    }
+  }
+}
+
+.hiddenInput {
+  display: none;
+}
+
+// ---------------------------------------------------------------------------
+// 제목 + 진행 표시
+// ---------------------------------------------------------------------------
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px 32px;
+  padding-bottom: 20px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid $border;
+
+  @media (max-width: 800px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+
+    nav {
+      width: 100%;
+    }
+  }
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: $text;
+
+  @media (max-width: 800px) {
+    font-size: 18px;
+    text-align: center;
+  }
+}
+
+// 화면에서는 숨기되 화면 낭독기에는 남긴다
+.titleCompact {
+  @media (max-width: 800px) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+.beta {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba($primary, 0.1);
+  color: $primary;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  vertical-align: middle;
+  position: relative;
+  top: -2px;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.stepperItem {
+  display: flex;
+  align-items: center;
+
+  // 앞 단계와 잇는 선
+  & + &::before {
+    content: '';
+    width: 34px;
+    height: 2px;
+    margin: 0 8px;
+    border-radius: 1px;
+    background: $border;
+    transition: background-color 0.2s;
+  }
+
+  @media (max-width: 800px) {
+    & + & {
+      flex: 1;
+    }
+
+    & + &::before {
+      flex: 1;
+      width: auto;
+      margin: 0 4px;
+      // 선을 숫자 동그라미 높이에 맞춘다 (아래에 글자가 있으므로)
+      transform: translateY(-10px);
+    }
+  }
+}
+
+.stepperBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 2px;
+  border: none;
+  background: none;
+  color: $muted;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  &:not(:disabled):hover .stepperDot {
+    border-color: $primary;
+  }
+
+  @media (max-width: 800px) {
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11px;
+  }
+}
+
+.stepperDot {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #d5dae0;
+  border-radius: 50%;
+  background: #fff;
+  color: $muted;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  transition: all 0.2s;
+
+  svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.stepper_todo .stepperLabel {
+  color: $muted;
+}
+
+.stepper_done,
+.stepper_current {
+  &::before {
+    background: $primary !important;
+  }
+
+  .stepperLabel {
+    color: $text;
+  }
+}
+
+.stepper_done .stepperDot {
+  border-color: $primary;
+  background: rgba($primary, 0.1);
+  color: $primary;
+}
+
+.stepper_current .stepperDot {
+  border-color: $primary;
+  background: $primary;
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba($primary, 0.16);
+}
+
+// ---------------------------------------------------------------------------
+// 단계 머리말 / 본문
+// ---------------------------------------------------------------------------
+
+.stepHead {
+  margin-bottom: 18px;
+
+  @media (max-width: 800px) {
+    margin-bottom: 14px;
+  }
+}
+
+.stepTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: $text;
+  outline: none;
+
+  @media (max-width: 800px) {
+    font-size: 17px;
+  }
+}
+
+.stepCount {
+  display: inline-block;
+  margin-right: 10px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba($primary, 0.1);
+  color: $primary;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.6;
+  vertical-align: middle;
+  position: relative;
+  top: -2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stepDesc {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: $muted;
+
+  @media (max-width: 800px) {
+    font-size: 13px;
+  }
+}
+
+.stepBody {
+  flex: 1;
+  min-height: 320px;
+  padding-bottom: 24px;
+}
+
+// ---------------------------------------------------------------------------
+// 작업 화면: 네 단계가 함께 쓴다
+// ---------------------------------------------------------------------------
+//
+// 왼쪽 무대(3D 또는 편집 화면)는 단계가 바뀌어도 그대로 남고, 오른쪽 패널의 폭이 바뀌는 만큼 늘어나거나 줄어든다.
+//  - 종류      : 무대 + 넓은 종류 목록
+//  - 사진 넣기 : 무대 + 사진 올리기 (400px)
+//  - 위치 맞추기: 무대만 가운데에 크게 (패널 없음)
+//  - 색상 · 완성: 무대 + 색상 · 요약 (400px)
+
+// 화면이 넘어가는 움직임 (page.tsx 의 STEP_MOTION_MS 보다 길지 않게).
+//  - 자리(폭 · 높이)는 천천히 출발해 천천히 멈춘다: 무대가 주르륵 늘어나는 것이 눈에 보인다
+//  - 내용은 빠르게 나타나 부드럽게 멈춘다
+$step-move: cubic-bezier(0.5, 0, 0.15, 1);
+$step-ease: cubic-bezier(0.22, 1, 0.36, 1);
+$step-time: 0.6s;
+
+.workspace {
+  // 정사각형 종류 카드의 한 변. 화면 폭에 맞춰 정한다 (좁은 창에서 3D 가 너무 좁아지지 않게).
+  // 종류 목록은 카드 여섯 장 + 간격 6 × 5 이고, 높이(160 + 2 × 한 변, 최대 376px)가
+  // 왼쪽 무대의 가장 낮은 높이(402px) 안에 항상 들어온다
+  --type-card: clamp(88px, 7vw, 108px);
+  --side-type: calc(6 * var(--type-card) + 30px);
+  --side-panel: 400px;
+  --side-w: var(--side-panel);
+  --side-gap: 24px;
+
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  // 위치 맞추기에서는 가운데로 모인다. 숫자끼리라야 부드럽게 바뀌므로 "제한 없음" 대신 넉넉한 값을 둔다
+  max-width: 1500px;
+  margin: 0 auto;
+  transition: max-width $step-time $step-move;
+
+  @media (max-width: 1100px) {
+    flex-direction: column;
+    align-items: stretch;
+    max-width: none;
+    transition: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.ws_type {
+  --side-w: var(--side-type);
+}
+
+.ws_adjust {
+  --side-w: 0px;
+  --side-gap: 0px;
+  max-width: 1080px;
+}
+
+// 오른쪽 패널이 차지하는 자리. 폭이 바뀌는 동안 안의 내용은 제 폭을 지킨 채 오른쪽 끝에 붙어 있어서,
+// 글자가 다시 줄바꿈되지 않고 무대가 그 위로 밀고 들어오거나 물러나는 것처럼 보인다
+.side {
+  position: relative;
+  flex: none;
+  display: flex;
+  justify-content: flex-end;
+  width: var(--side-w);
+  margin-left: var(--side-gap);
+  min-width: 0;
+  transition:
+    width $step-time $step-move,
+    margin-left $step-time $step-move;
+
+  @media (max-width: 1100px) {
+    display: block;
+    width: auto;
+    margin: 16px 0 0;
+    transition: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+// 넘어가는 동안에만 옆으로 넘친 내용을 자른다 (평소에는 선택 표시 같은 것이 패널 밖으로 조금 나올 수 있다)
+.wsMoving .side {
+  overflow-x: clip;
+}
+
+.sideContent {
+  flex: none;
+  width: var(--side-panel);
+  min-width: 0;
+
+  @media (max-width: 1100px) {
+    width: auto;
+  }
+}
+
+.side_type {
+  width: var(--side-type);
+
+  @media (max-width: 1100px) {
+    width: auto;
+  }
+}
+
+// 나타나는 움직임은 단계를 한 번이라도 넘긴 뒤(.motionOn)에만 쓴다. 페이지를 처음 열었을 때는 내용이 바로 보여야 한다
+
+// 새로 나타나는 패널: 무대가 자리를 잡는 동안 살짝 늦게, 넘어가는 방향에서 미끄러져 들어온다
+.motionOn .sideIn {
+  animation: sideIn 0.5s $step-ease 0.2s both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+// 사라지는 패널: 제자리에서 빠르게 흐려진다. 자리를 차지하지 않게 띄워 둔다
+.sideOut {
+  position: absolute;
+  top: 0;
+  right: 0;
+  pointer-events: none;
+  animation: sideOut 0.24s ease both;
+
+  @media (max-width: 1100px) {
+    left: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    display: none;
+  }
+}
+
+@keyframes sideIn {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--slide, 1) * 22px));
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sideOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(calc(var(--slide, 1) * -14px));
+  }
+}
+
+// 넘어가는 방향: 다음 단계로 갈 때는 오른쪽에서, 이전 단계로 갈 때는 왼쪽에서 들어온다
+.workspace[data-direction='forward'] {
+  --slide: 1;
+}
+
+.workspace[data-direction='back'] {
+  --slide: -1;
+}
+
+// 사진 넣기 · 색상 단계의 오른쪽 패널 안 (카드 묶음)
+.sidePanel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+// 안의 내용 높이를 따라 부드럽게 늘고 줄어드는 상자 (SmoothHeight)
+.smoothHeight {
+  overflow: hidden;
+  transition: height 0.5s $step-move;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+// 위치 맞추기 단계에서 무대 아래에 펼쳐지는 안내
+.belowStage {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+
+  > div > * {
+    margin-top: 16px;
+  }
+}
+
+// 내용이 바뀐 자리에 새 내용이 나타난다 (제목, 무대 아래 줄 등)
+.motionOn .swapIn {
+  animation: swapIn 0.4s $step-ease 0.06s both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.motionOn .fadeIn {
+  animation: fadeIn 0.3s ease both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes swapIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 1단계: 종류
+// ---------------------------------------------------------------------------
+
+.viewerLabel {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 5px 12px;
+  border: 1px solid $border;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: $text;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+// 오른쪽: 직접 입력 상자 + 일자형 / 사각형 묶음
+.typePanel,
+.typeGroups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.typePanel {
+  gap: 18px;
+}
+
+// 크기 직접 입력 (목록 맨 위에 눈에 띄게, 한 줄로: 제목 | 가로 × 세로 | 결과)
+.gridBox {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 11px 16px;
+  border: 1.5px solid rgba($primary, 0.35);
+  border-radius: 14px;
+  background: rgba($primary, 0.05);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+
+  @media (max-width: 800px) {
+    padding: 12px 14px;
+  }
+}
+
+// 지금 고른 종류가 직접 입력한 크기일 때
+.gridBoxActive {
+  border-color: $primary;
+  box-shadow: 0 0 0 1px $primary;
+}
+
+.gridHead {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.gridTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: $text;
+}
+
+.gridHint {
+  font-size: 12px;
+  line-height: 1.4;
+  color: $muted;
+}
+
+.gridFields {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// 입력 칸 하나: 입력란 위에 빈 칸 안내 글자를 겹쳐 놓는 자리
+.gridCell {
+  position: relative;
+  display: inline-flex;
+}
+
+// 빈 칸에 보이는 "가로" / "세로". 칸의 한가운데에 놓고, 눌러도 아래 입력란이 받는다
+.gridGhost {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9aa5b1;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.gridInput {
+  width: 52px;
+  height: 44px;
+  padding: 0;
+  border: 1.5px solid #cfd6de;
+  border-radius: 10px;
+  background: #fff;
+  color: $text;
+  font-size: 20px; // 16px 미만이면 iOS 가 입력할 때 화면을 확대한다
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+
+  &:focus {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.18);
+  }
+}
+
+// 가운데의 × 는 늘 있고 사용자가 치지 않는다
+.gridTimes {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  color: $muted;
+  user-select: none;
+}
+
+.gridResult {
+  flex: 1 1 190px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: $muted;
+
+  strong {
+    margin-right: 6px;
+    font-size: 15px;
+    font-weight: 700;
+    color: $primary;
+  }
+}
+
+.gridApply {
+  align-self: flex-start;
+  border: 1px solid $primary;
+  border-radius: 999px;
+  background: #fff;
+  color: $primary;
+  padding: 6px 13px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba($primary, 0.08);
+  }
+}
+
+.gridNote {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: $muted;
+}
+
+.gridError {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: $danger;
+}
+
+.typeGroup {
+  min-width: 0;
+}
+
+.typeGroupHead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.typeGroupTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: $text;
+}
+
+.typeGroupHint {
+  font-size: 12px;
+  line-height: 1.4;
+  color: $muted;
+}
+
+// 한 줄에 여섯 장. 묶음마다 여섯 장이라 줄이 빈칸 없이 꽉 차고, 두 묶음의 칸이 위아래로 맞는다
+.typeGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+}
+
+// 정사각형 카드. 그림 칸이 남는 높이를 다 쓰고 글자는 늘 아래 같은 자리에 온다 (카드끼리 이름 · 크기 줄이 맞는다)
+.typeCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  aspect-ratio: 1 / 1;
+  min-width: 0;
+  padding: 6px 4px 8px;
+  border: 1.5px solid $border;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    box-shadow 0.15s,
+    transform 0.15s;
+
+  &:hover {
+    border-color: $primary;
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary;
+    outline-offset: 2px;
+  }
+
+  // 한 줄로 쌓는 넓은 화면(태블릿)에서는 카드가 너무 커지지 않게 높이를 막는다
+  @media (min-width: 641px) and (max-width: 1100px) {
+    max-height: 124px;
+  }
+}
+
+.typeCardActive {
+  border-color: $primary;
+  background: rgba($primary, 0.06);
+  box-shadow: 0 0 0 1px $primary;
+
+  // 고른 카드 표시: 그림을 가리지 않게 모서리에 걸쳐 둔다
+  &::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: $primary
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E")
+      center / 9px no-repeat;
+  }
+
+  .typeIconCase {
+    fill: rgba($primary, 0.32);
+  }
+
+  .typeIconKey {
+    stroke: $primary;
+  }
+
+  .typeLabel {
+    color: $primary;
+  }
+}
+
+.typeIconBox {
+  position: relative;
+  flex: 1;
+  align-self: stretch;
+  min-height: 0;
+}
+
+// 그림은 칸 안에서 비율을 지키며 가운데에 놓인다
+.typeIcon {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.typeIconCase {
+  fill: #dde3ea;
+  transition: fill 0.15s;
+}
+
+.typeIconKey {
+  fill: #fff;
+  stroke: #b9c3ce;
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+  transition: stroke 0.15s;
+}
+
+.typeLabel {
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 700;
+  color: $text;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.typeSize {
+  font-size: 10.5px;
+  color: $muted;
+  line-height: 1.35;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------------------------------------------------------------------------
+// 편집 / 미리보기 카드
+// ---------------------------------------------------------------------------
+
+// 무대: 단계가 바뀌어도 남아 있는 왼쪽 카드. 오른쪽 패널이 줄어든 만큼 넓어진다
+.stageCard {
+  flex: 1 1 0;
+  min-width: 0;
+  border: 1px solid $border;
+  border-radius: 16px;
+  background: #fff;
+  overflow: hidden;
+  position: sticky;
+  top: 96px;
+
+  @media (max-width: 1100px) {
+    flex: none;
+    position: static;
+  }
+}
+
+// 좁은 화면의 종류 단계에서는 3D 모델을 위에 붙여 두고 아래 목록만 넘긴다 (카드를 누르면 바로 모양이 바뀌는 게 보이도록)
+.ws_type > .stageCard {
+  @media (max-width: 1100px) {
+    position: sticky;
+    top: 75px;
+    z-index: 5;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1);
+
+    .stageFooter {
+      display: none;
+    }
+  }
+}
+
+.stageBody {
+  position: relative;
+  height: clamp(340px, calc(100vh - 480px), 620px);
+  background: $stage;
+  overflow: hidden;
+
+  // 좁은 화면: 폭에 맞춘 4:3 (가장 좁은 화면은 정사각형). 단계가 바뀔 때 높이가 부드럽게 바뀌도록 비율 대신 길이로 적는다
+  @media (max-width: 1100px) {
+    height: min(calc((100vw - 40px) * 0.75), 62vh);
+    transition: height $step-time $step-move;
+  }
+
+  @media (max-width: 800px) {
+    height: min(calc((100vw - 32px) * 0.75), 62vh);
+  }
+
+  @media (max-width: 700px) {
+    height: min(calc(100vw - 32px), 62vh);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.ws_type .stageBody {
+  @media (max-width: 1100px) {
+    height: min(34vh, 300px);
+  }
+}
+
+// 무대에 올라가는 화면 한 겹 (3D 또는 편집 화면). 단계가 바뀌면 한 겹이 사라지는 동안 다른 겹이 나타난다
+.stageLayer {
+  position: absolute;
+  inset: 0;
+}
+
+.motionOn .layerIn {
+  animation: layerIn 0.55s $step-ease 0.12s both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.layerOut {
+  pointer-events: none;
+  animation: layerOut 0.3s ease both;
+
+  @media (prefers-reduced-motion: reduce) {
+    display: none;
+  }
+}
+
+@keyframes layerIn {
+  from {
+    opacity: 0;
+    transform: scale(0.965);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes layerOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.03);
+  }
+}
+
+.viewer {
+  position: absolute;
+  inset: 0;
+
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+    outline: none;
+  }
+}
+
+.viewerLoading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $stage;
+  color: $muted;
+  font-size: 14px;
+}
+
+.viewerActions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.stageBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(10, 10, 10, 0.72);
+  color: #fff;
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 5px 12px;
+  pointer-events: none;
+}
+
+.stageFooter {
+  display: flex;
+  align-items: center;
+  min-height: 60px;
+  padding: 14px 18px;
+  border-top: 1px solid $border;
+
+  @media (max-width: 480px) {
+    padding: 12px;
+  }
+}
+
+.footerHint {
+  margin: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.6;
+  color: $muted;
+
+  strong {
+    color: $text;
+    font-weight: 700;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 사진 고르기 (2단계 편집 화면 아래)
+// ---------------------------------------------------------------------------
+
+.picker {
+  width: 100%;
+}
+
+.pickerHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.pickerTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: $text;
+}
+
+.pickerList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.pickerThumb {
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 0 0 1px $border;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    transform 0.1s;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  &:hover {
+    border-color: $primary;
+    transform: translateY(-1px);
+  }
+}
+
+.pickerThumbActive {
+  border-color: $primary;
+  box-shadow: 0 0 0 2px rgba($primary, 0.25);
+}
+
+.pickerAdd {
+  height: 52px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  border: 1.5px dashed #c3ccd6;
+  border-radius: 10px;
+  background: $panel;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  &:hover {
+    border-color: $primary;
+    color: $primary;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 사진 조정 (3단계 편집 화면 아래)
+// ---------------------------------------------------------------------------
+
+.adjust {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adjustHead {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.adjustThumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid $border;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.adjustTitle {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.4;
+
+  strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: $text;
+    white-space: nowrap;
+  }
+
+  em {
+    margin-left: 6px;
+    font-style: normal;
+    font-size: 12px;
+    font-weight: 500;
+    color: $muted;
+    font-variant-numeric: tabular-nums;
+  }
+
+  span {
+    font-size: 12px;
+    color: $muted;
+
+    @media (max-width: 1000px) {
+      display: none;
+    }
+  }
+}
+
+.quickRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+
+  // 좁은 화면: 제목 줄 아래로 내려 한 줄을 통째로 쓴다
+  @media (max-width: 700px) {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+.quickBtn {
+  border: 1px solid $border;
+  background: $panel;
+  color: #374151;
+  border-radius: 999px;
+  padding: 6px 13px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: $primary;
+    color: $primary;
+    background: #fff;
+  }
+}
+
+.sliders {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px 28px;
+
+  @media (max-width: 800px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.sliderRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  input[type='range'] {
+    flex: 1;
+    min-width: 0;
+    accent-color: $primary;
+    cursor: pointer;
+  }
+}
+
+.sliderLabel {
+  width: 30px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: $text;
+}
+
+.sliderValue {
+  width: 46px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 700;
+  color: $primary;
+  font-variant-numeric: tabular-nums;
+}
+
+.iconBtn {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid $border;
+  border-radius: 8px;
+  background: #fff;
+  color: $text;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &:hover {
+    border-color: $primary;
+    color: $primary;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 공통 버튼
+// ---------------------------------------------------------------------------
+
+.ghostBtn {
+  border: 1px solid $border;
+  background: #fff;
+  color: $text;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: $primary;
+    color: $primary;
+  }
+}
+
+.dangerBtn:hover {
+  border-color: $danger;
+  color: $danger;
+}
+
+.outlineBtn {
+  width: 100%;
+  height: 46px;
+  border: 2px solid $primary;
+  border-radius: 12px;
+  background: #fff;
+  color: $primary;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover:not(:disabled) {
+    background: rgba($primary, 0.08);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+}
+
+.restartBtn {
+  margin-top: 12px;
+}
+
+.textBtn {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: $muted;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 4px 0;
+  white-space: nowrap;
+
+  &:hover {
+    color: $text;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 옆 설정 카드
+// ---------------------------------------------------------------------------
+
+.card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 20px;
+  background: #fff;
+  min-width: 0;
+
+  @media (max-width: 800px) {
+    padding: 16px;
+  }
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.cardTitle {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: $text;
+}
+
+.cardMeta {
+  font-size: 13px;
+  color: $muted;
+  font-variant-numeric: tabular-nums;
+}
+
+.cardNote {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: $muted;
+}
+
+.tips {
+  background: $panel;
+  border-radius: 14px;
+  padding: 16px 18px;
+
+  h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: $text;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  li {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #374151;
+  }
+}
+
+// 넓은 화면에서는 한 줄로 펼친다
+.tipsRow {
+  @media (min-width: 900px) {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+
+    h3 {
+      margin: 0;
+      white-space: nowrap;
+    }
+
+    ul {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 4px 28px;
+    }
+  }
+}
+
+// 사진 올리기
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 140px;
+  padding: 20px 16px;
+  border: 2px dashed #cfd6de;
+  border-radius: 14px;
+  background: $panel;
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s;
+
+  &:hover,
+  &:focus-visible {
+    border-color: $primary;
+    background: color.adjust($panel, $lightness: -2%);
+  }
+
+  &.dragging {
+    border-color: $primary;
+    background: rgba($primary, 0.08);
+  }
+
+  &.compact {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    min-height: 0;
+    padding: 12px 14px;
+    text-align: left;
+
+    .dropIcon svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    .dropTitle {
+      margin-bottom: 2px;
+    }
+  }
+}
+
+.dropIcon {
+  color: $primary;
+  line-height: 0;
+
+  svg {
+    width: 34px;
+    height: 34px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.dropText {
+  min-width: 0;
+}
+
+.dropTitle {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: $text;
+}
+
+.dropHint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: $muted;
+}
+
+.tray {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
+  gap: 10px;
+  margin: 16px 0 0;
+  padding: 0;
+}
+
+.trayItem {
+  position: relative;
+  aspect-ratio: 1 / 1;
+
+  &:hover .trayRemove,
+  &:focus-within .trayRemove {
+    opacity: 1;
+  }
+}
+
+.trayThumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 0 0 1px $border;
+  cursor: pointer;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    transform 0.1s;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+  }
+
+  &:hover,
+  &:focus-visible {
+    border-color: $primary;
+    transform: translateY(-1px);
+  }
+}
+
+.trayThumbUsed {
+  border-color: $primary;
+}
+
+.trayBadge {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: $primary;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.trayRemove {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #374151;
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.15s,
+    background-color 0.15s;
+
+  svg {
+    width: 10px;
+    height: 10px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+
+  &:hover {
+    background: $danger;
+  }
+
+  // 마우스가 없는 기기에서는 항상 보여준다
+  @media (hover: none) {
+    opacity: 1;
+  }
+}
+
+.chipGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  border: 1px solid $border;
+  background: #fff;
+  color: $text;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: $primary;
+    color: $primary;
+  }
+}
+
+.chipActive {
+  background: $primary;
+  border-color: $primary;
+  color: #fff;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+// 색상
+.optionLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: $text;
+}
+
+.optionHint {
+  font-size: 12px;
+  line-height: 1.6;
+  color: $muted;
+}
+
+.colorRow {
+  padding-bottom: 14px;
+
+  & + & {
+    padding-top: 14px;
+    border-top: 1px solid $border;
+  }
+}
+
+.colorHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.colorName {
+  font-size: 13px;
+  color: $muted;
+}
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+
+  // 좁은 화면에서도 케이스 색 9개가 한 줄에 들어가게
+  @media (max-width: 800px) {
+    gap: 6px;
+  }
+}
+
+.swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.16);
+  cursor: pointer;
+  padding: 0;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.swatchActive {
+  box-shadow: 0 0 0 2.5px $primary;
+  transform: scale(1.1);
+}
+
+.swatchSmall {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  margin-right: 5px;
+  vertical-align: -1px;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid $border;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+}
+
+.toggle {
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: none;
+  background: #cbd2da;
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s;
+}
+
+.toggleOn {
+  background: $primary;
+
+  .toggleKnob {
+    transform: translateX(20px);
+  }
+}
+
+.toggleKnob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s;
+}
+
+// 요약
+.summaryList {
+  margin: 0 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  > div {
+    display: flex;
+    gap: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  dt {
+    color: $muted;
+    min-width: 44px;
+    flex-shrink: 0;
+  }
+
+  dd {
+    margin: 0;
+    color: $text;
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.summaryColors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.colorTag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  background: $panel;
+  border-radius: 999px;
+  padding: 3px 10px 3px 8px;
+}
+
+// ---------------------------------------------------------------------------
+// 이전 / 다음 (화면 아래에 붙어 있는 줄)
+// ---------------------------------------------------------------------------
+
+.wizardNav {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0 -20px;
+  padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid $border;
+
+  @media (max-width: 800px) {
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    margin: 0 -16px;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.navBack {
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 18px 0 12px;
+  border: 1px solid $border;
+  border-radius: 12px;
+  background: #fff;
+  color: $text;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: $primary;
+    color: $primary;
+  }
+
+  // 첫 단계에서는 자리만 차지하고 보이지 않게 (다음 버튼 위치가 흔들리지 않도록)
+  &:disabled {
+    visibility: hidden;
+  }
+}
+
+.navInfo {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
+  color: $muted;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  // 좁은 화면: 버튼 위에 한 줄로
+  @media (max-width: 800px) {
+    order: -1;
+    flex: 0 0 100%;
+    font-size: 12px;
+  }
+}
+
+.navNext {
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 16px 0 22px;
+  border: none;
+  border-radius: 12px;
+  background: $primary;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba($primary, 0.3);
+  transition:
+    background 0.15s,
+    transform 0.1s;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &:hover {
+    background: $primary-dark;
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  @media (max-width: 800px) {
+    flex: 1;
+  }
+}
+
+// 마지막 단계의 "이미지 저장"처럼 화살표가 없는 버튼
+.navDone {
+  padding: 0 28px;
+}
+
+.navNextPrefix {
+  padding-right: 8px;
+  margin-right: 2px;
+  border-right: 1px solid rgba(255, 255, 255, 0.4);
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+// 아직 넘어갈 수 없을 때: 눌러서 이유를 들을 수는 있게 버튼은 살려 둔다
+.navNextBlocked {
+  background: #b8c2cc;
+  box-shadow: none;
+
+  &:hover {
+    background: #b8c2cc;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 알림
+// ---------------------------------------------------------------------------
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 92px;
+  z-index: 60;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(560px, calc(100vw - 32px));
+  background: rgba(10, 10, 10, 0.88);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.5;
+  border-radius: 12px;
+  padding: 10px 16px;
+  text-align: center;
+  pointer-events: none;
+  word-break: keep-all;
+  animation: toast-in 0.22s $ease-out-quart;
+
+  @media (max-width: 800px) {
+    bottom: 118px;
+  }
+}

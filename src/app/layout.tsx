@@ -4,68 +4,62 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import FooterSlot from "../components/FooterSlot";
 import { AuthProvider } from "../contexts/AuthContext";
 
+// Geist 는 변수만 정의돼 있고 화면에서 쓰는 곳이 없다. 미리 받지 않게 해 둔다 (쓰게 되면 그때 받는다)
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  preload: false,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  preload: false,
 });
 
+// Pretendard 는 굵기 하나가 2.6MB(전송 약 1.15MB)라서, 아홉 굵기를 모두 미리 받으면 페이지마다 10MB 넘게 든다.
+// 그래서 둘로 나눈다.
+//  - pretendard     : 자주 쓰는 글자만 담은 묶음 (한글 2,350자 + 영문 · 숫자 · 기호 전부, 굵기마다 약 0.3MB).
+//                     미리 받지 않고, 화면에 실제로 쓰인 굵기만 그때 받는다
+//  - pretendardRest : 원본 글꼴. 위 묶음에 없는 드문 한글(나머지 8,822자)이 화면에 나올 때만 받는다
+// 글자 모양은 원본과 똑같다. 묶음은 scripts 없이 fonttools 로 원본에서 잘라 만들었다 (src/fonts/subset)
 const pretendard = localFont({
   src: [
-    {
-      path: "../fonts/Pretendard-Thin.ttf",
-      weight: "100",
-      style: "normal",
-    },
-    {
-      path: "../fonts/Pretendard-ExtraLight.ttf",
-      weight: "200",
-      style: "normal",
-    },
-    {
-      path: "../fonts/Pretendard-Light.ttf",
-      weight: "300",
-      style: "normal",
-    },
-    {
-      path: "../fonts/Pretendard-Regular.ttf",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../fonts/Pretendard-Medium.ttf",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "../fonts/Pretendard-SemiBold.ttf",
-      weight: "600",
-      style: "normal",
-    },
-    {
-      path: "../fonts/Pretendard-Bold.ttf",
-      weight: "700",
-      style: "normal",
-    },
-    {
-      path: "../fonts/Pretendard-ExtraBold.ttf",
-      weight: "800",
-      style: "normal",
-    },
-    {
-      path: "../fonts/Pretendard-Black.ttf",
-      weight: "900",
-      style: "normal",
-    },
+    { path: "../fonts/subset/Pretendard-Thin.subset.woff2", weight: "100", style: "normal" },
+    { path: "../fonts/subset/Pretendard-ExtraLight.subset.woff2", weight: "200", style: "normal" },
+    { path: "../fonts/subset/Pretendard-Light.subset.woff2", weight: "300", style: "normal" },
+    { path: "../fonts/subset/Pretendard-Regular.subset.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/subset/Pretendard-Medium.subset.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/subset/Pretendard-SemiBold.subset.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/subset/Pretendard-Bold.subset.woff2", weight: "700", style: "normal" },
+    { path: "../fonts/subset/Pretendard-ExtraBold.subset.woff2", weight: "800", style: "normal" },
+    { path: "../fonts/subset/Pretendard-Black.subset.woff2", weight: "900", style: "normal" },
   ],
-  variable: "--font-pretendard",
+  variable: "--font-pretendard-core",
   display: "swap",
+  preload: false,
+});
+
+const pretendardRest = localFont({
+  src: [
+    { path: "../fonts/Pretendard-Thin.ttf", weight: "100", style: "normal" },
+    { path: "../fonts/Pretendard-ExtraLight.ttf", weight: "200", style: "normal" },
+    { path: "../fonts/Pretendard-Light.ttf", weight: "300", style: "normal" },
+    { path: "../fonts/Pretendard-Regular.ttf", weight: "400", style: "normal" },
+    { path: "../fonts/Pretendard-Medium.ttf", weight: "500", style: "normal" },
+    { path: "../fonts/Pretendard-SemiBold.ttf", weight: "600", style: "normal" },
+    { path: "../fonts/Pretendard-Bold.ttf", weight: "700", style: "normal" },
+    { path: "../fonts/Pretendard-ExtraBold.ttf", weight: "800", style: "normal" },
+    { path: "../fonts/Pretendard-Black.ttf", weight: "900", style: "normal" },
+  ],
+  variable: "--font-pretendard-rest",
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+  declarations: [{ prop: "unicode-range", value: "U+AC00-D7A3" }],
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://maker3d.co.kr';
@@ -159,7 +153,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${pretendard.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${pretendard.variable} ${pretendardRest.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
           <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -167,7 +161,9 @@ export default function RootLayout({
             <main style={{ flex: 1, paddingTop: '75px', backgroundColor: "white" }}>
               {children}
             </main>
-            <Footer />
+            <FooterSlot>
+              <Footer />
+            </FooterSlot>
           </div>
         </AuthProvider>
       </body>

@@ -1,9 +1,10 @@
 'use client';
 
 import styles from './page.module.scss';
-import Image from 'next/image';
-import {useState} from 'react';
 import {useRouter} from 'next/navigation';
+import Reveal from '@/components/Reveal';
+import ScrollArrow from '@/components/ScrollArrow';
+import { ArrowRightIcon, GrowthSection, IntroDiagram, IntroHero } from '@/components/intro/IntroSections';
 
 export default function IntroPage() {
     const router = useRouter();
@@ -12,78 +13,31 @@ export default function IntroPage() {
     return (
         <div className={styles.container}>
             <div className={styles.innerContainer}>
-                <div className={styles.introLogo}>
-                    <Image
-                        src="/introLogo.svg"
-                        alt="MAKER 3D Logo"
-                        width={1364}
-                        height={650}
-                        className={styles.logoImage}
-                    />
+                <IntroHero />
+
+                <div className={styles.scrollArrow}>
+                    <ScrollArrow />
                 </div>
 
-                <Image
-                    src="/underArrow.svg"
-                    alt="MAKER 3D Logo"
-                    width={22}
-                    height={50}
-                    style={{marginTop: 138}}
-                />
-
             </div>
-            <div className={styles.graphWrapper}>
-                <Image
-                    src="/graph.svg"
-                    alt="MAKER 3D Logo"
-                    width={1600}
-                    height={689}
-                    className={styles.graph}
-                />
-                <div className={styles.graphInfoWrapper}>
-                    <Image
-                        src="/graphInfo.svg"
-                        alt="MAKER 3D Logo"
-                        width={1277}
-                        height={644}
-                        className={styles.graphInfo}
-                    />
-                </div>
-
-
-            </div>
-            <Image
-                src="/introPhoto3.svg"
-                alt="MAKER 3D Logo"
-                width={1600}
-                height={689}
-                className={styles.introPhoto3}
-            />
-
+            <GrowthSection />
+            <IntroDiagram />
 
             <div className={styles.innerContainer}>
                 <div className={styles.buttonWrapper}>
                     <div className={styles.button}>
                         <p className={styles.buttonTitle}>3D프린팅코리아엑스포 홈페이지</p>
-                        <Image
-                            src="/arrow-right.svg"
-                            alt="MAKER 3D Logo"
-                            width={32}
-                            height={32}
-                        />
+                        <ArrowRightIcon />
 
                     </div>
                     <div className={styles.button} onClick={() => router.push('/store')} style={{cursor: 'pointer'}}>
                         <p className={styles.buttonTitle}>스토어 바로가기</p>
-                        <Image
-                            src="/arrow-right.svg"
-                            alt="MAKER 3D Logo"
-                            width={32}
-                            height={32}
-                        />
+                        <ArrowRightIcon />
 
                     </div>
                 </div>
 
+                <Reveal className={styles.revealBlock}>
                 <p className={styles.come}>오시는길</p>
                 <div className={styles.mapWrapper}>
                     <iframe
@@ -107,6 +61,7 @@ export default function IntroPage() {
                     <p className={styles.info}>054-461-4140 / jjy2882@bittech3d.com</p>
                 </div>
                 <div className={styles.thinLine}></div>
+                </Reveal>
                 <div className={styles.emptySpace}></div>
 
 

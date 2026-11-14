@@ -1,0 +1,1273 @@
+// 회사 소개 페이지에서 예전에 그림 파일이던 구역들. 글자 크기 · 위치는 원본 그림을 재서 옮긴 값이다.
+// 화면에 들어왔는지는 Reveal 이 data-shown 으로 알려 준다.
+
+$ink: #0a0a0a;
+$primary: #2493d8;
+$ease: cubic-bezier(0.22, 1, 0.36, 1);
+$bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+// ---------------------------------------------------------------------------
+// 대표 로고: WE'RE MAKER 3D (원본 1364 × 650)
+// ---------------------------------------------------------------------------
+
+.hero {
+  width: 100%;
+  max-width: 1364px;
+  margin-top: 137px;
+  // 원본 그림 아래에 있던 글줄 여백 (다음 구역의 위치를 원본과 같게)
+  margin-bottom: 8px;
+  --px: 0;
+  --py: 0;
+
+  @media (max-width: 800px) {
+    margin-top: 80px;
+  }
+}
+
+.heroSvg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+// 마우스를 따라 표시와 글씨가 서로 반대로 조금 움직인다 (깊이감)
+.heroMarkDepth {
+  translate: calc(var(--px) * -16px) calc(var(--py) * -12px);
+}
+
+.heroTextDepth {
+  translate: calc(var(--px) * 10px) calc(var(--py) * 7px);
+}
+
+.heroMarkFloat {
+  animation: heroFloat 5.5s ease-in-out infinite alternate;
+}
+
+// 처음부터 보이는 채로(가장 큰 그림이 늦게 뜨지 않게) 조금 작게 돌아가 있다가 제자리로 온다
+.heroMark {
+  transform-origin: 663px 325px;
+  animation: heroMarkIn 1.3s $ease both;
+}
+
+// 픽셀 글씨: 한 글자씩 위에서 떨어져 내려앉는다
+.heroLetter {
+  animation: heroLetterIn 0.75s $bounce both;
+  animation-delay: calc(0.25s + var(--i) * 0.055s);
+}
+
+// 그 뒤로는 이따금 왼쪽에서 오른쪽으로 물결치듯 튀어 오른다
+.heroLetterHop {
+  animation: heroHop 7s ease-in-out infinite;
+  animation-delay: calc(2.6s + var(--i) * 0.09s);
+}
+
+@keyframes heroFloat {
+  from {
+    transform: translateY(8px);
+  }
+
+  to {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes heroMarkIn {
+  from {
+    transform: scale(0.84) rotate(-9deg);
+  }
+
+  to {
+    transform: none;
+  }
+}
+
+@keyframes heroLetterIn {
+  from {
+    opacity: 0;
+    transform: translateY(-60px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes heroHop {
+  0%,
+  9%,
+  100% {
+    translate: 0 0;
+  }
+
+  4.5% {
+    translate: 0 -18px;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 성장 그래프 (원본 1991 × 905) + 강점 카드 (원본 1731 × 866)
+// ---------------------------------------------------------------------------
+
+.growth {
+  position: relative;
+  width: 100%;
+  max-width: 1920px;
+  margin-top: 120px;
+  // 124px + 원본 그림 아래의 글줄 여백
+  margin-bottom: 131px;
+
+  @media (max-width: 800px) {
+    margin-top: 72px;
+    margin-bottom: 72px;
+  }
+}
+
+.graphSvg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.graphText {
+  font-family: var(--font-pretendard);
+}
+
+// 곡선: 화면에 들어오면 왼쪽에서 오른쪽으로 그어진다
+.graphCurve {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 2.4s cubic-bezier(0.45, 0, 0.2, 1) 0.2s;
+
+  [data-shown='true'] & {
+    stroke-dashoffset: 0;
+  }
+}
+
+// 곡선 아래 면: 곡선과 같은 빠르기로 왼쪽부터 드러난다
+.graphRevealRect {
+  transform-origin: 0 0;
+  transform: scaleX(0);
+  transition: transform 2.4s cubic-bezier(0.45, 0, 0.2, 1) 0.2s;
+
+  [data-shown='true'] & {
+    transform: scaleX(1);
+  }
+}
+
+.graphOthers {
+  opacity: 0;
+  transform-origin: 220.855px 852.816px;
+  transform: scale(0.6);
+  transition:
+    opacity 0.5s ease 0.35s,
+    transform 0.7s $bounce 0.35s;
+
+  [data-shown='true'] & {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// 곡선을 타고 올라가는 점. 길을 따라가는 기능이 없는 브라우저에서는 보이지 않는다 (마지막 자리의 점만 나타난다)
+.graphTraveler {
+  display: none;
+
+  @supports (offset-path: path('M0 0L1 1')) {
+    display: block;
+    offset-path: path('M26 862.409C1058.03 870.89 1322.15 155.202 1976 121.91');
+    offset-rotate: 0deg;
+    offset-distance: 9.19%;
+    opacity: 0;
+
+    [data-shown='true'] & {
+      animation: graphTravel 2.3s cubic-bezier(0.45, 0, 0.2, 1) 0.5s both;
+    }
+  }
+}
+
+// "others" 자리(곡선 길이의 9.19%)에서 "Maker 3D" 자리(88.35%)까지
+@keyframes graphTravel {
+  0% {
+    offset-distance: 9.19%;
+    opacity: 0;
+  }
+
+  8% {
+    opacity: 1;
+  }
+
+  92% {
+    offset-distance: 88.35%;
+    opacity: 1;
+  }
+
+  100% {
+    offset-distance: 88.35%;
+    opacity: 0;
+  }
+}
+
+// 도착하면 그 자리에 점이 자리 잡고, 이름표가 튀어나온다
+.graphMakerDot {
+  opacity: 0;
+  transform-origin: 1733.86px 164.97px;
+  transform: scale(0.4);
+  transition:
+    opacity 0.3s ease 2.6s,
+    transform 0.6s $bounce 2.6s;
+
+  [data-shown='true'] & {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.graphMakerPill {
+  opacity: 0;
+  transform-origin: 1733px 126px;
+  transform: scale(0.5) translateY(30px);
+  transition:
+    opacity 0.4s ease 2.8s,
+    transform 0.7s $bounce 2.8s;
+
+  [data-shown='true'] & {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// 자리 잡은 점에서 물결이 계속 퍼져 나간다
+.graphRipple {
+  opacity: 0;
+  transform-origin: 1733.86px 164.97px;
+
+  [data-shown='true'] & {
+    animation: graphRipple 2.4s ease-out 3.2s infinite;
+  }
+}
+
+@keyframes graphRipple {
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(3.2);
+  }
+}
+
+// 그래프 위에 얹히는 설명. 폭에 비례해 줄어든다 (g(42) 는 "원본에서 42px 이던 길이")
+@function g($n) {
+  @return calc(#{$n} * var(--g));
+}
+
+.growthInfo {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  width: 100%;
+  max-width: 1500px;
+  padding: 0 100px;
+  box-sizing: border-box;
+  container-type: inline-size;
+  color: $ink;
+  font-family: var(--font-pretendard);
+  // 컨테이너 단위를 모르는 브라우저에서는 화면 폭으로 계산한다
+  --g: calc((min(100vw, 1500px) - 200px) / 1731);
+
+  @supports (width: 1cqw) {
+    --g: calc(100cqw / 1731);
+  }
+
+  @media (max-width: 800px) {
+    position: static;
+    padding: 0 20px;
+    margin-top: 28px;
+  }
+}
+
+.growthTitle {
+  margin: 0;
+  padding-left: g(2);
+  font-size: g(42);
+  font-weight: 600;
+  line-height: g(64);
+  word-break: keep-all;
+
+  span {
+    display: block;
+  }
+
+  @media (max-width: 800px) {
+    padding-left: 0;
+    font-size: 19px;
+    line-height: 1.55;
+
+    span {
+      display: inline;
+    }
+  }
+}
+
+// 카드 네 장: 원본에서 (453, 222) 부터 가로 661.84 · 세로 338 간격으로 놓인다
+.growthCards {
+  position: relative;
+  // 제목 세 줄(192) 아래에서 원본 좌표 222 까지
+  margin-top: g(30);
+  margin-left: g(453);
+  width: g(1276.69);
+  display: grid;
+  grid-template-columns: g(614.845) g(614.845);
+  gap: g(32) g(46.995);
+
+  @media (max-width: 800px) {
+    margin: 20px 0 0;
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+}
+
+.growthCardSlot {
+  min-width: 0;
+}
+
+.growthCard {
+  height: g(306);
+  border-radius: g(50);
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition:
+    translate 0.35s $ease,
+    box-shadow 0.35s ease,
+    background-color 0.35s ease;
+
+  &:hover {
+    translate: 0 -8px;
+    background: #fff;
+    box-shadow: 0 18px 44px rgba(15, 123, 190, 0.22);
+  }
+
+  p {
+    margin: 0;
+    font-size: g(32);
+    font-weight: 500;
+    line-height: g(48);
+    word-break: keep-all;
+  }
+
+  @media (max-width: 800px) {
+    height: auto;
+    padding: 22px 18px;
+    border-radius: 18px;
+
+    p {
+      font-size: 15px;
+      line-height: 1.6;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    &:hover {
+      translate: 0 0;
+    }
+  }
+}
+
+.growthLine {
+  display: block;
+}
+
+// 형광펜: 카드가 나타난 뒤 왼쪽에서 오른쪽으로 칠해진다 (글자 높이의 아래쪽을 덮는다)
+.marker {
+  color: inherit;
+  font-weight: 600;
+  background: linear-gradient(rgba(63, 181, 255, 0.3), rgba(63, 181, 255, 0.3)) no-repeat 0 100% / 0% 82%;
+  transition: background-size 0.8s cubic-bezier(0.45, 0, 0.2, 1);
+  transition-delay: calc(var(--reveal-delay, 0s) + 0.55s);
+
+  [data-shown='true'] & {
+    background-size: 100% 82%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    background-size: 100% 82%;
+    transition: none;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 회사 구조 · 서비스 · 목표: 가로 1920 기준 도식. u(391) 은 "원본에서 391px 이던 길이"
+// ---------------------------------------------------------------------------
+
+@function u($n) {
+  @return calc(#{$n} * var(--u));
+}
+
+.diagram {
+  position: relative;
+  width: 100%;
+  max-width: 1920px;
+  container-type: inline-size;
+  color: $ink;
+  font-family: var(--font-pretendard);
+  --u: calc(min(100vw, 1920px) / 1920);
+
+  @supports (width: 1cqw) {
+    --u: calc(100cqw / 1920);
+  }
+}
+
+.block {
+  position: relative;
+  width: 100%;
+
+  // 좁은 화면에서는 가로 720 기준으로 다시 배치한다 (같은 도형을 2.7배 크게, 세로로 쌓아서)
+  @media (max-width: 760px) {
+    --u: calc(100vw / 720);
+
+    @supports (width: 1cqw) {
+      --u: calc(100cqw / 720);
+    }
+  }
+}
+
+.labelArt {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+// ---- 회사 구조 (원본 y 0 ~ 909) -------------------------------------------
+
+.model {
+  height: u(909);
+  // 서비스 구역(원본 y 1096)까지
+  margin-bottom: u(187);
+
+  @media (max-width: 760px) {
+    height: u(1640);
+    margin-bottom: u(110);
+  }
+}
+
+// 뒤에 걸린 푸른 반원
+.modelGlow {
+  position: absolute;
+  left: u(15);
+  top: u(7);
+  width: u(1890);
+  height: u(634);
+  border-radius: u(945) u(945) 0 0 / u(634) u(634) 0 0;
+  background: radial-gradient(ellipse 50% 100% at 50% 100%, rgba(250, 250, 250, 0.12) 74%, rgba(36, 147, 216, 0.12) 100%);
+  filter: blur(u(9.7));
+  transform-origin: 50% 100%;
+  opacity: 0;
+  transform: scale(0.92);
+  transition:
+    opacity 1.2s ease,
+    transform 1.6s $ease;
+
+  [data-shown='true'] & {
+    opacity: 1;
+    transform: none;
+    animation: glowBreathe 6s ease-in-out 1.6s infinite alternate;
+  }
+
+  @media (max-width: 760px) {
+    left: u(-40);
+    top: 0;
+    width: u(800);
+    height: u(430);
+    border-radius: u(400) u(400) 0 0 / u(430) u(430) 0 0;
+  }
+}
+
+@keyframes glowBreathe {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.55;
+  }
+}
+
+.modelLabel {
+  position: absolute;
+  left: u(896);
+  top: u(80);
+  width: u(168);
+  height: u(21);
+  margin: 0;
+
+  @media (max-width: 760px) {
+    left: u(276);
+    top: u(8);
+  }
+}
+
+// BIT TECH: 가운데 위의 흰 동그라미
+.bitCircle {
+  position: absolute;
+  left: u(782);
+  top: u(187);
+  width: u(389);
+  height: u(389);
+  box-sizing: border-box;
+  border: u(2) solid $ink;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 0.5s ease 0.1s,
+    transform 0.9s $bounce 0.1s;
+
+  [data-shown='true'] & {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (max-width: 760px) {
+    left: u(220);
+    top: u(575);
+    width: u(280);
+    height: u(280);
+  }
+}
+
+.bitLogo {
+  position: absolute;
+  left: u(81);
+  top: u(153);
+  width: u(224);
+  height: u(50);
+
+  @media (max-width: 760px) {
+    left: u(26);
+    top: u(113);
+  }
+}
+
+.makerLogo {
+  position: absolute;
+  left: u(263);
+  top: u(441);
+  width: u(470);
+  height: u(52);
+  opacity: 0;
+  translate: u(-50) 0;
+  transition:
+    opacity 0.6s ease 0.25s,
+    translate 0.9s $ease 0.25s;
+
+  [data-shown='true'] & {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  @media (max-width: 760px) {
+    left: u(125);
+    top: u(70);
+  }
+}
+
+// 사업 영역 세 가지: 검은 동그라미가 차례로 내려앉는다
+.modelCircle {
+  position: absolute;
+  top: u(518);
+  width: u(391);
+  height: u(391);
+  border-radius: 50%;
+  background: $ink;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(u(-70)) scale(0.7);
+  transition:
+    opacity 0.5s ease calc(0.45s + var(--n) * 0.16s),
+    transform 0.9s $bounce calc(0.45s + var(--n) * 0.16s),
+    box-shadow 0.3s ease;
+
+  [data-shown='true'] & {
+    opacity: 1;
+    transform: none;
+  }
+
+  &:hover {
+    box-shadow: 0 0 0 u(8) rgba(36, 147, 216, 0.35);
+  }
+}
+
+.modelCircle_maker {
+  left: u(302);
+}
+
+.modelCircle_bit {
+  left: u(785);
+
+  // 원본에서 이 동그라미의 글만 가운데보다 조금 아래에 있다
+  .modelText {
+    position: relative;
+    top: u(10.85);
+  }
+}
+
+.modelCircle_cafe {
+  left: u(1266);
+}
+
+@media (max-width: 760px) {
+  .modelCircle_maker {
+    left: u(164.5);
+    top: u(150);
+  }
+
+  .modelCircle_bit {
+    left: u(164.5);
+    top: u(797);
+  }
+
+  .modelCircle_cafe {
+    left: u(164.5);
+    top: u(1218);
+  }
+}
+
+// 위에서 내려오는 화살표: 계속 아래로 까딱인다
+.modelArrow {
+  position: absolute;
+  left: 50%;
+  top: u(2);
+  width: u(44);
+  height: u(50);
+  margin-left: u(-22);
+  overflow: visible;
+  animation: arrowBob 1.6s ease-in-out infinite;
+  animation-delay: calc(var(--n) * 0.2s);
+}
+
+@keyframes arrowBob {
+  0%,
+  100% {
+    transform: translateY(u(-3));
+  }
+
+  50% {
+    transform: translateY(u(5));
+  }
+}
+
+.modelText {
+  margin: 0;
+  font-size: u(30);
+  font-weight: 600;
+  line-height: u(42);
+  // 원본의 글자 사이가 조금 좁다 (줄 폭으로 잰 값)
+  letter-spacing: -0.03em;
+  text-align: center;
+  white-space: nowrap;
+
+  span {
+    display: block;
+    opacity: 0;
+    translate: 0 u(12);
+    transition:
+      opacity 0.5s ease,
+      translate 0.6s $ease;
+    transition-delay: calc(0.9s + var(--n) * 0.16s + var(--l) * 0.07s);
+
+    [data-shown='true'] & {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+}
+
+// ---- 서비스 (원본 y 1096 ~ 2127) ------------------------------------------
+
+.service {
+  height: u(1031);
+  z-index: 0;
+
+  @media (max-width: 760px) {
+    height: u(1300);
+  }
+}
+
+.serviceHead {
+  margin: 0;
+}
+
+.serviceLabel,
+.serviceTitle {
+  position: absolute;
+  display: block;
+  opacity: 0;
+  translate: 0 u(24);
+  transition:
+    opacity 0.7s ease,
+    translate 0.9s $ease;
+
+  [data-shown='true'] & {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+.serviceLabel {
+  left: u(923);
+  top: u(-1);
+  width: u(75);
+  height: u(18);
+
+  @media (max-width: 760px) {
+    left: u(322.5);
+    top: 0;
+  }
+}
+
+.serviceTitle {
+  left: u(522);
+  top: u(70);
+  width: u(876);
+  height: u(46);
+  transition-delay: 0.1s;
+
+  @media (max-width: 760px) {
+    left: u(30);
+    top: u(46);
+    width: u(660);
+    height: u(34.7);
+  }
+}
+
+.serviceLead {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: u(222);
+  margin: 0;
+  // 화면이 좁아져도 12px 아래로는 줄지 않는다
+  font-size: max(#{u(20)}, 12px);
+  font-weight: 400;
+  line-height: u(32);
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.8s ease 0.3s;
+
+  [data-shown='true'] & {
+    opacity: 1;
+  }
+
+  @media (max-width: 760px) {
+    left: u(40);
+    right: u(40);
+    top: u(108);
+    font-size: u(26);
+    line-height: u(40);
+    word-break: keep-all;
+  }
+}
+
+// 결과물(검은 동그라미)에서 바깥으로 번져 나가는 고리 네 겹
+.rings {
+  position: absolute;
+  left: u(1381);
+  top: u(616);
+  width: 0;
+  height: 0;
+  opacity: 0.4;
+
+  @media (max-width: 760px) {
+    left: u(360);
+    top: u(940);
+  }
+}
+
+.ring {
+  --size: 0px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--size);
+  height: var(--size);
+  margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+  box-sizing: border-box;
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.55);
+  transition:
+    opacity 0.8s ease,
+    transform 1.2s $ease;
+  transition-delay: calc(1.05s + var(--k) * 0.14s);
+
+  [data-shown='true'] & {
+    opacity: 1;
+    transform: none;
+    animation: ringPulse 5s ease-in-out infinite;
+    animation-delay: calc(2.6s + var(--k) * 0.35s);
+  }
+}
+
+// 안쪽 고리부터 차례로 커졌다 돌아온다 (물결)
+@keyframes ringPulse {
+  0%,
+  100% {
+    scale: 1;
+  }
+
+  50% {
+    scale: 1.035;
+  }
+}
+
+.ring3 {
+  --k: 0;
+  --size: #{u(461)};
+  border: u(1) solid $ink;
+  background: radial-gradient(circle closest-side, rgba(10, 10, 10, 0) 80.5%, rgba(10, 10, 10, 0.2) 100%);
+}
+
+.ring2 {
+  --k: 1;
+  --size: #{u(596)};
+  border: u(1) solid rgba(10, 10, 10, 0.6);
+  background: radial-gradient(circle closest-side, rgba(10, 10, 10, 0) 80.5%, rgba(10, 10, 10, 0.15) 100%);
+}
+
+.ring1 {
+  --k: 2;
+  --size: #{u(778)};
+  border: u(1) solid rgba(10, 10, 10, 0.2);
+  background: radial-gradient(circle closest-side, rgba(10, 10, 10, 0) 80.5%, rgba(10, 10, 10, 0.1) 100%);
+}
+
+.ring0 {
+  --k: 3;
+  --size: #{u(1072)};
+  border: u(0.5) solid rgba(10, 10, 10, 0.2);
+  background: radial-gradient(circle closest-side, rgba(10, 10, 10, 0) 88.2%, rgba(10, 10, 10, 0.05) 100%);
+}
+
+@media (max-width: 760px) {
+  .ring3 {
+    --size: #{u(430)};
+  }
+
+  .ring2 {
+    --size: #{u(510)};
+  }
+
+  .ring1 {
+    --size: #{u(600)};
+  }
+
+  .ring0 {
+    --size: #{u(700)};
+  }
+}
+
+// 점선 테두리: 점선이 천천히 흘러간다
+.dotted {
+  position: absolute;
+  left: u(304);
+  top: u(381);
+  width: u(1312);
+  height: u(470);
+  overflow: visible;
+  opacity: 0;
+  transition: opacity 0.9s ease 0.35s;
+
+  [data-shown='true'] & {
+    opacity: 1;
+  }
+
+  rect {
+    animation: dashMarch 1.4s linear infinite;
+  }
+
+  @media (max-width: 760px) {
+    display: none;
+  }
+}
+
+@keyframes dashMarch {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+.dottedMobile {
+  display: none;
+
+  @media (max-width: 760px) {
+    display: block;
+    position: absolute;
+    left: u(20);
+    top: u(250);
+    width: u(680);
+    height: u(900);
+    box-sizing: border-box;
+    border: 1px dashed $ink;
+    border-radius: u(120);
+  }
+}
+
+.dottedLabel {
+  position: absolute;
+  left: u(865);
+  top: u(353);
+  width: u(190);
+  height: u(56);
+  margin: 0;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: u(40);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.8s ease 0.45s;
+
+  [data-shown='true'] & {
+    opacity: 1;
+  }
+
+  @media (max-width: 760px) {
+    left: u(265);
+    top: u(222);
+  }
+}
+
+// 아이디어 + 3D 프린팅: 양쪽에서 다가와 맞닿는다
+.ideaCircle {
+  position: absolute;
+  top: u(437.75);
+  width: u(356.5);
+  height: u(356.5);
+  box-sizing: border-box;
+  border: u(1.5) solid $ink;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: u(30);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0;
+  transition:
+    opacity 0.6s ease 0.5s,
+    translate 1s $ease 0.5s;
+
+  [data-shown='true'] & {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  @media (max-width: 760px) {
+    top: u(320);
+    width: u(300);
+    height: u(300);
+    font-size: u(26);
+  }
+}
+
+.ideaCircle_left {
+  left: u(360.75);
+  translate: u(-90) 0;
+
+  @media (max-width: 760px) {
+    left: u(60);
+  }
+}
+
+.ideaCircle_right {
+  left: u(718.75);
+  translate: u(90) 0;
+
+  @media (max-width: 760px) {
+    left: u(360);
+  }
+}
+
+.equals {
+  position: absolute;
+  left: u(1124);
+  top: u(608.25);
+  width: u(30);
+  height: u(14.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  opacity: 0;
+  scale: 0 1;
+  transition:
+    opacity 0.4s ease 1.05s,
+    scale 0.5s $ease 1.05s;
+
+  [data-shown='true'] & {
+    opacity: 1;
+    scale: 1 1;
+  }
+
+  span {
+    height: u(1.5);
+    min-height: 1px;
+    background: $ink;
+  }
+
+  @media (max-width: 760px) {
+    left: u(345);
+    top: u(660);
+    rotate: 90deg;
+  }
+}
+
+.resultCircle {
+  position: absolute;
+  left: u(1203);
+  top: u(438);
+  width: u(356);
+  height: u(356);
+  border-radius: 50%;
+  background: $ink;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.5);
+  transition:
+    opacity 0.5s ease 1.15s,
+    transform 0.9s $bounce 1.15s;
+
+  [data-shown='true'] & {
+    opacity: 1;
+    transform: none;
+  }
+
+  p {
+    margin: 0;
+    font-size: u(30);
+    font-weight: 600;
+    line-height: u(42);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  span {
+    display: block;
+  }
+
+  @media (max-width: 760px) {
+    left: u(190);
+    top: u(770);
+    width: u(340);
+    height: u(340);
+  }
+}
+
+// ---- 목표 (원본 y 2127 ~ 2582) --------------------------------------------
+
+.vision {
+  height: u(455);
+  z-index: 1;
+
+  @media (max-width: 760px) {
+    height: u(720);
+    margin-top: u(40);
+  }
+}
+
+.visionText {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  margin: 0;
+  font-size: u(36);
+  font-weight: 700;
+  line-height: u(48);
+  text-align: center;
+
+  // 한 줄씩 차례로 올라오며 나타난다
+  span {
+    display: block;
+    opacity: 0;
+    translate: 0 u(26);
+    transition:
+      opacity 0.7s ease,
+      translate 0.9s $ease;
+    transition-delay: calc(0.1s + var(--l) * 0.16s);
+
+    [data-shown='true'] & {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  @media (max-width: 760px) {
+    left: u(40);
+    right: u(40);
+    font-size: u(34);
+    line-height: u(54);
+    word-break: keep-all;
+
+    span {
+      display: inline;
+    }
+  }
+}
+
+.visionGlow {
+  position: absolute;
+  left: u(512);
+  top: u(131);
+  width: u(853);
+  height: u(156);
+  border-radius: 50%;
+  background: rgba(36, 147, 216, 0.15);
+  filter: blur(u(84));
+  animation: visionGlow 6s ease-in-out infinite alternate;
+
+  @media (max-width: 760px) {
+    left: u(110);
+    top: u(360);
+    width: u(500);
+    height: u(180);
+    filter: blur(u(70));
+  }
+}
+
+@keyframes visionGlow {
+  from {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+
+  to {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+}
+
+// 흩어진 점: 저마다 다른 빠르기로 떠다닌다
+.visionDot {
+  position: absolute;
+  left: calc(var(--x) * var(--u));
+  top: calc(var(--y) * var(--u));
+  width: calc(var(--r) * 2 * var(--u));
+  height: calc(var(--r) * 2 * var(--u));
+  min-width: 2px;
+  min-height: 2px;
+  margin: calc(var(--r) * -1 * var(--u)) 0 0 calc(var(--r) * -1 * var(--u));
+  border-radius: 50%;
+  background: $ink;
+  animation: dotFloat calc(4.5s + var(--i) * 0.8s) ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -0.9s);
+
+  @media (max-width: 760px) {
+    left: calc(var(--x) / 1920 * 100%);
+    top: calc((500 + var(--y) * 0.62) * var(--u));
+  }
+}
+
+@keyframes dotFloat {
+  from {
+    translate: 0 calc(-10 * var(--u));
+  }
+
+  to {
+    translate: calc(8 * var(--u)) calc(12 * var(--u));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 아래쪽 버튼의 화살표
+// ---------------------------------------------------------------------------
+
+.arrowRight {
+  display: block;
+  transition: translate 0.3s $ease;
+}
+
+// ---------------------------------------------------------------------------
+// 움직임을 줄이도록 설정한 기기에서는 다 나타난 모습을 가만히 보여 준다
+// ---------------------------------------------------------------------------
+
+@media (prefers-reduced-motion: reduce) {
+  .heroMarkFloat,
+  .heroMark,
+  .heroLetter,
+  .heroLetterHop,
+  .modelArrow,
+  .visionGlow,
+  .visionDot,
+  .dotted rect {
+    animation: none;
+  }
+
+  .graphCurve,
+  .graphRevealRect,
+  .graphOthers,
+  .graphMakerDot,
+  .graphMakerPill,
+  .modelGlow,
+  .bitCircle,
+  .makerLogo,
+  .modelCircle,
+  .modelText span,
+  .serviceLabel,
+  .serviceTitle,
+  .serviceLead,
+  .ring,
+  .dotted,
+  .dottedLabel,
+  .ideaCircle,
+  .equals,
+  .resultCircle,
+  .visionText span {
+    opacity: 1;
+    transform: none;
+    translate: 0 0;
+    scale: 1 1;
+    transition: none;
+    animation: none;
+  }
+
+  .graphCurve {
+    stroke-dashoffset: 0;
+  }
+
+  .graphTraveler,
+  .graphRipple {
+    display: none;
+  }
+}

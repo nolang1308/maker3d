@@ -22,6 +22,8 @@ html {
 }
 
 body {
+  /* 자주 쓰는 글자 묶음을 먼저 쓰고, 거기 없는 드문 한글만 원본 글꼴에서 가져온다 (layout.tsx 참고) */
+  --font-pretendard: var(--font-pretendard-core), var(--font-pretendard-rest);
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-pretendard), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;

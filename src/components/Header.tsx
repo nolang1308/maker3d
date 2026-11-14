@@ -49,12 +49,14 @@ const Header = () => {
                 <div className={styles.container}>
                 {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
                 <a href="/" className={styles.logo}>
+                    {/* 머리말 로고는 모든 페이지의 첫 화면에 있으므로 미루지 않고 바로 받는다 */}
                     <Image
                         src="/logo.svg"
                         alt="MAKER 3D"
                         width={32}
                         height={32}
                         className={styles.logoIcon}
+                        priority
                     />
                 </a>
 

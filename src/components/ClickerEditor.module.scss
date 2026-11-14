@@ -1,0 +1,291 @@
+$primary: #2493D8;
+$stage: #f3f5f7;
+
+.stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: $stage;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.stageDrop::after {
+  content: '';
+  position: absolute;
+  inset: 10px;
+  border: 2px dashed $primary;
+  border-radius: 14px;
+  background: rgba($primary, 0.06);
+  pointer-events: none;
+}
+
+// ---------------------------------------------------------------------------
+// 위에서 본 클리커
+// ---------------------------------------------------------------------------
+
+// 키를 고르면 그 키가 화면 가운데로 오면서 커진다 (길이는 ClickerEditor 의 FOCUS_MOTION_MS 와 맞춘다)
+.clicker {
+  position: absolute;
+  transform-origin: 0 0;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+// 키를 선택한 동안에는 손가락 움직임을 사진 이동/확대로 쓴다
+.active {
+  touch-action: none;
+}
+
+.lug {
+  position: absolute;
+  box-shadow:
+    0 6px 14px rgba(15, 23, 42, 0.12),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.case {
+  position: absolute;
+  background-image: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.36) 0%,
+    rgba(255, 255, 255, 0) 42%,
+    rgba(0, 0, 0, 0.07) 100%
+  );
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.16),
+    0 2px 6px rgba(15, 23, 42, 0.1),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.05),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.55);
+}
+
+.well {
+  position: absolute;
+  box-shadow:
+    inset 0 2px 5px rgba(15, 23, 42, 0.28),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+// 한 장을 이어 붙일 때, 키 사이 틈에 가려지는 부분을 옅게 보여준다
+.ghost {
+  position: absolute;
+  overflow: hidden;
+  opacity: 0.36;
+  pointer-events: none;
+  outline: 1.5px dashed rgba($primary, 0.9);
+  outline-offset: 2px;
+
+  canvas {
+    display: block;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 키캡
+// ---------------------------------------------------------------------------
+
+// 위에서 본 키캡. 바탕(둥근 사각형)이 기울어진 옆면이고, ::before 가 둥근 윗면, .face 가 사진이 올라가는 면이다.
+// 실제 키캡처럼 모서리가 모두 둥글다 → 사진 모서리가 둥글게 잘리는 까닭이 그림에서 바로 보인다
+.keycap {
+  position: absolute;
+  box-sizing: border-box;
+  outline: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow:
+    0 4px 9px rgba(15, 23, 42, 0.26),
+    0 0 0 1px rgba(0, 0, 0, 0.07);
+  transition:
+    box-shadow 0.15s,
+    opacity 0.3s;
+
+  // 윗면 (가장자리의 둥근 턱까지). 사진 면보다 조금 크고 같은 중심의 둥근 사각형이다
+  &::before {
+    content: '';
+    position: absolute;
+    inset: var(--cap-inset, 0);
+    border-radius: var(--cap-radius, 0);
+    background: var(--cap-rim);
+    box-shadow:
+      0 0 0 calc(1px * var(--inv, 1)) rgba(0, 0, 0, 0.06),
+      inset 0 0 0 calc(1px * var(--inv, 1)) rgba(255, 255, 255, 0.35);
+    pointer-events: none;
+  }
+
+  &:hover .empty {
+    color: $primary !important;
+    background: rgba($primary, 0.08);
+  }
+
+  &:focus-visible .face {
+    box-shadow:
+      0 0 0 calc(2px * var(--inv, 1)) #fff,
+      0 0 0 calc(4px * var(--inv, 1)) rgba($primary, 0.6);
+  }
+}
+
+.filled {
+  cursor: grab;
+}
+
+// 한 키에 초점을 맞춘 동안에는 나머지 키를 흐리게 해서 지금 맞추는 키가 도드라지게 한다.
+// 흐린 키도 누르면 그 키로 옮겨 간다
+.focused .keycap:not(.selected) {
+  opacity: 0.45;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.dragging .filled {
+  cursor: grabbing;
+}
+
+.face {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  box-shadow: 0 0 0 calc(1px * var(--inv, 1)) rgba(0, 0, 0, 0.07);
+  transition: box-shadow 0.15s;
+
+  canvas {
+    display: block;
+  }
+}
+
+.selected .face,
+.selected:focus-visible .face {
+  box-shadow:
+    0 0 0 calc(2px * var(--inv, 1)) #fff,
+    0 0 0 calc(4.5px * var(--inv, 1)) $primary,
+    0 calc(6px * var(--inv, 1)) calc(18px * var(--inv, 1)) rgba($primary, 0.38);
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: inherit;
+  transition:
+    color 0.15s,
+    background-color 0.15s;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 7%;
+    border: 1.5px dashed currentColor;
+    border-radius: 12%;
+    opacity: 0.45;
+  }
+}
+
+.dropHint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  border: 2px solid $primary;
+  background: rgba($primary, 0.3);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.number {
+  position: absolute;
+  // 사진 면의 왼쪽 위 모서리에 건다
+  top: var(--skirt, 0);
+  left: var(--skirt, 0);
+  transform-origin: 0 0;
+  transform: scale(var(--inv, 1)) translate(-70%, -70%);
+  min-width: var(--badge, 20px);
+  height: var(--badge, 20px);
+  padding: 0 calc(var(--badge, 20px) * 0.2);
+  border-radius: 999px;
+  background: #fff;
+  color: #374151;
+  font-size: calc(var(--badge, 20px) * 0.55);
+  font-weight: 700;
+  line-height: var(--badge, 20px);
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.28);
+  pointer-events: none;
+}
+
+.selected .number {
+  background: $primary;
+  color: #fff;
+}
+
+// 확대해서 보는 동안 원래 화면으로 돌아가는 버튼
+.zoomOut {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(10, 10, 10, 0.72);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  animation: zoomOutIn 0.25s ease-out both;
+
+  &:hover {
+    background: rgba(10, 10, 10, 0.86);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+@keyframes zoomOutIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

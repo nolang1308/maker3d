@@ -7,50 +7,6 @@
   align-items: center;
   justify-content: center;
 
-  .graphWrapper {
-    margin-top: 120px;
-    width: 100%;
-    max-width: 1920px;
-    height: auto;
-    position: relative;
-    margin-bottom: 124px;
-
-    .graphTitle {
-      @include headline-small();
-      color: #0a0a0a;
-      position: absolute;
-      top: 0;
-      left: 90px;
-      line-height: 1.5;
-    }
-
-    .graphInfoWrapper {
-      max-width: 1500px;
-      padding-left: 100px;
-      padding-right: 100px;
-      width: 100%;
-      position: absolute;
-      top: 10px;
-
-      .graphInfo {
-        width: 100%;
-        height: auto;
-      }
-    }
-
-
-    .graph {
-      width: 100%;
-      height: auto;
-    }
-  }
-
-  .introPhoto3 {
-    width: 100%;
-    height: auto;
-    max-width: 1920px;
-  }
-
 
   .innerContainer {
     width: 100%;
@@ -58,21 +14,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    .introLogo{
-      width: 100%;
-      max-width: 1364px;
-      margin-top: 137px;
-
-      .logoImage {
-        width: 100%;
-        height: auto;
-      }
-    }
-
-
-    .logoIcon {
-
-    }
 
     .come {
       margin-top: 207px;
@@ -173,11 +114,6 @@
     .innerContainer {
       padding: 0 20px;
 
-      .introLogo {
-        max-width: 100%;
-        margin-top: 80px;
-      }
-
       .mapWrapper {
         width: 100%;
         height: 300px;
@@ -217,6 +153,107 @@
       .come {
         margin-top: 100px;
       }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 움직임
+// ---------------------------------------------------------------------------
+
+.container .innerContainer {
+  // 대표 로고 아래의 화살표 (원본에서 138px 아래)
+  .scrollArrow {
+    margin-top: 138px;
+
+    // 원본에서는 화살표 아래에 글줄 여백이 없었다
+    svg {
+      display: block;
+    }
+
+    @media (max-width: 800px) {
+      margin-top: 60px;
+    }
+  }
+
+  // "오시는길" 묶음: 안의 요소들은 예전처럼 가운데로 모인다
+  .revealBlock {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  // 버튼은 위 도식의 아래쪽 여백에 80px 겹쳐 놓인다. 도식 위에 올라와야 누를 수 있다
+  .buttonWrapper {
+    position: relative;
+    z-index: 2;
+  }
+
+  // 아래쪽 버튼: 올리면 밑줄이 파랗게 차오르고 화살표가 앞으로 나간다
+  .buttonWrapper .button {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -2px;
+      width: 100%;
+      height: 2px;
+      background: #2493d8;
+      transform-origin: left;
+      transform: scaleX(0);
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    &:hover::after {
+      transform: scaleX(1);
+    }
+
+    svg path {
+      transition: fill 0.3s ease;
+    }
+
+    &:hover svg {
+      translate: 10px 0;
+    }
+
+    &:hover svg path {
+      fill: #2493d8;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .buttonWrapper .button::after {
+      transition: none;
+    }
+
+    .buttonWrapper .button:hover svg {
+      translate: 0 0;
+    }
+  }
+}
+
+// 태블릿 폭(801 ~ 1240px): 버튼 · 지도 · 주소의 폭이 고정돼 있어 화면 밖으로 나갔다. 화면 폭에 맞춘다
+@media (min-width: 801px) and (max-width: 1240px) {
+  .container .innerContainer {
+    .buttonWrapper {
+      width: min(976px, calc(100% - 40px));
+
+      .button {
+        width: calc(50% - 40px);
+      }
+    }
+
+    .mapWrapper {
+      width: calc(100% - 40px);
+    }
+
+    .addressWrapper,
+    .boldLine,
+    .thinLine {
+      width: min(948px, calc(100% - 40px));
     }
   }
 }

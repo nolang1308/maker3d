@@ -94,6 +94,7 @@ export interface OrderData {
     fileName: string;
     material: string;
     color: string;
+    colorHex?: string;
     quantity: number;
     price: number;
   }>;
@@ -103,6 +104,22 @@ export interface OrderData {
   orderTime: string;
   workStatus: 'pending' | 'processing' | 'completed' | 'cancelled';
   paymentId?: string;
+  /** 'quote'(실시간 견적) | 'keycap'(키캡제작). 없으면 견적 주문 */
+  orderType?: 'quote' | 'keycap';
+  /** 키캡제작 주문의 설계 정보 (크기, 색상 매핑 등) */
+  keycapSpec?: KeycapOrderSpec;
+}
+
+export interface KeycapOrderSpec {
+  sourceImageName: string;
+  widthUnits: number;
+  height: number;
+  embossHeight: number;
+  imageScale: number;
+  dimensions: { bottomWidth: number; bottomDepth: number; totalHeight: number };
+  baseColor: { name: string; code: string; hex: string };
+  layers: Array<{ fileName: string; name: string; code: string; hex: string; originalHex: string }>;
+  filamentCount: number;
 }
 
 // Firestore에 주문 정보 저장

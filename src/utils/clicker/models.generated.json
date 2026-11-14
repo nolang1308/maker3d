@@ -1,0 +1,738 @@
+[
+  {
+    "id": "1x1",
+    "label": "1구",
+    "description": "키 1개",
+    "source": "1구.stl",
+    "mesh": "/clicker-models/1x1.bin",
+    "meshBytes": 21284,
+    "triangles": 1772,
+    "cols": 1,
+    "rows": 1,
+    "body": {
+      "width": 27.8,
+      "depth": 27.8,
+      "height": 21,
+      "cornerRadius": 3.9
+    },
+    "well": {
+      "x": -9.93,
+      "y": -9.86,
+      "w": 19.77,
+      "h": 19.79
+    },
+    "plateHeight": 12,
+    "keys": [
+      {
+        "x": 0,
+        "y": 0
+      }
+    ],
+    "lug": {
+      "x": -13.9,
+      "y": 0,
+      "dx": -1,
+      "dy": 0,
+      "length": 3.12,
+      "thickness": 1.8,
+      "hole": {
+        "offset": 1.04,
+        "height": 10.46,
+        "radius": 1
+      }
+    }
+  },
+  {
+    "id": "3x1",
+    "label": "3구",
+    "description": "일자형",
+    "source": "3구.stl",
+    "mesh": "/clicker-models/3x1.bin",
+    "meshBytes": 24548,
+    "triangles": 2044,
+    "cols": 3,
+    "rows": 1,
+    "body": {
+      "width": 66.2,
+      "depth": 27.8,
+      "height": 21,
+      "cornerRadius": 3.9
+    },
+    "well": {
+      "x": -29.13,
+      "y": -9.86,
+      "w": 58.3,
+      "h": 19.75
+    },
+    "plateHeight": 12,
+    "keys": [
+      {
+        "x": -19.2,
+        "y": 0
+      },
+      {
+        "x": 0,
+        "y": 0
+      },
+      {
+        "x": 19.2,
+        "y": 0
+      }
+    ],
+    "lug": {
+      "x": -33.1,
+      "y": 0,
+      "dx": -1,
+      "dy": 0,
+      "length": 3.02,
+      "thickness": 2,
+      "hole": {
+        "offset": 0.94,
+        "height": 10.46,
+        "radius": 1
+      }
+    }
+  },
+  {
+    "id": "4x1",
+    "label": "4구",
+    "description": "일자형",
+    "source": "4구-일자.stl",
+    "mesh": "/clicker-models/4x1.bin",
+    "meshBytes": 26468,
+    "triangles": 2204,
+    "cols": 4,
+    "rows": 1,
+    "body": {
+      "width": 85.4,
+      "depth": 27.8,
+      "height": 21,
+      "cornerRadius": 3.9
+    },
+    "well": {
+      "x": -38.73,
+      "y": -9.86,
+      "w": 77.27,
+      "h": 19.75
+    },
+    "plateHeight": 12,
+    "keys": [
+      {
+        "x": -28.8,
+        "y": 0
+      },
+      {
+        "x": -9.6,
+        "y": 0
+      },
+      {
+        "x": 9.6,
+        "y": 0
+      },
+      {
+        "x": 28.8,
+        "y": 0
+      }
+    ],
+    "lug": {
+      "x": -42.7,
+      "y": 0,
+      "dx": -1,
+      "dy": 0,
+      "length": 3.02,
+      "thickness": 2,
+      "hole": {
+        "offset": 0.94,
+        "height": 10.46,
+        "radius": 1
+      }
+    }
+  },
+  {
+    "id": "2x2",
+    "label": "4구",
+    "description": "정사각형 2×2",
+    "source": "4구-사각.stl",
+    "mesh": "/clicker-models/2x2.bin",
+    "meshBytes": 26396,
+    "triangles": 2198,
+    "cols": 2,
+    "rows": 2,
+    "body": {
+      "width": 47,
+      "depth": 47,
+      "height": 21,
+      "cornerRadius": 3.9
+    },
+    "well": {
+      "x": -19.53,
+      "y": -19.49,
+      "w": 39.06,
+      "h": 38.98
+    },
+    "plateHeight": 12,
+    "keys": [
+      {
+        "x": -9.6,
+        "y": -9.6
+      },
+      {
+        "x": 9.6,
+        "y": -9.6
+      },
+      {
+        "x": -9.6,
+        "y": 9.6
+      },
+      {
+        "x": 9.6,
+        "y": 9.6
+      }
+    ],
+    "lug": {
+      "x": -23.5,
+      "y": 0,
+      "dx": -1,
+      "dy": 0,
+      "length": 3.02,
+      "thickness": 2,
+      "hole": {
+        "offset": 0.94,
+        "height": 10.46,
+        "radius": 1
+      }
+    }
+  },
+  {
+    "id": "5x1",
+    "label": "5구",
+    "description": "일자형",
+    "source": "5구.stl",
+    "mesh": "/clicker-models/5x1.bin",
+    "meshBytes": 28364,
+    "triangles": 2362,
+    "cols": 5,
+    "rows": 1,
+    "body": {
+      "width": 104.6,
+      "depth": 27.8,
+      "height": 21,
+      "cornerRadius": 3.9
+    },
+    "well": {
+      "x": -48.33,
+      "y": -9.86,
+      "w": 96.53,
+      "h": 19.75
+    },
+    "plateHeight": 12,
+    "keys": [
+      {
+        "x": -38.4,
+        "y": 0
+      },
+      {
+        "x": -19.2,
+        "y": 0
+      },
+      {
+        "x": 0,
+        "y": 0
+      },
+      {
+        "x": 19.2,
+        "y": 0
+      },
+      {
+        "x": 38.4,
+        "y": 0
+      }
+    ],
+    "lug": {
+      "x": -52.3,
+      "y": 0,
+      "dx": -1,
+      "dy": 0,
+      "length": 3.02,
+      "thickness": 2,
+      "hole": {
+        "offset": 0.94,
+        "height": 10.46,
+        "radius": 1
+      }
+    }
+  },
+  {
+    "id": "6x1",
+    "label": "6구",
+    "description": "일자형",
+    "source": "6구-일자.stl",
+    "mesh": "/clicker-models/6x1.bin",
+    "meshBytes": 30116,
+    "triangles": 2508,
+    "cols": 6,
+    "rows": 1,
+    "body": {
+      "width": 123.79,
+      "depth": 27.8,
+      "height": 21,
+      "cornerRadius": 3.9
+    },
+    "well": {
+      "x": -57.93,
+      "y": -9.84,
+      "w": 115.78,
+      "h": 19.73
+    },
+    "plateHeight": 12,
+    "keys": [
+      {
+        "x": -48,
+        "y": 0
+      },
+      {
+        "x": -28.8,
+        "y": 0
+      },
+      {
+        "x": -9.6,
+        "y": 0
+      },
+      {
+        "x": 9.6,
+        "y": 0
+      },
+      {
+        "x": 28.8,
+        "y": 0
+      },
+      {
+        "x": 48,
+        "y": 0
+      }
+    ],
+    "lug": {
+      "x": -61.9,
+      "y": 0,
+      "dx": -1,
+      "dy": 0,
+      "length": 3.02,
+      "thickness": 2,
+      "hole": {
+        "offset": 0.94,
+        "height": 10.46,
+        "radius": 1
+      }
+    }
+  },
+  {
+    "id": "3x2-left",
+    "label": "6구",
+    "description": "3×2 · 고리 옆",
+    "source": "2x3(6구).stl",
+    "mesh": "/clicker-models/3x2-left.bin",
+    "meshBytes": 30308,
+    "triangles": 2524,
+    "cols": 3,
+    "rows": 2,
+    "body": {
+      "width": 66.2,
+      "depth": 47,
+      "height": 21,
+      "cornerRadius": 3.9
+    },
+    "well": {
+      "x": -29.13,
+      "y": -19.49,
+      "w": 58.3,
+      "h": 38.98
+    },
+    "plateHeight": 12,
+    "keys": [
+      {
+        "x": -19.2,
+        "y": -9.6
+      },
+      {
+        "x": 0,
+        "y": -9.6
+      },
+      {
+        "x": 19.2,
+        "y": -9.6
+      },
+      {
+        "x": -19.2,
+        "y": 9.6
+      },
+      {
+        "x": 0,
+        "y": 9.6
+      },
+      {
+        "x": 19.2,
+        "y": 9.6
+      }
+    ],
+    "lug": {
+      "x": -33.1,
+      "y": 0,
+      "dx": -1,
+      "dy": 0,
+      "length": 3.02,
+      "thickness": 2,
+      "hole": {
+        "offset": 0.94,
+        "height": 10.46,
+        "radius": 1
+      }
+    }
+  },
+  {
+    "id": "3x2-top",
+    "label": "6구",
+    "description": "3×2 · 고리 위",
+    "source": "2x3(6구).stl",
+    "mesh": "/clicker-models/3x2-top.bin",
+    "meshBytes": 30308,
+    "triangles": 2524,
+    "cols": 3,
+    "rows": 2,
+    "body": {
+      "width": 66.2,
+      "depth": 47,
+      "height": 21,
+      "cornerRadius": 3.9
+    },
+    "well": {
+      "x": -29.13,
+      "y": -19.49,
+      "w": 58.3,
+      "h": 38.98
+    },
+    "plateHeight": 12,
+    "keys": [
+      {
+        "x": -19.2,
+        "y": -9.6
+      },
+      {
+        "x": 0,
+        "y": -9.6
+      },
+      {
+        "x": 19.2,
+        "y": -9.6
+      },
+      {
+        "x": -19.2,
+        "y": 9.6
+      },
+      {
+        "x": 0,
+        "y": 9.6
+      },
+      {
+        "x": 19.2,
+        "y": 9.6
+      }
+    ],
+    "lug": {
+      "x": 0,
+      "y": -23.5,
+      "dx": 0,
+      "dy": -1,
+      "length": 3.02,
+      "thickness": 2,
+      "hole": {
+        "offset": 0.94,
+        "height": 10.46,
+        "radius": 1
+      }
+    }
+  },
+  {
+    "id": "7x1",
+    "label": "7구",
+    "description": "일자형",
+    "source": "7구.stl",
+    "mesh": "/clicker-models/7x1.bin",
+    "meshBytes": 32204,
+    "triangles": 2682,
+    "cols": 7,
+    "rows": 1,
+    "body": {
+      "width": 143,
+      "depth": 27.8,
+      "height": 21,
+      "cornerRadius": 3.9
+    },
+    "well": {
+      "x": -67.53,
+      "y": -9.84,
+      "w": 135.05,
+      "h": 19.73
+    },
+    "plateHeight": 12,
+    "keys": [
+      {
+        "x": -57.6,
+        "y": 0
+      },
+      {
+        "x": -38.4,
+        "y": 0
+      },
+      {
+        "x": -19.2,
+        "y": 0
+      },
+      {
+        "x": 0,
+        "y": 0
+      },
+      {
+        "x": 19.2,
+        "y": 0
+      },
+      {
+        "x": 38.4,
+        "y": 0
+      },
+      {
+        "x": 57.6,
+        "y": 0
+      }
+    ],
+    "lug": {
+      "x": -71.5,
+      "y": 0,
+      "dx": -1,
+      "dy": 0,
+      "length": 3.02,
+      "thickness": 2,
+      "hole": {
+        "offset": 0.74,
+        "height": 10.46,
+        "radius": 1
+      }
+    }
+  },
+  {
+    "id": "8x1",
+    "label": "8구",
+    "description": "일자형",
+    "source": "8구-일자.stl",
+    "mesh": "/clicker-models/8x1.bin",
+    "meshBytes": 33956,
+    "triangles": 2828,
+    "cols": 8,
+    "rows": 1,
+    "body": {
+      "width": 162.2,
+      "depth": 27.8,
+      "height": 21,
+      "cornerRadius": 3.9
+    },
+    "well": {
+      "x": -77.13,
+      "y": -9.86,
+      "w": 154.3,
+      "h": 19.75
+    },
+    "plateHeight": 12,
+    "keys": [
+      {
+        "x": -67.19,
+        "y": 0
+      },
+      {
+        "x": -47.99,
+        "y": 0
+      },
+      {
+        "x": -28.79,
+        "y": 0
+      },
+      {
+        "x": -9.59,
+        "y": 0
+      },
+      {
+        "x": 9.6,
+        "y": 0
+      },
+      {
+        "x": 28.8,
+        "y": 0
+      },
+      {
+        "x": 48,
+        "y": 0
+      },
+      {
+        "x": 67.2,
+        "y": 0
+      }
+    ],
+    "lug": {
+      "x": -81.1,
+      "y": 0,
+      "dx": -1,
+      "dy": 0,
+      "length": 3.02,
+      "thickness": 2,
+      "hole": {
+        "offset": 0.74,
+        "height": 10.46,
+        "radius": 1
+      }
+    }
+  },
+  {
+    "id": "4x2",
+    "label": "8구",
+    "description": "4×2",
+    "source": "8구(4X2).stl",
+    "mesh": "/clicker-models/4x2.bin",
+    "meshBytes": 26468,
+    "triangles": 2204,
+    "cols": 4,
+    "rows": 2,
+    "body": {
+      "width": 85.4,
+      "depth": 47,
+      "height": 21,
+      "cornerRadius": 3.9
+    },
+    "well": {
+      "x": -38.64,
+      "y": -19.55,
+      "w": 77.19,
+      "h": 39.11
+    },
+    "plateHeight": 12,
+    "keys": [
+      {
+        "x": -28.8,
+        "y": -9.6
+      },
+      {
+        "x": -9.6,
+        "y": -9.6
+      },
+      {
+        "x": 9.6,
+        "y": -9.6
+      },
+      {
+        "x": 28.8,
+        "y": -9.6
+      },
+      {
+        "x": -28.8,
+        "y": 9.6
+      },
+      {
+        "x": -9.6,
+        "y": 9.6
+      },
+      {
+        "x": 9.6,
+        "y": 9.6
+      },
+      {
+        "x": 28.8,
+        "y": 9.6
+      }
+    ],
+    "lug": {
+      "x": -0.33,
+      "y": -23.5,
+      "dx": 0,
+      "dy": -1,
+      "length": 3.02,
+      "thickness": 2,
+      "hole": {
+        "offset": 0.74,
+        "height": 10.46,
+        "radius": 1
+      }
+    }
+  },
+  {
+    "id": "3x3",
+    "label": "9구",
+    "description": "정사각형 3×3",
+    "source": "9구(정사각형).stl",
+    "mesh": "/clicker-models/3x3.bin",
+    "meshBytes": 36164,
+    "triangles": 3012,
+    "cols": 3,
+    "rows": 3,
+    "body": {
+      "width": 66.2,
+      "depth": 66.2,
+      "height": 21,
+      "cornerRadius": 3.1
+    },
+    "well": {
+      "x": -29.13,
+      "y": -29.17,
+      "w": 58.28,
+      "h": 58.26
+    },
+    "plateHeight": 12,
+    "keys": [
+      {
+        "x": -19.2,
+        "y": -19.2
+      },
+      {
+        "x": 0,
+        "y": -19.2
+      },
+      {
+        "x": 19.2,
+        "y": -19.2
+      },
+      {
+        "x": -19.2,
+        "y": 0
+      },
+      {
+        "x": 0,
+        "y": 0
+      },
+      {
+        "x": 19.2,
+        "y": 0
+      },
+      {
+        "x": -19.2,
+        "y": 19.2
+      },
+      {
+        "x": 0,
+        "y": 19.2
+      },
+      {
+        "x": 19.2,
+        "y": 19.2
+      }
+    ],
+    "lug": {
+      "x": -33.1,
+      "y": 0,
+      "dx": -1,
+      "dy": 0,
+      "length": 2.98,
+      "thickness": 2,
+      "hole": {
+        "offset": 0.9,
+        "height": 10.64,
+        "radius": 1
+      }
+    }
+  }
+]

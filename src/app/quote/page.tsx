@@ -53,6 +53,7 @@ export default function QuotePage() {
     const [isShippingPolicyExpanded, setIsShippingPolicyExpanded] = useState(false); // 배송 및 환불 정책 확장 상태
     const [activeShoppingGuideTab, setActiveShoppingGuideTab] = useState('상품결제정보'); // 쇼핑가이드 탭 상태
     const [materialColors, setMaterialColors] = useState<Record<string, ColorOption[]>>({});
+    const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'done'>('idle'); // 저장 오버레이 상태
 
     // 로그인 체크 제거 - 견적 계산은 로그인 없이 가능
 
@@ -287,6 +288,8 @@ export default function QuotePage() {
     };
 
     const handleSave = async () => {
+        if (saveStatus !== 'idle') return; // 저장 중 중복 클릭 방지
+
         // 로그인 체크
         if (!user) {
             alert('저장하기는 로그인이 필요한 서비스입니다.');
@@ -301,6 +304,7 @@ export default function QuotePage() {
         }
 
         if (uploadedFiles.length > 0 && material && color) {
+            setSaveStatus('saving');
             try {
                 let savedFilePaths: string[] = [];
 
@@ -381,9 +385,13 @@ export default function QuotePage() {
                 const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
                 if (fileInput) fileInput.value = '';
 
-                alert('견적이 저장되었습니다!');
+                // 저장 완료 피드백을 잠시 보여준 뒤 오버레이 닫기
+                setSaveStatus('done');
+                await new Promise((resolve) => setTimeout(resolve, 1200));
+                setSaveStatus('idle');
             } catch (error) {
                 console.error('견적 저장 오류:', error);
+                setSaveStatus('idle');
                 alert('견적 저장 중 오류가 발생했습니다.');
             }
         } else {
@@ -972,14 +980,14 @@ export default function QuotePage() {
                             </>
                         )}
                         <div
-                            className={`${styles.saveBtn} ${!hasCalculatedEstimate || estimatedPrice <= 0 ? styles.disabled : ''}`}
+                            className={`${styles.saveBtn} ${(!hasCalculatedEstimate || estimatedPrice <= 0 || saveStatus !== 'idle') ? styles.disabled : ''}`}
                             onClick={handleSave}
                             style={{
-                                cursor: (!hasCalculatedEstimate || estimatedPrice <= 0) ? 'not-allowed' : 'pointer',
-                                opacity: (!hasCalculatedEstimate || estimatedPrice <= 0) ? 0.5 : 1
+                                cursor: (!hasCalculatedEstimate || estimatedPrice <= 0 || saveStatus !== 'idle') ? 'not-allowed' : 'pointer',
+                                opacity: (!hasCalculatedEstimate || estimatedPrice <= 0 || saveStatus !== 'idle') ? 0.5 : 1
                             }}
                         >
-                            저장
+                            {saveStatus === 'saving' ? '저장 중...' : '저장'}
                         </div>
 
 
@@ -1610,6 +1618,35 @@ export default function QuotePage() {
                 totalPrice={fileItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)}
                 fileCount={fileItems.length}
             />
+
+            {/* 견적 저장 중 전체화면 오버레이 */}
+            {saveStatus !== 'idle' && (
+                <div
+                    className={styles.saveOverlay}
+                    role="status"
+                    aria-live="polite"
+                    aria-busy={saveStatus === 'saving'}
+                >
+                    <div className={styles.saveOverlayCard}>
+                        {saveStatus === 'saving' ? (
+                            <>
+                                <div className={styles.saveSpinner} />
+                                <p className={styles.saveOverlayTitle}>예상 견적을 저장 및 최종 견적에 포함하는 중입니다</p>
+                                <p className={styles.saveOverlaySub}>파일을 업로드하고 있어요. 잠시만 기다려주세요.</p>
+                                <div className={styles.saveProgressBar}>
+                                    <div className={styles.saveProgressFill} />
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className={styles.saveDoneIcon}>✓</div>
+                                <p className={styles.saveOverlayTitle}>저장 완료</p>
+                                <p className={styles.saveOverlaySub}>아래 최종 견적 목록에 추가되었습니다.</p>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
