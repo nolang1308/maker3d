@@ -6,6 +6,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import FooterSlot from "../components/FooterSlot";
 import { AuthProvider } from "../contexts/AuthContext";
+import VisitTracker from "../components/VisitTracker";
 
 // Geist 는 변수만 정의돼 있고 화면에서 쓰는 곳이 없다. 미리 받지 않게 해 둔다 (쓰게 되면 그때 받는다)
 const geistSans = Geist({
@@ -156,6 +157,7 @@ export default function RootLayout({
         className={`${pretendard.variable} ${pretendardRest.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
+          <VisitTracker />
           <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <Header />
             <main style={{ flex: 1, paddingTop: '75px', backgroundColor: "white" }}>

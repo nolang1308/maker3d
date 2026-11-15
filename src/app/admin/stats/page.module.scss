@@ -1,0 +1,797 @@
+// 관리자 > 통계. 바탕 · 관리자 띠는 다른 관리자 화면과 같은 값을 쓴다
+
+$primary: #2493D8;
+$primary-dark: #1b7ab5;
+$text: #0a0a0a;
+$body: #374151;
+$muted: #6b7280;
+$border: #e5e7eb;
+$panel: #f7f9fb;
+
+@mixin focus-ring {
+  &:focus-visible {
+    outline: 2px solid $primary;
+    outline-offset: 2px;
+  }
+}
+
+.container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #F5F5F7;
+  word-break: keep-all;
+
+  .ManagerSignatureBar {
+    position: fixed;
+    top: 75px;
+    z-index: 999;
+    width: 100%;
+    height: 44px;
+    background-color: #333333;
+    display: flex;
+    align-items: center;
+    padding-left: 35px;
+    flex-direction: row;
+
+    p {
+      margin-left: 10px;
+      font-size: 16px;
+      color: white;
+    }
+  }
+}
+
+.gate {
+  padding: 180px 24px 80px;
+  text-align: center;
+  font-size: 16px;
+  color: $body;
+}
+
+.gateLink {
+  display: inline-block;
+  margin-top: 12px;
+  font-weight: 700;
+  color: $primary;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.content {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 140px 24px 80px;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+// ---------------------------------------------------------------------------
+// 왼쪽 메뉴
+// ---------------------------------------------------------------------------
+
+.sidebar {
+  padding: 20px 12px 12px;
+  border: 1px solid $border;
+  border-radius: 16px;
+  background: #ffffff;
+
+  nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+.sidebarTitle {
+  margin: 0 8px 12px;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.4;
+  color: $text;
+}
+
+.sideItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: $panel;
+  }
+
+  @include focus-ring;
+}
+
+.sideLabel {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: $body;
+}
+
+.sideNote {
+  font-size: 12px;
+  line-height: 1.4;
+  color: $muted;
+}
+
+.sideItemActive {
+  background: rgba($primary, 0.1);
+
+  &:hover {
+    background: rgba($primary, 0.1);
+  }
+
+  .sideLabel {
+    color: $primary-dark;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 기간 고르기
+// ---------------------------------------------------------------------------
+
+.main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  > div:not([class]) {
+    display: contents;
+  }
+}
+
+.refreshing {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+
+.periods {
+  display: inline-flex;
+  padding: 4px;
+  border: 1px solid $border;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.period {
+  height: 36px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: $body;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: $panel;
+  }
+
+  @include focus-ring;
+}
+
+.periodActive {
+  background: $primary;
+  color: #ffffff;
+
+  &:hover {
+    background: $primary;
+  }
+}
+
+.toolbarRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rangeText {
+  font-size: 13px;
+  color: $muted;
+  font-variant-numeric: tabular-nums;
+}
+
+.ghostBtn {
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid $border;
+  border-radius: 999px;
+  background: #ffffff;
+  color: $text;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    border-color: $primary;
+    color: $primary;
+  }
+
+  @include focus-ring;
+}
+
+.stateText {
+  padding: 60px 16px;
+  text-align: center;
+  font-size: 15px;
+  color: $muted;
+}
+
+.emptyBox {
+  padding: 56px 24px;
+  border: 1.5px dashed #d5dae1;
+  border-radius: 16px;
+  background: #ffffff;
+  text-align: center;
+}
+
+.emptyTitle {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 700;
+  color: $text;
+}
+
+.emptyText {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: $muted;
+}
+
+// ---------------------------------------------------------------------------
+// 숫자 칸
+// ---------------------------------------------------------------------------
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.tile {
+  padding: 18px 20px;
+  border: 1px solid $border;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.tileLabel {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: $muted;
+}
+
+.tileValue {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: $text;
+}
+
+.tileDelta {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: $muted;
+  font-variant-numeric: tabular-nums;
+
+  &.up {
+    color: #0a7d3c;
+  }
+
+  &.down {
+    color: #b3261e;
+  }
+}
+
+.tileDeltaNote {
+  font-weight: 500;
+  color: $muted;
+}
+
+// ---------------------------------------------------------------------------
+// 카드 · 표
+// ---------------------------------------------------------------------------
+
+.card {
+  min-width: 0;
+  padding: 22px 24px 24px;
+  border: 1px solid $border;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.cardTitle {
+  margin: 0 0 4px;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: $text;
+
+  // 설명이 없는 카드에서는 제목 아래를 조금 더 띄운다
+  & + :not(.cardNote) {
+    margin-top: 14px;
+  }
+}
+
+.cardNote {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: $muted;
+}
+
+.cardEmpty {
+  margin: 0;
+  padding: 28px 12px;
+  border-radius: 12px;
+  background: $panel;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.7;
+  color: $muted;
+
+  p {
+    margin: 0;
+  }
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.details {
+  margin-top: 14px;
+
+  summary {
+    display: inline-block;
+    padding: 6px 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: $primary;
+    cursor: pointer;
+
+    @include focus-ring;
+  }
+}
+
+// 날짜 표는 길어질 수 있어 안에서 굴린다
+.tableScroll {
+  max-height: 420px;
+  overflow: auto;
+}
+
+.tableWide {
+  overflow-x: auto;
+}
+
+.plain,
+.rank {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  th,
+  td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #eef0f3;
+    text-align: left;
+    color: $body;
+    vertical-align: middle;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    color: $muted;
+    white-space: nowrap;
+  }
+
+  tbody th {
+    font-weight: 600;
+    color: $text;
+  }
+
+  tbody tr:last-child th,
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .num {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.rank tbody th {
+  width: 62%;
+}
+
+.rankName {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  overflow-wrap: anywhere;
+}
+
+.rankSub {
+  font-size: 12px;
+  font-weight: 500;
+  color: $muted;
+}
+
+.dot {
+  display: inline-block;
+  flex: none;
+  align-self: center;
+  width: 9px;
+  height: 9px;
+  margin-right: 8px;
+  border-radius: 50%;
+
+  .rankName & {
+    margin-right: 0;
+  }
+}
+
+// 표 안의 가는 막대: 그 줄의 크기를 한눈에 견주게 한다
+.meter {
+  display: block;
+  height: 4px;
+  margin-top: 6px;
+  border-radius: 2px;
+  background: #eef0f3;
+}
+
+.meterFill {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  border-radius: 2px;
+  background: $primary;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 14px;
+
+  div {
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: $panel;
+  }
+
+  dt {
+    font-size: 13px;
+    color: $muted;
+  }
+
+  dd {
+    margin: 4px 0 0;
+    font-size: 24px;
+    font-weight: 800;
+    color: $text;
+  }
+}
+
+.footnote {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.7;
+  color: $muted;
+}
+
+.textBtn {
+  margin-top: 6px;
+  padding: 4px 0;
+  border: none;
+  background: none;
+  color: $primary;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+
+  @include focus-ring;
+}
+
+// ---------------------------------------------------------------------------
+// 견적 흐름
+// ---------------------------------------------------------------------------
+
+.funnel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.funnelRow {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr) 64px 130px;
+  align-items: center;
+  gap: 14px;
+}
+
+.funnelLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: $text;
+}
+
+.funnelIndex {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #eceff3;
+  color: $muted;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.funnelTrack {
+  display: block;
+  height: 20px;
+  border-radius: 4px;
+  background: #eef0f3;
+}
+
+.funnelFill {
+  display: block;
+  height: 100%;
+  min-width: 3px;
+  border-radius: 4px;
+  background: $primary;
+}
+
+.funnelValue {
+  text-align: right;
+  font-size: 16px;
+  font-weight: 800;
+  color: $text;
+  font-variant-numeric: tabular-nums;
+}
+
+.funnelRate {
+  font-size: 13px;
+  color: $muted;
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------------------------------------------------------------------------
+// 광고 링크 만들기
+// ---------------------------------------------------------------------------
+
+.field {
+  margin-top: 20px;
+}
+
+.fieldLabel {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: $body;
+}
+
+.fieldHelp {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: $muted;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid $border;
+  border-radius: 999px;
+  background: #ffffff;
+  color: $body;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    border-color: rgba($primary, 0.6);
+  }
+
+  @include focus-ring;
+}
+
+.chipActive {
+  border-color: $primary;
+  background: rgba($primary, 0.1);
+  color: $primary-dark;
+}
+
+.inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin-top: 10px;
+}
+
+.input {
+  width: 100%;
+  max-width: 360px;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid $border;
+  border-radius: 12px;
+  background: #ffffff;
+  color: $text;
+  font: inherit;
+  font-size: 15px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &::placeholder {
+    color: #9ca3af;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.2);
+  }
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: $body;
+  cursor: pointer;
+
+  input {
+    width: 18px;
+    height: 18px;
+    accent-color: $primary;
+    cursor: pointer;
+  }
+}
+
+.result {
+  margin-top: 22px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: $panel;
+}
+
+.resultUrl {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border: 1px solid $border;
+  border-radius: 10px;
+  background: #ffffff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: $text;
+  word-break: break-all;
+  user-select: all;
+}
+
+.resultRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+
+.resultReads {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: $body;
+
+  strong {
+    color: $text;
+  }
+}
+
+.primaryBtn {
+  height: 42px;
+  min-width: 120px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 10px;
+  background: $primary;
+  color: #ffffff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+
+  &:hover {
+    background: $primary-dark;
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  @include focus-ring;
+}
+
+.notes {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  li {
+    font-size: 14px;
+    line-height: 1.7;
+    color: $body;
+  }
+}

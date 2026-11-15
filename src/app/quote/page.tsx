@@ -11,6 +11,7 @@ import { generateOrderNumber, uploadSTLFiles, saveOrder, OrderData } from '@/uti
 import { db } from '@/config/firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { getAllMaterialColors, ColorOption, TRANSPARENT_SENTINEL } from '@/services/colorService';
+import { recordQuoteStep } from '@/utils/visitStats/tracker';
 
 interface FileItem {
     id: number;
@@ -171,6 +172,7 @@ export default function QuotePage() {
             setHasCalculatedEstimate(false); // 견적 계산 상태 초기화
             setIsPrintSizeExceeded(false);
             setOverSizeDimensions(null);
+            recordQuoteStep('upload'); // 방문 통계: 견적 흐름
         }
     };
 
@@ -215,6 +217,7 @@ export default function QuotePage() {
                 setPrintTime(result.printTime);
                 setEstimatedPrice(result.estimatedPrice);
                 setHasCalculatedEstimate(true); // 견적 계산 완료 표시
+                recordQuoteStep('estimate'); // 방문 통계: 견적 흐름
             } else if (result.error === '출력 크기 초과') {
                 const dim = result.dimensions;
                 setOverSizeDimensions({
@@ -282,6 +285,7 @@ export default function QuotePage() {
             setHasCalculatedEstimate(false);
             setIsPrintSizeExceeded(false);
             setOverSizeDimensions(null);
+            recordQuoteStep('upload'); // 방문 통계: 견적 흐름
         } else {
             alert('STL, OBJ, STP 파일만 업로드 가능합니다.');
         }
@@ -370,6 +374,8 @@ export default function QuotePage() {
                         updatedAt: new Date().toISOString()
                     });
                 }
+
+                recordQuoteStep('save'); // 방문 통계: 견적 흐름
 
                 // 폼 초기화
                 setMaterial('');
@@ -504,6 +510,7 @@ export default function QuotePage() {
 
             // 4. Firestore에 주문 저장
             await saveOrder(orderNumber, orderData);
+            recordQuoteStep('inquiry'); // 방문 통계: 견적 흐름
 
             // 5. 성공 처리
             alert(`주문이 완료되었습니다!\n주문번호: ${orderNumber}`);
@@ -628,6 +635,7 @@ export default function QuotePage() {
             };
 
             await saveOrder(orderNumber, orderData);
+            recordQuoteStep('inquiry'); // 방문 통계: 견적 흐름
 
             // 5. 이메일 알림 발송
             try {

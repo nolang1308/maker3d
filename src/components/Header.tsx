@@ -118,6 +118,7 @@ const Header = () => {
                                 <Link href="/admin/customers" className={styles.dropdownItem}>고객정보관리</Link>
                                 <Link href="/admin/popup" className={styles.dropdownItem}>팝업관리</Link>
                                 <Link href="/admin/colors" className={styles.dropdownItem}>색상관리</Link>
+                                <Link href="/admin/stats" className={styles.dropdownItem}>통계</Link>
                             </div>
                         </div>
                     )}
@@ -199,6 +200,7 @@ const Header = () => {
                                     <Link href="/admin/customers" className={styles.mobileDropdownItem} onClick={closeMobileMenu}>고객정보관리</Link>
                                     <Link href="/admin/popup" className={styles.mobileDropdownItem} onClick={closeMobileMenu}>팝업관리</Link>
                                     <Link href="/admin/colors" className={styles.mobileDropdownItem} onClick={closeMobileMenu}>색상관리</Link>
+                                    <Link href="/admin/stats" className={styles.mobileDropdownItem} onClick={closeMobileMenu}>통계</Link>
                                 </div>
                             </div>
                         </>

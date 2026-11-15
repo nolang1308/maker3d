@@ -1,0 +1,136 @@
+// 통계 그래프. 글자는 늘 글자색을 쓰고, 색은 그래프의 선 · 막대만 입는다
+
+$text: #0a0a0a;
+$body: #374151;
+$muted: #6b7280;
+$border: #e5e7eb;
+
+.chart {
+  min-width: 0;
+}
+
+.plot {
+  position: relative;
+  width: 100%;
+  border-radius: 8px;
+  outline: none;
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px #2493D8;
+  }
+
+  svg {
+    display: block;
+    // 손가락으로 그래프를 훑을 때 화면이 같이 밀리지 않게
+    touch-action: pan-y;
+  }
+}
+
+.axisText {
+  fill: $muted;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.endLabel {
+  fill: $body;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: $body;
+  }
+}
+
+.lineKey,
+.lineKeyBlank {
+  flex: none;
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.boxKey {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 2;
+  min-width: 132px;
+  padding: 10px 12px;
+  border: 1px solid $border;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.tipTitle {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: $muted;
+}
+
+.tipRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: $muted;
+
+  strong {
+    min-width: 34px;
+    font-weight: 700;
+    color: $text;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.share {
+  min-width: 0;
+}
+
+.shareBar {
+  display: flex;
+  gap: 2px;
+  height: 28px;
+  margin-bottom: 12px;
+}
+
+.shareBlock {
+  display: flex;
+  align-items: center;
+  flex-basis: 0;
+  min-width: 3px;
+  padding-left: 8px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.shareValue {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0a0a0a;
+  font-variant-numeric: tabular-nums;
+}
