@@ -68,6 +68,17 @@ export default function STLViewer({ file, className, onDimensions, modelColor }:
         renderer.setPixelRatio(window.devicePixelRatio);
         container.appendChild(renderer.domElement);
 
+        // 창 크기나 화면 방향이 바뀌어 자리가 달라지면 그림도 그 크기에 맞춘다
+        const resizeObserver = new ResizeObserver(() => {
+          const width = container.clientWidth;
+          const height = container.clientHeight;
+          if (!width || !height || !renderer || !camera) return;
+          camera.aspect = width / height;
+          camera.updateProjectionMatrix();
+          renderer.setSize(width, height);
+        });
+        resizeObserver.observe(container);
+
         // 그리드 추가 (바닥)
         const gridHelper = new THREE.GridHelper(10, 20, 0x888888, 0xcccccc);
         gridHelper.position.y = -1;
@@ -183,6 +194,7 @@ export default function STLViewer({ file, className, onDimensions, modelColor }:
 
         return () => {
           if (animationId) cancelAnimationFrame(animationId);
+          resizeObserver.disconnect();
           controls.dispose();
           if (renderer) renderer.dispose();
         };

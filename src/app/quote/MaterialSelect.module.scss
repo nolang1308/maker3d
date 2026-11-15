@@ -1,0 +1,187 @@
+// 소재 선택 상자. 색과 둥글기는 견적 페이지(page.module.scss)와 같은 값을 쓴다
+
+$primary: #2493D8;
+$text: #0a0a0a;
+$muted: #6b7280;
+$border: #e5e7eb;
+$panel: #f7f9fb;
+$danger: #d93025;
+
+.root {
+  position: relative;
+  width: 100%;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 14px 8px 16px;
+  border: 1px solid $border;
+  border-radius: 12px;
+  background: #fff;
+  color: $text;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    border-color: rgba($primary, 0.6);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.2);
+  }
+
+  &:disabled {
+    background: $panel;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+}
+
+.triggerOpen {
+  border-color: $primary;
+  box-shadow: 0 0 0 3px rgba($primary, 0.2);
+
+  .chevron {
+    transform: rotate(180deg);
+    color: $primary;
+  }
+}
+
+.triggerInvalid {
+  border-color: $danger;
+  box-shadow: 0 0 0 3px rgba($danger, 0.14);
+}
+
+.triggerText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.triggerLabel {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.triggerHint {
+  font-size: 12px;
+  line-height: 1.4;
+  color: $muted;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.placeholder {
+  font-size: 15px;
+  line-height: 1.4;
+  color: #9ca3af;
+}
+
+.chevron {
+  flex: none;
+  color: $muted;
+  transition: transform 0.18s ease, color 0.15s ease;
+}
+
+.list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  max-height: 340px;
+  overflow-y: auto;
+  border: 1px solid $border;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.06);
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: listIn 0.16s ease-out;
+    transform-origin: top center;
+  }
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  // 손가락으로 누르기 쉬운 높이
+  min-height: 48px;
+}
+
+.optionActive {
+  background: $panel;
+}
+
+.optionSelected {
+  background: rgba($primary, 0.08);
+
+  .optionLabel {
+    color: $primary;
+  }
+
+  .check {
+    opacity: 1;
+  }
+}
+
+.optionSelected.optionActive {
+  background: rgba($primary, 0.13);
+}
+
+.optionText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.optionLabel {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: $text;
+}
+
+.optionHint {
+  font-size: 12px;
+  line-height: 1.5;
+  color: $muted;
+}
+
+.check {
+  flex: none;
+  color: $primary;
+  opacity: 0;
+}
+
+@keyframes listIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

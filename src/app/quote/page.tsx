@@ -2,7 +2,8 @@
 
 import styles from './page.module.scss';
 import Image from "next/image";
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef} from 'react';
+import Link from 'next/link';
 import {useRouter} from 'next/navigation';
 import {useAuth} from '@/contexts/AuthContext';
 import STLViewer from '../../components/STLViewer';
@@ -12,6 +13,17 @@ import { db } from '@/config/firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { getAllMaterialColors, ColorOption, TRANSPARENT_SENTINEL } from '@/services/colorService';
 import { recordQuoteStep } from '@/utils/visitStats/tracker';
+import MaterialSelect from './MaterialSelect';
+import QuoteDialog from './QuoteDialog';
+import {
+    MATERIAL_OPTIONS,
+    MATERIAL_GUIDE_URL,
+    FILE_SIZE_LIMIT_MB,
+    PRINT_SIZE_LIMIT_MM,
+    formatPrintTime,
+    formatFileSize,
+    fileExtension,
+} from './quoteOptions';
 
 interface FileItem {
     id: number;
@@ -23,6 +35,74 @@ interface FileItem {
     price: number;
     file: File | null;
     savedFilePath?: string; // 백엔드에 저장된 파일 경로
+}
+
+// 화면 안에서 알려 주는 안내(예전의 alert 자리). where 는 안내를 보여 줄 구역
+type HintWhere = 'upload' | 'option' | 'list';
+interface Hint {
+    where: HintWhere;
+    text: string;
+}
+
+const TALK_URL = 'https://talk.naver.com/ct/w4e4gt?frm=psf';
+
+const STEPS = [
+    { id: 'upload', label: '파일 올리기', target: 'quote-upload' },
+    { id: 'option', label: '소재 · 색상 고르기', target: 'quote-options' },
+    { id: 'estimate', label: '견적 확인', target: 'quote-result' },
+    { id: 'order', label: '저장하고 문의', target: 'quote-list' },
+] as const;
+
+// 화면에서 쓰는 작은 그림들 (선 굵기를 맞추려고 그림 파일 대신 직접 그린다)
+function IconCheck({ size = 16 }: { size?: number }) {
+    return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M5 12.5l4.5 4.5L19 7.5" />
+        </svg>
+    );
+}
+
+function IconDownload() {
+    return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 4v11M7.5 11l4.5 4.5 4.5-4.5M5 19.5h14" />
+        </svg>
+    );
+}
+
+function IconUpload() {
+    return (
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M7 18.5a4.5 4.5 0 0 1-.6-8.96 5.5 5.5 0 0 1 10.8 1.02A3.75 3.75 0 0 1 17.5 18.5" />
+            <path d="M12 19.5V12M9 14.5l3-3 3 3" />
+        </svg>
+    );
+}
+
+function IconCube() {
+    return (
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" />
+            <path d="M4 7.5l8 4.5 8-4.5M12 12v9" />
+        </svg>
+    );
+}
+
+function IconTrash() {
+    return (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l.8 12.5h9.4L17.5 7M10 11v5M14 11v5" />
+        </svg>
+    );
+}
+
+function IconCopy() {
+    return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="8.5" y="8.5" width="11" height="11" rx="2" />
+            <path d="M15.5 8.5v-2a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2" />
+        </svg>
+    );
 }
 
 export default function QuotePage() {
@@ -55,6 +135,12 @@ export default function QuotePage() {
     const [activeShoppingGuideTab, setActiveShoppingGuideTab] = useState('상품결제정보'); // 쇼핑가이드 탭 상태
     const [materialColors, setMaterialColors] = useState<Record<string, ColorOption[]>>({});
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'done'>('idle'); // 저장 오버레이 상태
+    const [colorsLoaded, setColorsLoaded] = useState(false); // 소재별 색상을 받아 왔는지
+    const [modelDims, setModelDims] = useState<{ x: number; y: number; z: number } | null>(null); // 미리보기 중인 모델의 크기(mm)
+    const [hint, setHint] = useState<Hint | null>(null); // 화면 안 안내
+    const [loginPrompt, setLoginPrompt] = useState<'save' | 'order' | null>(null); // 로그인 안내 창
+    const materialButtonRef = useRef<HTMLButtonElement>(null);
+    const colorGridRef = useRef<HTMLDivElement>(null);
 
     // 로그인 체크 제거 - 견적 계산은 로그인 없이 가능
 
@@ -98,7 +184,10 @@ export default function QuotePage() {
 
     // 소재별 색상 Firestore에서 로드
     useEffect(() => {
-        getAllMaterialColors().then(setMaterialColors);
+        getAllMaterialColors().then((colors) => {
+            setMaterialColors(colors);
+            setColorsLoaded(true);
+        });
     }, []);
 
     useEffect(() => {
@@ -137,10 +226,59 @@ export default function QuotePage() {
         }
     };
 
-    const FILE_SIZE_LIMIT = 64 * 1024 * 1024; // 64MB
-    const PRINT_SIZE_LIMIT = 350; // 최대 출력 크기 (mm)
+    const FILE_SIZE_LIMIT = FILE_SIZE_LIMIT_MB * 1024 * 1024; // 64MB
+    const PRINT_SIZE_LIMIT = PRINT_SIZE_LIMIT_MM; // 최대 출력 크기 (mm)
+
+    // 안내를 보여 주고 그 구역이 화면에 들어오게 한다
+    const showHint = (where: HintWhere, text: string, focusTarget?: HTMLElement | null) => {
+        setHint({ where, text });
+        const sectionId = where === 'upload' ? 'quote-upload' : where === 'option' ? 'quote-options' : 'quote-list';
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (focusTarget) {
+            focusTarget.focus({ preventScroll: true });
+            focusTarget.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+        } else {
+            document.getElementById(sectionId)?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest' });
+        }
+    };
+
+    const scrollToSection = (targetId: string) => {
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        document.getElementById(targetId)?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    };
+
+    // 소재가 바뀌면 금액도 달라지므로 이전 견적은 지운다 (다른 소재의 금액으로 저장되지 않게)
+    const handleMaterialChange = (value: string) => {
+        if (value === material) return;
+        setMaterial(value);
+        setEstimatedPrice(0);
+        setPrintTime('');
+        setHasCalculatedEstimate(false);
+        setHint(null);
+    };
+
+    const handleColorSelect = (name: string) => {
+        setColor(name);
+        setHint((current) => (current?.where === 'option' ? null : current));
+    };
+
+    // 올린 파일을 지운다 (저장한 견적 목록은 그대로 둔다)
+    const clearUploadedFile = () => {
+        setUploadedFiles([]);
+        setCurrentPreviewFile(null);
+        setEstimatedPrice(0);
+        setPrintTime('');
+        setHasCalculatedEstimate(false);
+        setIsPrintSizeExceeded(false);
+        setOverSizeDimensions(null);
+        setModelDims(null);
+        setHint(null);
+        const fileInput = document.getElementById('fileInput') as HTMLInputElement | null;
+        if (fileInput) fileInput.value = '';
+    };
 
     const handleDimensions = (dims: { x: number; y: number; z: number }) => {
+        setModelDims(dims);
         if (dims.x > PRINT_SIZE_LIMIT || dims.y > PRINT_SIZE_LIMIT || dims.z > PRINT_SIZE_LIMIT) {
             setOverSizeDimensions(dims);
             setIsPrintSizeExceeded(true);
@@ -172,6 +310,8 @@ export default function QuotePage() {
             setHasCalculatedEstimate(false); // 견적 계산 상태 초기화
             setIsPrintSizeExceeded(false);
             setOverSizeDimensions(null);
+            setModelDims(null);
+            setHint(null);
             recordQuoteStep('upload'); // 방문 통계: 견적 흐름
         }
     };
@@ -179,18 +319,19 @@ export default function QuotePage() {
     const calculateEstimate = async () => {
         // 유효성 검사
         if (uploadedFiles.length === 0) {
-            alert('STL 파일을 먼저 업로드해주세요.');
+            showHint('upload', 'STL 파일을 먼저 업로드해주세요.');
             return;
         }
         if (!material) {
-            alert('소재를 선택해주세요.');
+            showHint('option', '소재를 선택해주세요.', materialButtonRef.current);
             return;
         }
         if (!color) {
-            alert('색상을 선택해주세요.');
+            showHint('option', '색상을 선택해주세요.', colorGridRef.current?.querySelector<HTMLElement>('button:not([aria-disabled="true"])'));
             return;
         }
 
+        setHint(null);
         setIsCalculating(true);
         setEstimatedPrice(0);
         setPrintTime('');
@@ -233,7 +374,7 @@ export default function QuotePage() {
             }
         } catch (error) {
             console.error('네트워크 오류:', error);
-            alert('견적 계산 중 오류가 발생했습니다. 다시 시도해주세요.');
+            showHint('option', '견적 계산 중 오류가 발생했습니다. 다시 시도해주세요.');
         } finally {
             setIsCalculating(false);
         }
@@ -256,6 +397,8 @@ export default function QuotePage() {
 
     const handleDragLeave = (e: React.DragEvent) => {
         e.preventDefault();
+        // 구역 안의 다른 요소 위로 옮겨 간 것은 나간 것이 아니다 (테두리가 깜빡이지 않게)
+        if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
         setIsDragOver(false);
     };
 
@@ -285,9 +428,11 @@ export default function QuotePage() {
             setHasCalculatedEstimate(false);
             setIsPrintSizeExceeded(false);
             setOverSizeDimensions(null);
+            setModelDims(null);
+            setHint(null);
             recordQuoteStep('upload'); // 방문 통계: 견적 흐름
         } else {
-            alert('STL, OBJ, STP 파일만 업로드 가능합니다.');
+            showHint('upload', 'STL, OBJ, STP 파일만 업로드 가능합니다.');
         }
     };
 
@@ -296,14 +441,13 @@ export default function QuotePage() {
 
         // 로그인 체크
         if (!user) {
-            alert('저장하기는 로그인이 필요한 서비스입니다.');
-            router.push('/login');
+            setLoginPrompt('save');
             return;
         }
 
         // 견적 계산 완료 확인
         if (!hasCalculatedEstimate || estimatedPrice <= 0) {
-            alert('견적내기를 먼저 진행해주세요.');
+            showHint('option', '견적내기를 먼저 진행해주세요.');
             return;
         }
 
@@ -386,6 +530,8 @@ export default function QuotePage() {
                 setEstimatedPrice(0);
                 setPrintTime('');
                 setHasCalculatedEstimate(false); // 저장 후 견적 상태 초기화
+                setModelDims(null);
+                setHint(null);
 
                 // 파일 input 초기화
                 const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
@@ -398,10 +544,10 @@ export default function QuotePage() {
             } catch (error) {
                 console.error('견적 저장 오류:', error);
                 setSaveStatus('idle');
-                alert('견적 저장 중 오류가 발생했습니다.');
+                showHint('option', '견적 저장 중 오류가 발생했습니다.');
             }
         } else {
-            alert('파일을 업로드하고 소재, 색상을 선택해주세요.');
+            showHint('option', '파일을 업로드하고 소재, 색상을 선택해주세요.');
         }
     };
 
@@ -409,15 +555,15 @@ export default function QuotePage() {
     const handleOrderClick = () => {
         // 로그인 체크
         if (!user) {
-            alert('견적 주문하기는 로그인이 필요한 서비스입니다.');
-            router.push('/login');
+            setLoginPrompt('order');
             return;
         }
 
         if (fileItems.length === 0) {
-            alert('주문할 파일을 먼저 추가해주세요.');
+            showHint('list', '저장한 견적이 없습니다. 위에서 견적을 낸 뒤 저장해 주세요.');
             return;
         }
+        setHint(null);
         setIsOrderModalOpen(true);
     };
 
@@ -696,16 +842,6 @@ export default function QuotePage() {
         }
     };
 
-    // 견적가이드 PDF 다운로드
-    const handleGuideDownload = () => {
-        const link = document.createElement('a');
-        link.href = '/quote/file/guide.pdf';
-        link.download = '견적가이드.pdf';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
     const removeFileItem = async (id: number) => {
         const updatedItems = fileItems.filter(item => item.id !== id);
         setFileItems(updatedItems);
@@ -719,6 +855,7 @@ export default function QuotePage() {
                     fileName: item.fileName,
                     material: item.material,
                     color: item.color,
+                    colorHex: item.colorHex,
                     quantity: item.quantity,
                     price: item.price,
                     savedFilePath: item.savedFilePath,
@@ -750,6 +887,7 @@ export default function QuotePage() {
                     fileName: item.fileName,
                     material: item.material,
                     color: item.color,
+                    colorHex: item.colorHex,
                     quantity: item.quantity,
                     price: item.price,
                     savedFilePath: item.savedFilePath,
@@ -771,298 +909,433 @@ export default function QuotePage() {
         return (
             <div className={styles.container}>
                 <div className={styles.innerContainer}>
-                    <p style={{ textAlign: 'center', marginTop: '100px' }}>로딩 중...</p>
+                    <p className={styles.pageLoading}>로딩 중...</p>
                 </div>
             </div>
         );
     }
 
+    const colorOptions = material ? (materialColors[material] ?? []) : [];
+    const selectedColor = colorOptions.find((c) => c.name === color) ?? null;
+    const hasUnavailableColor = colorOptions.some((c) => !c.available);
+    const hasFile = uploadedFiles.length > 0;
+    const hasEstimate = hasCalculatedEstimate && estimatedPrice > 0;
+    const saveDisabled = !hasEstimate || saveStatus !== 'idle';
+    const calculateBlocked = !hasFile || !material || !color || isCalculating || isPrintSizeExceeded;
+    const totalQuantity = fileItems.reduce((sum, item) => sum + item.quantity, 0);
+    const totalPrice = fileItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const previewExt = currentPreviewFile?.name.split('.').pop()?.toLowerCase();
+    const previewRotatable = !!currentPreviewFile && previewExt !== 'stp' && previewExt !== 'step';
+    const dimsText = modelDims
+        ? `${modelDims.x.toFixed(1)} × ${modelDims.y.toFixed(1)} × ${modelDims.z.toFixed(1)} mm`
+        : '';
+
+    // 진행 순서: 저장까지 마쳐 올린 파일이 비워졌으면 앞의 세 단계는 끝난 것으로 본다
+    const stepDone = !hasFile && fileItems.length > 0
+        ? [true, true, true, false]
+        : [hasFile, !!material && !!color, hasEstimate, false];
+    const currentStep = stepDone.indexOf(false);
+
     return (
 
         <div className={styles.container}>
             <div className={styles.innerContainer}>
-                <div className={styles.titleWrapper}>
-                    <p>실시간 견적 확인</p>
-                    <div className={styles.guide} onClick={handleGuideDownload} style={{ cursor: 'pointer' }}>
-                        견적가이드 다운로드
-                        <Image
-                            src="/download_icon.svg"
-                            alt="MAKER 3D Logo"
-                            width={30}
-                            height={30}
-                            className={styles.logoIcon}
-                        />
-                    </div>
-
-                </div>
-                <div className={styles.subTitleRow}>
-                    <div>
-                        <p className={styles.subTitle}>3D프린팅의 예상견적을 확인할 수 있습니다.</p>
-                        <p className={styles.subTitle}>실제견적요청 시, 데이터를 압축하여 첨부 부탁드립니다.</p>
-                    </div>
-                    <div className={styles.consultBanner}>
-                        <p className={styles.consultText}>앗! 아직 파일이 준비되지 않았나요?<br/>전문가와 상담하여 3D파일 설계부터 시작해보세요!</p>
-                        <a
-                            href="https://talk.naver.com/ct/w4e4gt?frm=psf"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={styles.consultBtn}
-                        >
-                            상담하기
+                <header className={styles.pageHead}>
+                    <div className={styles.titleWrapper}>
+                        <h1 className={styles.pageTitle}>실시간 견적 확인</h1>
+                        <a className={styles.guide} href="/quote/file/guide.pdf" download="견적가이드.pdf">
+                            견적가이드 다운로드
+                            <IconDownload />
                         </a>
                     </div>
-                </div>
-
-                <div className={styles.line}></div>
-                <div className={styles.fileUploader}>
-                    <p>STL 파일 업로드</p>
-                    <div
-                        className={`${styles.dragBox} ${isDragOver ? styles.dragOver : ''}`}
-                        onDragOver={handleDragOver}
-                        onDragLeave={handleDragLeave}
-                        onDrop={handleDrop}
-                    >
-                        <Image
-                            src="/download_icon2.svg"
-                            alt="MAKER 3D Logo"
-                            width={25}
-                            height={26}
-                            className={styles.logoIcon}
-                        />
-                        <p>STL / OBJ / STP 파일을 드래그 하거나, 파일을 올려주세요.</p>
-                        <Image
-                            src="/download_divider.svg"
-                            alt="MAKER 3D Logo"
-                            width={201}
-                            height={16}
-                            style={{marginTop: 10}}
-                        />
-                        <input
-                            type="file"
-                            multiple
-                            accept=".stl,.obj,.stp,.step"
-                            onChange={handleFileUpload}
-                            style={{display: 'none'}}
-                            id="fileInput"
-                        />
-                        <label htmlFor="fileInput" className={styles.fileUploadBtn}>
-                            파일 선택
-                        </label>
-
-
+                    <div className={styles.subTitleRow}>
+                        <div>
+                            <p className={styles.subTitle}>3D프린팅의 예상견적을 확인할 수 있습니다.</p>
+                            <p className={styles.subTitle}>실제견적요청 시, 데이터를 압축하여 첨부 부탁드립니다.</p>
+                        </div>
+                        <div className={styles.consultBanner}>
+                            <p className={styles.consultText}>앗! 아직 파일이 준비되지 않았나요?<br/>전문가와 상담하여 3D파일 설계부터 시작해보세요!</p>
+                            <a
+                                href={TALK_URL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.consultBtn}
+                            >
+                                상담하기
+                            </a>
+                        </div>
                     </div>
-                    <p className={styles.in}>.stl / .obj / .stp 파일을 올려주세요.</p>
+                </header>
 
+                {/* 진행 순서: 누르면 그 구역으로 내려간다 */}
+                <ol className={styles.steps} aria-label="견적 진행 순서">
+                    {STEPS.map((step, index) => {
+                        const state = stepDone[index] ? 'done' : index === currentStep ? 'current' : 'todo';
+                        return (
+                            <li
+                                key={step.id}
+                                className={`${styles.step} ${state === 'done' ? styles.stepDone : ''} ${state === 'current' ? styles.stepCurrent : ''}`}
+                                aria-current={state === 'current' ? 'step' : undefined}
+                            >
+                                <button type="button" className={styles.stepButton} onClick={() => scrollToSection(step.target)}>
+                                    <span className={styles.stepMark} aria-hidden="true">
+                                        {state === 'done' ? <IconCheck size={14} /> : index + 1}
+                                    </span>
+                                    <span className={styles.stepLabel}>{step.label}</span>
+                                    {state !== 'todo' && (
+                                        <span className={styles.srOnly}>{state === 'done' ? ' (완료)' : ' (지금 단계)'}</span>
+                                    )}
+                                </button>
+                            </li>
+                        );
+                    })}
+                </ol>
 
-                </div>
+                <section
+                    id="quote-upload"
+                    className={`${styles.fileUploader} ${isDragOver ? styles.dragOver : ''}`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                >
+                    <div className={styles.cardHead}>
+                        <h2 className={styles.cardTitle}>STL 파일 업로드</h2>
+                        <p className={styles.cardMeta}>한 파일 최대 {FILE_SIZE_LIMIT_MB}MB</p>
+                    </div>
+                    <input
+                        type="file"
+                        multiple
+                        accept=".stl,.obj,.stp,.step"
+                        onChange={handleFileUpload}
+                        className={styles.fileInput}
+                        id="fileInput"
+                        aria-label="견적 낼 3D 파일 선택"
+                    />
+                    {!hasFile ? (
+                        <label htmlFor="fileInput" className={styles.dragBox}>
+                            <IconUpload />
+                            <span className={styles.dragText}>STL / OBJ / STP 파일을 드래그 하거나, 파일을 올려주세요.</span>
+                            <span className={styles.fileUploadBtn}>파일 선택</span>
+                        </label>
+                    ) : (
+                        <div className={styles.uploaded}>
+                            <ul className={styles.uploadedList}>
+                                {uploadedFiles.map((file, index) => (
+                                    <li key={`${file.name}-${index}`} className={styles.uploadedItem}>
+                                        <span className={styles.fileBadge} aria-hidden="true">{fileExtension(file.name)}</span>
+                                        <div className={styles.uploadedText}>
+                                            <p className={styles.uploadedName}>{file.name}</p>
+                                            <p className={styles.uploadedMeta}>
+                                                {formatFileSize(file.size)}
+                                                {index === 0 && dimsText && ` · 크기 ${dimsText}`}
+                                            </p>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                            <div className={styles.uploadedActions}>
+                                <label htmlFor="fileInput" className={styles.ghostBtn}>다른 파일 선택</label>
+                                <button type="button" className={styles.ghostBtn} onClick={clearUploadedFile}>지우기</button>
+                            </div>
+                        </div>
+                    )}
+                    {isPrintSizeExceeded && overSizeDimensions && (
+                        <p className={styles.inlineAlert} role="alert">
+                            출력할 수 있는 크기({PRINT_SIZE_LIMIT_MM} × {PRINT_SIZE_LIMIT_MM} × {PRINT_SIZE_LIMIT_MM}mm)를 넘는 파일입니다.
+                            <button type="button" className={styles.textBtn} onClick={() => setIsPrintSizeModalOpen(true)}>자세히 보기</button>
+                        </p>
+                    )}
+                    {hint?.where === 'upload' && (
+                        <p className={styles.inlineAlert} role="alert">{hint.text}</p>
+                    )}
+                    <p className={styles.in}>
+                        .stl / .obj / .stp 파일을 올려주세요. 출력할 수 있는 크기는 {PRINT_SIZE_LIMIT_MM} × {PRINT_SIZE_LIMIT_MM} × {PRINT_SIZE_LIMIT_MM}mm까지입니다.
+                    </p>
+                </section>
+
                 <div className={styles.selectOption}>
                     <div className={styles.viewer}>
                         {currentPreviewFile ? (
-                            <STLViewer
-                                file={currentPreviewFile}
-                                className={styles.stlViewer}
-                                onDimensions={handleDimensions}
-                                modelColor={
-                                    color && material
-                                        ? (materialColors[material] ?? []).find((c) => c.name === color)?.hex
-                                        : undefined
-                                }
-                            />
+                            // 그림의 크기가 틀의 높이를 밀어내지 않도록 틀 안에 띄워 둔다
+                            <div className={styles.viewerStage}>
+                                <STLViewer
+                                    file={currentPreviewFile}
+                                    className={styles.stlViewer}
+                                    onDimensions={handleDimensions}
+                                    modelColor={selectedColor?.hex}
+                                />
+                            </div>
                         ) : (
                             <div className={styles.viewerPlaceholder}>
+                                <IconCube />
                                 <p>STL 파일을 업로드하면</p>
                                 <p>3D 미리보기가 표시됩니다</p>
                             </div>
                         )}
+                        {previewRotatable && (
+                            <div className={styles.viewerInfo}>
+                                {dimsText && <span className={styles.viewerChip}>크기 {dimsText}</span>}
+                                <span className={styles.viewerTip}>끌어서 돌려 볼 수 있습니다</span>
+                            </div>
+                        )}
                     </div>
-                    <div className={styles.option}>
-                        <p className={styles.optionTitle}>상세 설정</p>
-                        <div className={styles.divider}></div>
-                        <div className={styles.optionDropbox}>
-                            <span>소재 <span style={{color: '#FF4040', marginLeft: '2px'}}>*</span></span>
-                            <select
-                                className={styles.dropdown}
+                    <section id="quote-options" className={styles.option}>
+                        <h2 className={styles.optionTitle}>상세 설정</h2>
+
+                        <div className={styles.field}>
+                            <div className={styles.fieldHead}>
+                                <span id="quote-material-label" className={styles.fieldLabel}>
+                                    소재 <span className={styles.required} aria-hidden="true">*</span>
+                                </span>
+                                <Link href={MATERIAL_GUIDE_URL} target="_blank" className={styles.fieldLink}>
+                                    소재별 차이 보기
+                                </Link>
+                            </div>
+                            <MaterialSelect
+                                options={MATERIAL_OPTIONS}
                                 value={material}
-                                onChange={(e) => setMaterial(e.target.value)}
-                            >
-                                <option value="">선택해주세요</option>
-                                <option value="PLA">PLA</option>
-                                <option value="ABS">ABS</option>
-                                <option value="PETG">PETG</option>
-                                <option value="TPU">TPU</option>
-                            </select>
+                                onChange={handleMaterialChange}
+                                labelledBy="quote-material-label"
+                                disabled={isCalculating}
+                                invalid={hint?.where === 'option' && !material}
+                                buttonRef={materialButtonRef}
+                            />
                         </div>
-                        <div className={styles.divider}></div>
-                        <div className={styles.colorPickerSection}>
-                            <div className={styles.colorPickerHeader}>
-                                <span>색상 <span style={{ color: '#FF4040', marginLeft: '2px' }}>*</span></span>
-                                {color && material && (() => {
-                                    const found = (materialColors[material] ?? []).find((c) => c.name === color);
-                                    return found
-                                        ? <span className={styles.colorSelectedLabel}>{found.hex === TRANSPARENT_SENTINEL ? found.name : `${found.name}(${found.hex})`}</span>
-                                        : null;
-                                })()}
-                                {!color && <span className={styles.colorPlaceholder}>선택해주세요</span>}
+
+                        <div className={styles.field}>
+                            <div className={styles.fieldHead}>
+                                <span id="quote-color-label" className={styles.fieldLabel}>
+                                    색상 <span className={styles.required} aria-hidden="true">*</span>
+                                </span>
+                                {selectedColor ? (
+                                    <span className={styles.colorSelectedLabel}>
+                                        {selectedColor.name}
+                                        {selectedColor.hex !== TRANSPARENT_SENTINEL && (
+                                            <span className={styles.colorHex}>{selectedColor.hex}</span>
+                                        )}
+                                    </span>
+                                ) : (
+                                    <span className={styles.colorPlaceholder}>선택해주세요</span>
+                                )}
                             </div>
 
-                            {material && (materialColors[material] ?? []).length > 0 ? (
-                                <div className={styles.colorGrid}>
-                                    {(materialColors[material] ?? []).map((colorOption) => {
-                                        const isSelected = color === colorOption.name;
-                                        const isTransparent = colorOption.hex === TRANSPARENT_SENTINEL;
-                                        const circleClasses = [
-                                            styles.colorCircle,
-                                            isSelected ? styles.selected : '',
-                                            !colorOption.available ? styles.unavailable : '',
-                                            isTransparent ? styles.transparent : '',
-                                        ].filter(Boolean).join(' ');
-
-                                        return (
-                                            <div
-                                                key={colorOption.code}
-                                                className={circleClasses}
-                                                title={`${colorOption.name} (${colorOption.code})`}
-                                                onClick={() => { if (colorOption.available) setColor(colorOption.name); }}
-                                                style={isTransparent ? undefined : { backgroundColor: colorOption.hex }}
-                                                role="button"
-                                                aria-label={`${colorOption.name}${!colorOption.available ? ' (품절)' : ''}`}
-                                                aria-pressed={isSelected}
-                                                tabIndex={colorOption.available ? 0 : -1}
-                                                onKeyDown={(e) => {
-                                                    if ((e.key === 'Enter' || e.key === ' ') && colorOption.available) setColor(colorOption.name);
-                                                }}
-                                            />
-                                        );
-                                    })}
-                                </div>
+                            {!material ? (
+                                <p className={styles.colorNoMaterial}>소재를 먼저 선택해주세요</p>
+                            ) : !colorsLoaded ? (
+                                <p className={styles.colorNoMaterial}>색상을 불러오는 중입니다...</p>
+                            ) : colorOptions.length === 0 ? (
+                                <p className={styles.colorNoMaterial}>지금 고를 수 있는 색상이 없습니다. 상담으로 문의해 주세요.</p>
                             ) : (
-                                !material && <p className={styles.colorNoMaterial}>소재를 먼저 선택해주세요</p>
+                                <>
+                                    <div
+                                        ref={colorGridRef}
+                                        className={styles.colorGrid}
+                                        role="group"
+                                        aria-labelledby="quote-color-label"
+                                    >
+                                        {colorOptions.map((colorOption) => {
+                                            const isSelected = color === colorOption.name;
+                                            const isTransparent = colorOption.hex === TRANSPARENT_SENTINEL;
+                                            const selectable = colorOption.available && !isCalculating;
+                                            const circleClasses = [
+                                                styles.colorCircle,
+                                                isSelected ? styles.selected : '',
+                                                !colorOption.available ? styles.unavailable : '',
+                                                isTransparent ? styles.transparent : '',
+                                            ].filter(Boolean).join(' ');
+
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    key={`${colorOption.code}-${colorOption.name}`}
+                                                    className={circleClasses}
+                                                    title={`${colorOption.name} (${colorOption.code})${!colorOption.available ? ' · 품절' : ''}`}
+                                                    onClick={() => { if (selectable) handleColorSelect(colorOption.name); }}
+                                                    style={isTransparent ? undefined : { backgroundColor: colorOption.hex }}
+                                                    aria-label={`${colorOption.name}${!colorOption.available ? ' (품절)' : ''}`}
+                                                    aria-pressed={isSelected}
+                                                    aria-disabled={!selectable}
+                                                    tabIndex={colorOption.available ? 0 : -1}
+                                                />
+                                            );
+                                        })}
+                                    </div>
+                                    {hasUnavailableColor && (
+                                        <p className={styles.colorLegend}>빗금이 그어진 색상은 품절입니다.</p>
+                                    )}
+                                </>
                             )}
                         </div>
-                        <div className={styles.infoText}>
-                            <p>솔리드 데이터 일 경우, 예상견적이 높게 산출됩니다.</p>
-                        </div>
-                        <div className={styles.divider}></div>
-                        <div className={styles.calculateBtnWrapper}>
 
-                            <div
-                                className={styles.calculateBtn}
+                        <p className={styles.infoText}>솔리드 데이터 일 경우, 예상견적이 높게 산출됩니다.</p>
+
+                        <div className={styles.calculateBtnWrapper}>
+                            <ul className={styles.readyList} aria-label="견적에 필요한 항목">
+                                {([['파일', hasFile], ['소재', !!material], ['색상', !!color]] as const).map(([name, ready]) => (
+                                    <li key={name} className={ready ? styles.ready : ''}>
+                                        <IconCheck size={12} />
+                                        {name}
+                                        <span className={styles.srOnly}>{ready ? ' 준비됨' : ' 필요'}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                            <button
+                                type="button"
+                                className={`${styles.calculateBtn} ${calculateBlocked ? styles.btnMuted : ''}`}
                                 onClick={() => {
+                                    if (isCalculating) return;
                                     if (isPrintSizeExceeded) {
                                         setIsPrintSizeModalOpen(true);
                                         return;
                                     }
                                     calculateEstimate();
                                 }}
-                                style={{
-                                    cursor: (isCalculating || isPrintSizeExceeded) ? 'not-allowed' : 'pointer',
-                                    opacity: (isCalculating || isPrintSizeExceeded) ? 0.5 : 1
-                                }}
                             >
                                 {isCalculating ? '계산 중...' : '견적내기'}
-                            </div>
-
+                            </button>
+                            {hint?.where === 'option' && (
+                                <p className={styles.inlineAlert} role="alert">{hint.text}</p>
+                            )}
                         </div>
 
-                        <div className={styles.divider}></div>
-                        <div className={styles.priceWrapper}>
-                            <p className={styles.title}>예상 견적</p>
-                            <p className={styles.vat}>(VAT 포함)</p>
-                        </div>
-                        {isCalculating ? (
-                            <div className={styles.loadingWrapper}>
-                                <div className={styles.loadingContent}>
-                                    <div className={styles.spinner}></div>
-                                    <span className={styles.loadingText}>견적을 계산하고 있습니다...</span>
-                                </div>
-                                <div className={styles.progressBar}>
-                                    <div className={styles.progressFill}></div>
-                                </div>
+                        <div id="quote-result" className={styles.result} aria-live="polite">
+                            <div className={styles.priceWrapper}>
+                                <p className={styles.title}>예상 견적</p>
+                                <p className={styles.vat}>(VAT 포함)</p>
                             </div>
-                        ) : (
-                            <>
-                                <p className={styles.price}>₩ {estimatedPrice.toLocaleString()}</p>
-                                {printTime && (
-                                    <p className={styles.printTime}>예상 출력 시간: {printTime}</p>
+                            {isCalculating ? (
+                                <div className={styles.loadingWrapper}>
+                                    <div className={styles.loadingContent}>
+                                        <div className={styles.spinner}></div>
+                                        <span className={styles.loadingText}>견적을 계산하고 있습니다...</span>
+                                    </div>
+                                    <div className={styles.progressBar}>
+                                        <div className={styles.progressFill}></div>
+                                    </div>
+                                    <p className={styles.loadingNote}>파일 크기에 따라 시간이 조금 걸릴 수 있습니다.</p>
+                                </div>
+                            ) : hasEstimate ? (
+                                <>
+                                    <p className={styles.price}>₩ {estimatedPrice.toLocaleString()}</p>
+                                    <p className={styles.printTime}>
+                                        1개 기준
+                                        {printTime && ` · 예상 출력 시간: ${formatPrintTime(printTime)}`}
+                                    </p>
+                                </>
+                            ) : (
+                                <p className={styles.priceEmpty}>견적내기를 누르면 예상 금액이 여기에 표시됩니다.</p>
+                            )}
+                        </div>
+
+                        <div className={styles.saveArea}>
+                            <button
+                                type="button"
+                                className={`${styles.saveBtn} ${saveDisabled ? styles.disabled : ''}`}
+                                onClick={handleSave}
+                            >
+                                {saveStatus === 'saving' ? '저장 중...' : '견적 저장하기'}
+                            </button>
+                            <p className={styles.saveNote}>
+                                {user ? (
+                                    '저장하면 아래 ‘저장한 견적’에 담기고, 견적문의를 할 수 있습니다.'
+                                ) : (
+                                    <>저장과 견적문의는 <Link href="/login">로그인</Link> 후 이용할 수 있습니다.</>
                                 )}
-                            </>
-                        )}
-                        <div
-                            className={`${styles.saveBtn} ${(!hasCalculatedEstimate || estimatedPrice <= 0 || saveStatus !== 'idle') ? styles.disabled : ''}`}
-                            onClick={handleSave}
-                            style={{
-                                cursor: (!hasCalculatedEstimate || estimatedPrice <= 0 || saveStatus !== 'idle') ? 'not-allowed' : 'pointer',
-                                opacity: (!hasCalculatedEstimate || estimatedPrice <= 0 || saveStatus !== 'idle') ? 0.5 : 1
-                            }}
-                        >
-                            {saveStatus === 'saving' ? '저장 중...' : '저장'}
+                            </p>
                         </div>
-
-
-                    </div>
+                    </section>
                 </div>
-                <div className={styles.fileList}>
-                    STL 파일 업로드
-                    {fileItems.map((item) => (
-                        <div key={item.id} className={styles.fileItem}>
-                            <div className={styles.filePreview}>
-                                <div className={styles.stlIcon}>3D</div>
-                            </div>
-                            <div className={styles.fileInfo}>
-                                <div className={styles.fileName}>{item.fileName}</div>
-                                <div className={styles.fileDetails}>
-                                    <span>소재: {item.material}</span>
-                                    <span>색상: {item.color} | 부피: 124.5 mm³</span>
-                                </div>
-                            </div>
 
+                <section id="quote-list" className={styles.fileList}>
+                    <div className={styles.cardHead}>
+                        <h2 className={styles.cardTitle}>저장한 견적</h2>
+                        {fileItems.length > 0 && (
+                            <p className={styles.cardMeta}>새 파일을 올리면 이 목록은 새로 시작됩니다.</p>
+                        )}
+                    </div>
 
-                            <div className={styles.filePriceWrapper}>
-                                <div className={styles.filePrice}>￦ {item.price.toLocaleString()}</div>
-                                <div className={styles.fileControls}>
-                                    <button
-                                        onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                                        className={styles.controlBtn}
-                                    >
-                                        −
-                                    </button>
-                                    <span className={styles.fileQuantity}>{item.quantity}</span>
-                                    <button
-                                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                        className={styles.controlBtn}
-                                    >
-                                        +
-                                    </button>
-                                </div>
-                                <div
-                                    onClick={() => removeFileItem(item.id)}
-                                    className={styles.removeBtn}
-
-
-                                >
-                                    <Image
-                                        src="/delete_btn.svg"
-                                        alt="MAKER 3D Logo"
-                                        width={32}
-                                        height={32}
-                                    />
-
-                                </div>
-                            </div>
-
-
+                    {fileItems.length === 0 ? (
+                        <div className={styles.emptyList}>
+                            <p className={styles.emptyTitle}>아직 저장한 견적이 없습니다.</p>
+                            <p className={styles.emptyText}>위에서 견적을 낸 뒤 ‘견적 저장하기’를 누르면 여기에 담깁니다.</p>
                         </div>
-                    ))}
+                    ) : (
+                        fileItems.map((item) => {
+                            const isTransparent = item.colorHex === TRANSPARENT_SENTINEL;
+                            return (
+                                <div key={item.id} className={styles.fileItem}>
+                                    <div className={styles.filePreview}>
+                                        <div className={styles.stlIcon}>{fileExtension(item.fileName)}</div>
+                                    </div>
+                                    <div className={styles.fileInfo}>
+                                        <div className={styles.fileName}>{item.fileName}</div>
+                                        <div className={styles.fileDetails}>
+                                            <span>소재: {item.material}</span>
+                                            <span className={styles.fileColor}>
+                                                {item.colorHex && (
+                                                    <i
+                                                        className={`${styles.fileSwatch} ${isTransparent ? styles.transparent : ''}`}
+                                                        style={isTransparent ? undefined : { backgroundColor: item.colorHex }}
+                                                        aria-hidden="true"
+                                                    />
+                                                )}
+                                                색상: {item.color}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.filePriceWrapper}>
+                                        <div className={styles.filePriceBox}>
+                                            <div className={styles.filePrice}>￦ {item.price.toLocaleString()}</div>
+                                            <div className={styles.filePriceNote}>
+                                                {item.quantity > 1
+                                                    ? `${item.quantity}개 합계 ￦ ${(item.price * item.quantity).toLocaleString()}`
+                                                    : '1개 금액'}
+                                            </div>
+                                        </div>
+                                        <div className={styles.fileControls} role="group" aria-label={`${item.fileName} 수량`}>
+                                            <button
+                                                type="button"
+                                                onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                                                className={styles.controlBtn}
+                                                aria-label="수량 줄이기"
+                                                disabled={item.quantity <= 1}
+                                            >
+                                                −
+                                            </button>
+                                            <span className={styles.fileQuantity} aria-live="polite">{item.quantity}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                className={styles.controlBtn}
+                                                aria-label="수량 늘리기"
+                                            >
+                                                +
+                                            </button>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeFileItem(item.id)}
+                                            className={styles.removeBtn}
+                                            aria-label={`${item.fileName} 삭제`}
+                                        >
+                                            <IconTrash />
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+
                     <div className={styles.lastPriceWrapper}>
                         <div>
                             <p className={styles.lastPriceTitle}>최종 견적 요약</p>
                             <p className={styles.lastPriceInfo}>총 {fileItems.length}개 파일</p>
-                            <p className={styles.lastPriceInfo}>총 수량: {fileItems.reduce((sum, item) => sum + item.quantity, 0)}개</p>
+                            <p className={styles.lastPriceInfo}>총 수량: {totalQuantity}개</p>
                         </div>
-                        <div style={{display: 'flex', alignItems: 'flex-end', flexDirection: 'column'}}>
+                        <div className={styles.lastPriceTotal}>
                             <p className={styles.lastPriceInfo}>예상 견적(VAT 포함)</p>
-                            <p className={styles.lastPrice}>₩ {fileItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()}</p>
-
+                            <p className={styles.lastPrice}>₩ {totalPrice.toLocaleString()}</p>
                         </div>
                     </div>
 
@@ -1071,7 +1344,7 @@ export default function QuotePage() {
                         <div className={styles.cautionTitle}>
                             <Image
                                 src="/caution_icon.svg"
-                                alt="MAKER 3D Logo"
+                                alt=""
                                 width={20}
                                 height={20}
                             />
@@ -1086,35 +1359,32 @@ export default function QuotePage() {
                     </div>
 
                     <div className={styles.orderWrapper}>
+                        {hint?.where === 'list' && (
+                            <p className={styles.inlineAlert} role="alert">{hint.text}</p>
+                        )}
                         <button
-                            className={styles.inquiryBtn}
+                            type="button"
+                            className={`${styles.inquiryBtn} ${fileItems.length === 0 ? styles.btnMuted : ''}`}
                             onClick={handleOrderClick}
                         >
                             견적문의하기
                         </button>
                     </div>
-
                     {/* 쇼핑가이드 섹션 */}
                     <div className={styles.shoppingGuide}>
-                        <div className={styles.tabWrapper}>
-                            <div
-                                className={`${styles.tab} ${activeShoppingGuideTab === '상품결제정보' ? styles.active : ''}`}
-                                onClick={() => setActiveShoppingGuideTab('상품결제정보')}
-                            >
-                                상품결제정보
-                            </div>
-                            <div
-                                className={`${styles.tabCenter} ${activeShoppingGuideTab === '배송정보' ? styles.active : ''}`}
-                                onClick={() => setActiveShoppingGuideTab('배송정보')}
-                            >
-                                배송정보
-                            </div>
-                            <div
-                                className={`${styles.tab} ${activeShoppingGuideTab === '교환 및 반품정보' ? styles.active : ''}`}
-                                onClick={() => setActiveShoppingGuideTab('교환 및 반품정보')}
-                            >
-                                교환 및 반품정보
-                            </div>
+                        <div className={styles.tabWrapper} role="tablist" aria-label="쇼핑가이드">
+                            {(['상품결제정보', '배송정보', '교환 및 반품정보'] as const).map((tabName, index) => (
+                                <button
+                                    type="button"
+                                    key={tabName}
+                                    role="tab"
+                                    aria-selected={activeShoppingGuideTab === tabName}
+                                    className={`${index === 1 ? styles.tabCenter : styles.tab} ${activeShoppingGuideTab === tabName ? styles.active : ''}`}
+                                    onClick={() => setActiveShoppingGuideTab(tabName)}
+                                >
+                                    {tabName}
+                                </button>
+                            ))}
                         </div>
 
                         <div className={styles.shoppingGuideContent}>
@@ -1388,233 +1658,123 @@ export default function QuotePage() {
                         </div>
 
                     </div>
-                </div>
+                </section>
 
             </div>
 
             {/* 출력 크기 초과 모달 */}
             {isPrintSizeModalOpen && overSizeDimensions && (
-                <div
-                    onClick={() => setIsPrintSizeModalOpen(false)}
-                    style={{
-                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                        background: 'rgba(0,0,0,0.5)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 9999
-                    }}
-                >
-                    <div
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                            background: 'white', borderRadius: '16px',
-                            width: '90%', maxWidth: '420px',
-                            padding: '40px 32px',
-                            display: 'flex', flexDirection: 'column', alignItems: 'center',
-                            textAlign: 'center',
-                            boxShadow: '0 4px 24px rgba(0,0,0,0.18)'
-                        }}
-                    >
-                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>📏</div>
-                        <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#111827', margin: '0 0 12px 0' }}>
-                            출력 가능 크기 초과
-                        </h3>
-                        <p style={{ fontSize: '15px', color: '#4B5563', lineHeight: 1.6, margin: '0 0 16px 0' }}>
-                            최대 출력 크기는 <strong>350 × 350 × 350 mm</strong>입니다.<br />
-                            업로드한 파일의 크기가 이를 초과합니다.
-                        </p>
-                        <div style={{
-                            background: '#FFF5F5', border: '1px solid #FECACA',
-                            borderRadius: '10px', padding: '14px 20px',
-                            width: '100%', marginBottom: '24px',
-                            fontSize: '14px', color: '#374151', lineHeight: 1.8
-                        }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span>X축</span>
-                                <span style={{ fontWeight: 600, color: overSizeDimensions.x > 350 ? '#EF4444' : '#111827' }}>
-                                    {overSizeDimensions.x.toFixed(1)} mm {overSizeDimensions.x > 350 ? '⚠️' : '✅'}
-                                </span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span>Y축</span>
-                                <span style={{ fontWeight: 600, color: overSizeDimensions.y > 350 ? '#EF4444' : '#111827' }}>
-                                    {overSizeDimensions.y.toFixed(1)} mm {overSizeDimensions.y > 350 ? '⚠️' : '✅'}
-                                </span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span>Z축</span>
-                                <span style={{ fontWeight: 600, color: overSizeDimensions.z > 350 ? '#EF4444' : '#111827' }}>
-                                    {overSizeDimensions.z.toFixed(1)} mm {overSizeDimensions.z > 350 ? '⚠️' : '✅'}
-                                </span>
-                            </div>
-                        </div>
-                        <p style={{ fontSize: '13px', color: '#6B7280', margin: '0 0 20px 0' }}>
-                            파일을 분할하거나 크기를 줄인 후 다시 업로드해 주세요.
-                        </p>
-                        <button
-                            onClick={() => setIsPrintSizeModalOpen(false)}
-                            style={{
-                                width: '100%', height: '48px',
-                                background: '#EF4444', color: 'white',
-                                fontSize: '16px', fontWeight: 600,
-                                border: 'none', borderRadius: '8px',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            확인
-                        </button>
-                    </div>
-                </div>
+                <QuoteDialog tone="danger" title="출력 가능 크기 초과" onClose={() => setIsPrintSizeModalOpen(false)}>
+                    <p className={styles.dialogText}>
+                        최대 출력 크기는 <strong>{PRINT_SIZE_LIMIT_MM} × {PRINT_SIZE_LIMIT_MM} × {PRINT_SIZE_LIMIT_MM} mm</strong>입니다.<br />
+                        업로드한 파일의 크기가 이를 초과합니다.
+                    </p>
+                    <dl className={styles.dialogBox}>
+                        {(['x', 'y', 'z'] as const).map((axis) => {
+                            const over = overSizeDimensions[axis] > PRINT_SIZE_LIMIT;
+                            return (
+                                <div key={axis} className={styles.dialogRow}>
+                                    <dt>{axis.toUpperCase()}축</dt>
+                                    <dd className={over ? styles.dialogOver : ''}>
+                                        {overSizeDimensions[axis].toFixed(1)} mm
+                                        <span className={styles.dialogMark}>{over ? '초과' : '가능'}</span>
+                                    </dd>
+                                </div>
+                            );
+                        })}
+                    </dl>
+                    <p className={styles.dialogNote}>파일을 분할하거나 크기를 줄인 후 다시 업로드해 주세요.</p>
+                    <button type="button" className={styles.dialogPrimary} onClick={() => setIsPrintSizeModalOpen(false)}>
+                        확인
+                    </button>
+                </QuoteDialog>
             )}
 
             {/* 파일 용량 초과 모달 */}
             {isFileSizeModalOpen && (
-                <div
-                    onClick={() => { setIsFileSizeModalOpen(false); setEmailCopied(false); }}
-                    style={{
-                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                        background: 'rgba(0,0,0,0.5)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 9999
-                    }}
+                <QuoteDialog
+                    tone="warn"
+                    title="파일이 너무 큽니다!"
+                    onClose={() => { setIsFileSizeModalOpen(false); setEmailCopied(false); }}
                 >
-                    <div
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                            background: 'white', borderRadius: '16px',
-                            width: '90%', maxWidth: '420px',
-                            padding: '40px 32px',
-                            display: 'flex', flexDirection: 'column', alignItems: 'center',
-                            textAlign: 'center',
-                            boxShadow: '0 4px 24px rgba(0,0,0,0.18)'
+                    <p className={styles.dialogText}>
+                        {FILE_SIZE_LIMIT_MB}MB 이상 파일은 아래 이메일로 파일을 보내주세요!
+                    </p>
+                    <button
+                        type="button"
+                        className={styles.dialogCopy}
+                        onClick={() => {
+                            navigator.clipboard.writeText('3dstore@bittech3d.com');
+                            setEmailCopied(true);
+                            setTimeout(() => setEmailCopied(false), 2000);
                         }}
                     >
-                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
-                        <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#111827', margin: '0 0 12px 0' }}>
-                            파일이 너무 큽니다!
-                        </h3>
-                        <p style={{ fontSize: '15px', color: '#4B5563', lineHeight: 1.6, margin: '0 0 20px 0' }}>
-                            64MB 이상 파일은 아래 이메일로 파일을 보내주세요!
-                        </p>
-                        <button
-                            onClick={() => {
-                                navigator.clipboard.writeText('3dstore@bittech3d.com');
-                                setEmailCopied(true);
-                                setTimeout(() => setEmailCopied(false), 2000);
-                            }}
-                            style={{
-                                display: 'inline-flex', alignItems: 'center', gap: '8px',
-                                fontSize: '15px', fontWeight: 600,
-                                color: '#2493D8',
-                                background: '#F0F9FF',
-                                border: '1px solid #2493D8',
-                                borderRadius: '8px',
-                                padding: '10px 24px',
-                                marginBottom: '8px',
-                                cursor: 'pointer',
-                            }}
-                        >
-                            📋 3dstore@bittech3d.com
-                        </button>
-                        <div style={{ height: '20px', marginBottom: '12px' }}>
-                            {emailCopied && (
-                                <p style={{ fontSize: '13px', color: '#059669', margin: 0, fontWeight: 600 }}>
-                                    ✓ 이메일 주소가 복사되었습니다
-                                </p>
-                            )}
-                        </div>
-                        <a
-                            href="https://talk.naver.com/ct/w4e4gt?frm=psf"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={() => setIsFileSizeModalOpen(false)}
-                            style={{
-                                display: 'block', width: '100%', height: '48px',
-                                lineHeight: '48px',
-                                background: '#F9FAFB', color: '#374151',
-                                fontSize: '15px', fontWeight: 600,
-                                border: '1px solid #D1D5DB', borderRadius: '8px',
-                                textDecoration: 'none',
-                                marginBottom: '10px',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            1:1 문의하기
-                        </a>
-                        <button
-                            onClick={() => { setIsFileSizeModalOpen(false); setEmailCopied(false); }}
-                            style={{
-                                width: '100%', height: '48px',
-                                background: '#2493D8', color: 'white',
-                                fontSize: '16px', fontWeight: 600,
-                                border: 'none', borderRadius: '8px',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            확인
-                        </button>
-                    </div>
-                </div>
+                        <IconCopy />
+                        3dstore@bittech3d.com
+                    </button>
+                    <p className={styles.dialogCopied} aria-live="polite">
+                        {emailCopied && '✓ 이메일 주소가 복사되었습니다'}
+                    </p>
+                    <a
+                        href={TALK_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.dialogSecondary}
+                        onClick={() => setIsFileSizeModalOpen(false)}
+                    >
+                        1:1 문의하기
+                    </a>
+                    <button
+                        type="button"
+                        className={styles.dialogPrimary}
+                        onClick={() => { setIsFileSizeModalOpen(false); setEmailCopied(false); }}
+                    >
+                        확인
+                    </button>
+                </QuoteDialog>
             )}
 
             {/* 견적 계산 오류 모달 */}
             {isEstimateErrorModalOpen && (
-                <div
-                    onClick={() => setIsEstimateErrorModalOpen(false)}
-                    style={{
-                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                        background: 'rgba(0,0,0,0.5)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 9999
-                    }}
-                >
-                    <div
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                            background: 'white', borderRadius: '16px',
-                            width: '90%', maxWidth: '420px',
-                            padding: '40px 32px',
-                            display: 'flex', flexDirection: 'column', alignItems: 'center',
-                            textAlign: 'center',
-                            boxShadow: '0 4px 24px rgba(0,0,0,0.18)'
-                        }}
+                <QuoteDialog tone="danger" title="견적 계산 오류" onClose={() => setIsEstimateErrorModalOpen(false)}>
+                    <p className={styles.dialogText}>
+                        견적 계산 중 오류가 발생했습니다.<br />
+                        아래 톡톡으로 문의해 주세요.
+                    </p>
+                    <a
+                        href={TALK_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.dialogTalk}
                     >
-                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚨</div>
-                        <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#111827', margin: '0 0 12px 0' }}>
-                            견적 계산 오류
-                        </h3>
-                        <p style={{ fontSize: '15px', color: '#4B5563', lineHeight: 1.6, margin: '0 0 24px 0' }}>
-                            견적 계산 중 오류가 발생했습니다.<br />
-                            아래 톡톡으로 문의해 주세요.
+                        네이버 톡톡으로 문의하기
+                    </a>
+                    <button type="button" className={styles.dialogSecondary} onClick={() => setIsEstimateErrorModalOpen(false)}>
+                        닫기
+                    </button>
+                </QuoteDialog>
+            )}
+
+            {/* 로그인 안내 모달: 바로 로그인 화면으로 넘기지 않고, 올린 파일이 사라진다는 것을 먼저 알린다 */}
+            {loginPrompt && (
+                <QuoteDialog tone="info" title="로그인이 필요합니다" onClose={() => setLoginPrompt(null)}>
+                    <p className={styles.dialogText}>
+                        {loginPrompt === 'save'
+                            ? '견적 저장은 로그인 후 이용할 수 있습니다.'
+                            : '견적문의는 로그인 후 이용할 수 있습니다.'}
+                    </p>
+                    {hasFile && (
+                        <p className={styles.dialogNote}>
+                            로그인 화면으로 이동하면 지금 올린 파일과 견적은 다시 진행해야 합니다.
                         </p>
-                        <a
-                            href="https://talk.naver.com/ct/w4e4gt?frm=psf&resizeTo=1710,952nidref="
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                                display: 'inline-block',
-                                fontSize: '15px', fontWeight: 600,
-                                color: 'white', background: '#03C75A',
-                                border: 'none', borderRadius: '8px',
-                                padding: '12px 28px', textDecoration: 'none',
-                                marginBottom: '16px'
-                            }}
-                        >
-                            네이버 톡톡으로 문의하기
-                        </a>
-                        <button
-                            onClick={() => setIsEstimateErrorModalOpen(false)}
-                            style={{
-                                width: '100%', height: '48px',
-                                background: '#F3F4F6', color: '#374151',
-                                fontSize: '16px', fontWeight: 600,
-                                border: 'none', borderRadius: '8px',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            닫기
-                        </button>
-                    </div>
-                </div>
+                    )}
+                    <button type="button" className={styles.dialogPrimary} onClick={() => router.push('/login')}>
+                        로그인하러 가기
+                    </button>
+                    <button type="button" className={styles.dialogSecondary} onClick={() => setLoginPrompt(null)}>
+                        닫기
+                    </button>
+                </QuoteDialog>
             )}
 
             {/* 주문 정보 입력 모달 */}
