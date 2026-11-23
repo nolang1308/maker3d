@@ -1,0 +1,10 @@
+# 백엔드 이미지에는 아래에 적은 것만 넣습니다.
+# (올라온 파일 폴더, .env.local, node_modules 가 실수로 들어가지 않도록 "전부 제외 후 허용" 방식)
+*
+!package.json
+!package-lock.json
+!server.js
+!prusaClicer.js
+!prusa-config.ini
+!docker-entrypoint.sh
+!ini

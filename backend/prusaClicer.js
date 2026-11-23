@@ -1,10 +1,18 @@
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { promisify } from 'util';
 import { fileURLToPath } from 'url';
 
-const execAsync = promisify(exec);
+// 셸을 거치지 않고 슬라이서를 직접 실행한다.
+// (셸 명령 문자열로 실행하면 업로드 파일 이름에 든 $( ) 같은 글자가 명령으로 실행될 수 있다)
+const execFileAsync = promisify(execFile);
+
+// 슬라이싱 제한 시간. 서버 CPU 가 느리면 SLICE_TIMEOUT_MS 로 늘린다.
+const SLICE_TIMEOUT_MS = Number(process.env.SLICE_TIMEOUT_MS) || 60000;
+
+// 계산이 끝난 G-code 는 지운다. 확인용으로 남기려면 KEEP_GCODE=1.
+const KEEP_GCODE = process.env.KEEP_GCODE === '1';
 
 // ES module에서 __dirname 구현
 const __filename = fileURLToPath(import.meta.url);
@@ -179,6 +187,8 @@ async function getPrintTime(stlFilePath, material) {
     fs.mkdirSync(tempDir, { recursive: true });
   }
 
+  let centered = null;
+
   try {
     // 환경 변수로 경로가 지정된 경우 우선 사용
     let prusaSlicerPath = process.env.PRUSA_SLICER_PATH;
@@ -207,27 +217,24 @@ async function getPrintTime(stlFilePath, material) {
     console.log(`소재: ${material}, 설정 파일: ${configFile}`);
 
     // STL 파일을 원점으로 이동 (좌표가 프린트 볼륨 밖에 있을 경우 대비)
-    const centered = translateSTLToOrigin(stlFilePath);
+    centered = translateSTLToOrigin(stlFilePath);
     const stlToProcess = centered.path;
     console.log(`STL 원점 이동: ${centered.isTemp ? '임시 파일 생성됨' : '이미 원점 근처'}`);
 
-    let command;
+    const args = ['--export-gcode', '--output', outputFilePath];
     if (fs.existsSync(configFile)) {
-      command = `"${prusaSlicerPath}" --export-gcode --output "${outputFilePath}" --load "${configFile}" "${stlToProcess}"`;
+      args.push('--load', configFile);
     } else {
-      command = `"${prusaSlicerPath}" --export-gcode --output "${outputFilePath}" --print-settings "0.20mm STRUCTURAL @XLIS 0.4" --fill-density 100% "${stlToProcess}"`;
+      args.push('--print-settings', '0.20mm STRUCTURAL @XLIS 0.4', '--fill-density', '100%');
     }
+    args.push(stlToProcess);
 
-    console.log(`PrusaSlicer 실행 중: ${command}`);
+    console.log(`PrusaSlicer 실행 중: ${prusaSlicerPath} ${args.join(' ')}`);
 
-    const { stdout, stderr } = await execAsync(command, {
-      timeout: 60000
+    const { stderr } = await execFileAsync(prusaSlicerPath, args, {
+      timeout: SLICE_TIMEOUT_MS,
+      windowsHide: true
     });
-
-    // 임시 centered STL 파일 삭제
-    if (centered.isTemp && fs.existsSync(centered.path)) {
-      fs.unlinkSync(centered.path);
-    }
 
     if (stderr && !stderr.includes('Loading')) {
       console.warn('PrusaSlicer stderr:', stderr);
@@ -241,15 +248,11 @@ async function getPrintTime(stlFilePath, material) {
 
     const printTime = await extractPrintTimeFromGcode(outputFilePath);
 
-    // 디버깅을 위해 임시로 파일을 남겨둠
-    // fs.unlinkSync(outputFilePath);
-    console.log('임시 G-code 파일:', outputFilePath);
-
     return printTime;
 
   } catch (error) {
-    if (fs.existsSync(outputFilePath)) {
-      fs.unlinkSync(outputFilePath);
+    if (error.killed) {
+      throw new Error(`PrusaSlicer 실행 오류: 계산이 ${Math.round(SLICE_TIMEOUT_MS / 1000)}초 안에 끝나지 않았습니다.`);
     }
 
     if (error.code === 'ENOENT') {
@@ -269,6 +272,16 @@ async function getPrintTime(stlFilePath, material) {
     }
 
     throw new Error(`PrusaSlicer 실행 오류: ${error.message}`);
+  } finally {
+    // 성공·실패와 상관없이 임시 파일 정리 (원점으로 옮긴 STL, 계산용 G-code)
+    if (centered?.isTemp && fs.existsSync(centered.path)) {
+      fs.unlinkSync(centered.path);
+    }
+    if (KEEP_GCODE) {
+      console.log('임시 G-code 파일 남김(KEEP_GCODE=1):', outputFilePath);
+    } else if (fs.existsSync(outputFilePath)) {
+      fs.unlinkSync(outputFilePath);
+    }
   }
 }
 

@@ -1,0 +1,52 @@
+# MAKER3D 사이트 설정.
+# 주소는 deploy/.env 의 WEB_SITE, API_SITE 에서 옵니다.
+#   시험 기간(도메인 연결 전) : WEB_SITE=:80        API_SITE=:8080   → http://<서버 IP> 로 접속
+#   도메인 연결 후            : WEB_SITE=www.maker3d.kr   API_SITE=maker3d-backend.maker3d.kr   APEX_SITE=maker3d.kr
+# 도메인 이름을 적으면 Caddy 가 HTTPS 인증서를 자동으로 받아 옵니다.
+
+(common) {
+	header -Server
+	encode zstd gzip
+	# 리허설 중(.env 의 REHEARSAL_TLS="tls internal")에는 자체 서명 인증서를 씁니다.
+	# 도메인이 이 서버를 가리키기 전에는 진짜 인증서를 받을 수 없기 때문입니다.
+	# 전환 후에는 빈 값으로 두어 Let's Encrypt 인증서를 받습니다.
+	{$REHEARSAL_TLS}
+}
+
+# 백엔드로 넘기는 규칙
+(to-api) {
+	# 한 번에 올릴 수 있는 크기 상한 (모델 파일 여러 개를 함께 올리는 경우 포함)
+	request_body {
+		max_size 500MB
+	}
+	reverse_proxy http://api:10000
+}
+
+# ───────────── 사이트 (프론트) ─────────────
+{$WEB_SITE} {
+	import common
+
+	# 백엔드를 같은 주소의 /backend 아래로도 엽니다.
+	# 도메인 연결 전에는 백엔드 전용 주소가 없으므로 이 길을 씁니다.
+	handle_path /backend/* {
+		import to-api
+	}
+
+	handle {
+		reverse_proxy http://web:3000
+	}
+}
+
+# ───────────── 백엔드 전용 주소 ─────────────
+{$API_SITE} {
+	import common
+	import to-api
+}
+
+# ───────────── www 없는 주소 → 사이트 주소로 넘김 ─────────────
+# 도메인 연결 후 APEX_SITE=maker3d.kr 로 두면 maker3d.kr 로 들어온 사람을 www 로 보냅니다.
+# (DNS 에 maker3d.kr 의 A 레코드가 있어야 합니다. 시험 기간에는 쓰지 않는 포트 :8081)
+{$APEX_SITE} {
+	import common
+	redir {$SITE_URL}{uri} permanent
+}

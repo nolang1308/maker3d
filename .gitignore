@@ -48,3 +48,13 @@ next-env.d.ts
 .DS_Store
 .env.local
 .env*.local
+
+# 고객이 올린 파일 (PC 에서 가져온 사본). 공개 저장소에 절대 올리지 않음
+/orders/
+/saved-quotes/
+
+# deploy/: 서버용 비밀값은 올리지 않음 (예시 파일만 올림)
+deploy/.env
+deploy/env/*
+!deploy/env/*.example
+!deploy/.env.example

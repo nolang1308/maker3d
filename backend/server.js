@@ -101,6 +101,42 @@ app.use(cors({
 app.use(express.json({ limit: '500mb' }));
 app.use(express.urlencoded({ limit: '500mb', extended: true }));
 
+// ========================================================
+// 경로에 쓰는 값 검사
+// 사용자 ID, 주문번호, 글 ID, 파일 이름은 폴더 경로에 그대로 붙는다.
+// '/' 나 '..' 이 섞여 있으면 정해진 폴더 밖의 파일을 읽거나 지울 수 있으므로 막는다.
+// (정상 값은 MK-20261123-1, Firebase ID, 파일 이름처럼 구분자가 없는 한 덩어리다)
+// ========================================================
+function isSafeSegment(value) {
+  return typeof value === 'string'
+    && value.length > 0
+    && value.length <= 255
+    && !/[\/\\\0]/.test(value)
+    && value !== '.'
+    && value !== '..';
+}
+
+function rejectUnsafe(res) {
+  return res.status(400).json({ success: false, error: '잘못된 요청입니다.' });
+}
+
+// 요청을 거절할 때, 임시로 받아 둔 업로드 파일 지우기
+function removeUploaded(files) {
+  (files || []).forEach(file => {
+    if (file?.path && fs.existsSync(file.path)) {
+      fs.unlinkSync(file.path);
+    }
+  });
+}
+
+// 주소에 들어오는 값(:postId, :filename, :orderNumber, :noticeId)은 여기서 한 번에 검사
+app.param(['postId', 'filename', 'orderNumber', 'noticeId'], (req, res, next, value) => {
+  if (!isSafeSegment(value)) {
+    return rejectUnsafe(res);
+  }
+  next();
+});
+
 // Multer 설정 (STL 파일 업로드 - 임시 저장용)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -399,6 +435,12 @@ app.post('/api/save-quote-files', uploadSavedQuote.array('files', 20), async (re
       });
     }
 
+    // 아래에서 사용자 폴더를 통째로 지우고 새로 만들기 때문에, 폴더 밖을 가리키는 값은 반드시 막는다
+    if (!isSafeSegment(userId) || (req.files || []).some(file => !isSafeSegment(file.originalname))) {
+      removeUploaded(req.files);
+      return rejectUnsafe(res);
+    }
+
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({
         success: false,
@@ -479,6 +521,10 @@ app.post('/api/copy-saved-files-to-order', async (req, res) => {
       });
     }
 
+    if (!isSafeSegment(userId) || !isSafeSegment(orderNumber) || !Array.isArray(filePaths)) {
+      return rejectUnsafe(res);
+    }
+
     // 주문 폴더 생성
     const orderDir = path.join(__dirname, 'orders', orderNumber);
     if (!fs.existsSync(orderDir)) {
@@ -488,8 +534,14 @@ app.post('/api/copy-saved-files-to-order', async (req, res) => {
     // 저장된 파일을 주문 폴더로 복사
     const copiedFilePaths = [];
     for (const filePath of filePaths) {
+      if (typeof filePath !== 'string') {
+        continue;
+      }
       // filePath 형식: /saved-quotes/{userId}/{fileName}
       const fileName = path.basename(filePath);
+      if (!isSafeSegment(fileName)) {
+        continue;
+      }
       const sourcePath = path.join(__dirname, 'saved-quotes', userId, fileName);
       const destPath = path.join(orderDir, fileName);
 
@@ -540,6 +592,11 @@ app.post('/api/upload-order-files', uploadOrder.array('files', 10), async (req, 
         success: false,
         error: '주문번호가 필요합니다.'
       });
+    }
+
+    if (!isSafeSegment(orderNumber) || (req.files || []).some(file => !isSafeSegment(file.originalname))) {
+      removeUploaded(req.files);
+      return rejectUnsafe(res);
     }
 
     if (!req.files || req.files.length === 0) {
@@ -651,6 +708,11 @@ app.post('/api/upload-freenotice-files', uploadFreeNotice.array('files', 10), as
       });
     }
 
+    if (!isSafeSegment(postId)) {
+      removeUploaded(req.files);
+      return rejectUnsafe(res);
+    }
+
     if (!req.files || req.files.length === 0) {
       return res.json({
         success: true,
@@ -735,7 +797,7 @@ app.post('/api/delete-freenotice-files', async (req, res) => {
         const filename = urlParts[urlParts.length - 1];
         const postId = urlParts[urlParts.length - 2];
 
-        if (!postId || !filename) {
+        if (!isSafeSegment(postId) || !isSafeSegment(filename)) {
           errors.push({ url: fileUrl, error: '잘못된 URL 형식' });
           continue;
         }
@@ -830,9 +892,13 @@ app.delete('/api/delete-freenotice-file', async (req, res) => {
     }
 
     // URL에서 postId와 filename 추출
-    const urlParts = fileUrl.split('/');
+    const urlParts = String(fileUrl).split('/');
     const filename = urlParts[urlParts.length - 1];
     const postId = urlParts[urlParts.length - 2];
+
+    if (!isSafeSegment(postId) || !isSafeSegment(filename)) {
+      return rejectUnsafe(res);
+    }
 
     const filePath = path.join(__dirname, 'freenoticeboard', postId, filename);
 
@@ -1192,7 +1258,10 @@ app.delete('/api/delete-portfolio-image', async (req, res) => {
     }
 
     // imageUrl 형식: /api/portfolio-image/filename
-    const filename = imageUrl.split('/').pop();
+    const filename = String(imageUrl).split('/').pop();
+    if (!isSafeSegment(filename)) {
+      return rejectUnsafe(res);
+    }
     const filePath = path.join(__dirname, 'portfolio', filename);
 
     console.log('실제 파일 경로:', filePath);
@@ -1278,6 +1347,11 @@ app.post('/api/upload-notice-files', uploadNotice.array('files', 10), async (req
         success: false,
         error: '공지사항 ID가 필요합니다.'
       });
+    }
+
+    if (!isSafeSegment(noticeId)) {
+      removeUploaded(req.files);
+      return rejectUnsafe(res);
     }
 
     if (!req.files || req.files.length === 0) {
@@ -1396,9 +1470,12 @@ app.delete('/api/delete-notice-file', async (req, res) => {
 
     // filePath 형식: /api/download-notice-file/noticeId/filename
     // 실제 경로로 변환: backend/notices/noticeId/filename
-    const pathParts = filePath.split('/');
+    const pathParts = String(filePath).split('/');
     const noticeId = pathParts[pathParts.length - 2];
     const filename = pathParts[pathParts.length - 1];
+    if (!isSafeSegment(noticeId) || !isSafeSegment(filename)) {
+      return rejectUnsafe(res);
+    }
     const actualPath = path.join(__dirname, 'notices', noticeId, filename);
 
     console.log('실제 파일 경로:', actualPath);

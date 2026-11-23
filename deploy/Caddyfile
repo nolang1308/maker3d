@@ -1,0 +1,7 @@
+# 전역 설정. 사이트별 설정은 caddy/*.caddy 에 있습니다.
+{
+	# 인증서 만료 알림을 받으려면 아래 줄의 주석을 풀고 이메일을 적습니다 (없어도 발급됩니다).
+	# email you@example.com
+}
+
+import sites/*.caddy
