@@ -61,6 +61,23 @@ if command -v docker >/dev/null 2>&1 && docker compose ps >/dev/null 2>&1; then
   docker compose ps --format '  {{.Name}}\t{{.Status}}'
   bad="$(docker compose ps -a --format '{{.Name}}\t{{.Health}}\t{{.Status}}' | awk -F'\t' '($2!="" && $2!="healthy") || $3!~/^Up/')"
   [ -z "$bad" ] || { echo "  FAIL 비정상 컨테이너: $bad"; fail=1; }
+
+  # Caddy 가 설정 폴더를 제대로 보고 있는지.
+  # 서버에서 deploy/caddy 폴더가 지워졌다 다시 만들어지면(git stash -u, git clean, 폴더 교체 등)
+  # 돌고 있는 Caddy 는 빈 폴더를 보게 된다. 그 상태로도 사이트는 계속 뜨지만,
+  # 누군가 Caddy 설정을 다시 읽히는 순간 모든 사이트가 내려간다 (2026-11-23 에 2분간 발생).
+  echo "[Caddy 설정 연결]"
+  here="$(cd "$(dirname "$0")/.." && pwd)"
+  host_files="$(ls "$here/caddy" 2>/dev/null | sort | tr '\n' ' ')"
+  cont_files="$(docker exec maker3d-caddy ls /etc/caddy/sites 2>/dev/null | sort | tr '\n' ' ')"
+  if [ -n "$host_files" ] && [ "$host_files" = "$cont_files" ] \
+     && docker exec maker3d-caddy cat /etc/caddy/Caddyfile 2>/dev/null | cmp -s - "$here/Caddyfile"; then
+    echo "  OK       서버의 설정과 Caddy 가 보는 설정이 같음 ($host_files)"
+  else
+    echo "  FAIL     Caddy 가 보는 설정이 서버와 다름 (서버: $host_files / Caddy: $cont_files)"
+    echo "           → docker compose restart caddy 로 다시 연결하세요 (1초쯤 끊김)"
+    fail=1
+  fi
 fi
 
 echo

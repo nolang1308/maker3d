@@ -53,6 +53,11 @@ next-env.d.ts
 /orders/
 /saved-quotes/
 
+# 같은 서버의 다른 프로젝트가 넣는 Caddy 사이트 파일 (예: farm.caddy). 이 저장소 것이 아님.
+# 무시해 두면 커밋되지도 않고, git 이 치우거나 옮기지도 않는다.
+deploy/caddy/*.caddy
+!deploy/caddy/maker3d.caddy
+
 # deploy/: 서버용 비밀값은 올리지 않음 (예시 파일만 올림)
 deploy/.env
 deploy/env/*

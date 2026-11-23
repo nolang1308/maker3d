@@ -198,6 +198,9 @@ docker builder prune -f --keep-storage 5GB
 
 ## 10. 하지 말아야 할 것
 
+- **서버의 저장소에서 `git stash -u`, `git clean`, `deploy/caddy` 폴더 삭제·교체** : 돌고 있는 Caddy 는 이 폴더를 직접 보고 있습니다. 폴더가 지워졌다 다시 만들어지면 Caddy 는 빈 폴더를 보게 되고, 그 뒤 누군가 Caddy 설정을 다시 읽히는 순간 **모든 사이트가 내려갑니다.** 2026-11-23 에 실제로 2분 11초 동안 내려갔습니다. 서버에서는 `git pull` 만 쓰세요. 꼭 해야 했다면 바로 `docker compose restart caddy` 를 실행합니다.
+- `deploy/Caddyfile` 이 바뀐 배포 뒤에는 `docker compose restart caddy` 를 한 번 실행합니다 (파일 하나만 연결된 것은 git 이 바꿔 써도 Caddy 가 예전 내용을 계속 봅니다). `bash scripts/03-smoke-test.sh` 의 "Caddy 설정 연결" 항목이 이 상태를 잡아 줍니다.
+- `deploy/caddy/` 에는 **이 저장소 것이 아닌 사이트 파일**이 있을 수 있습니다 (같은 서버의 다른 프로젝트, 예: `farm.caddy` → `farm.maker3d.kr`). 지우지 마세요. git 은 이 파일들을 무시합니다. 그 프로젝트의 컨테이너(`farm-door`)는 이 compose 의 네트워크에 붙어 있으므로 `docker compose down` 도 하지 않습니다.
 - `docker compose down -v` : 평소엔 `restart` 나 `up -d` 로 충분합니다.
 - `/srv/maker3d/data` 안의 파일 직접 삭제 · 이동 : 고객이 올린 주문 파일과 인증서입니다.
 - `deploy/.env`, `deploy/env/*.env` 를 git 에 올리기 : `.gitignore` 로 막혀 있지만 강제로 올리지 마세요. 이 저장소는 공개입니다.
