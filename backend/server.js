@@ -120,6 +120,47 @@ function rejectUnsafe(res) {
   return res.status(400).json({ success: false, error: '잘못된 요청입니다.' });
 }
 
+// ========================================================
+// 업로드 파일 이름 바로잡기
+// 브라우저는 파일 이름을 UTF-8 로 보내는데 업로드 부품(multer)은 이를 latin1 로 읽는다.
+// 그래서 한글 한 글자가 깨진 글자 여러 개로 불어나고, 리눅스의 파일 이름 한도(255바이트)를
+// 넘으면 저장이 실패한다(ENAMETOOLONG). 여기서 원래 글자로 되돌린다.
+//  1) latin1 로 잘못 읽힌 이름을 UTF-8 로 되돌림
+//  2) 맥에서 올린 분리형 한글(ㅎㅏㄴ)을 합친 형태(한)로 맞춤
+//  3) 그래도 너무 긴 이름은 확장자를 남기고 줄임
+// ========================================================
+const MAX_NAME_BYTES = 180; // 한도 255바이트에서, 앞에 붙는 시각 · 난수의 여유를 뺀 값
+
+function fixUploadName(name) {
+  if (typeof name !== 'string' || name.length === 0) {
+    return name;
+  }
+  let fixed = name;
+
+  // 모든 글자가 latin1 범위이고 그중 일부가 0x80 이상이면 "잘못 읽힌 UTF-8" 일 수 있다.
+  // 되돌린 결과가 올바른 UTF-8 일 때만 바꾸고, 아니면 원래 이름을 그대로 둔다.
+  if (/[\u0080-ÿ]/.test(fixed) && !/[^\u0000-ÿ]/.test(fixed)) {
+    try {
+      fixed = new TextDecoder('utf-8', { fatal: true }).decode(Buffer.from(fixed, 'latin1'));
+    } catch {
+      fixed = name;
+    }
+  }
+
+  fixed = fixed.normalize('NFC');
+
+  if (Buffer.byteLength(fixed) > MAX_NAME_BYTES) {
+    const ext = path.extname(fixed);
+    const chars = Array.from(path.basename(fixed, ext));
+    while (chars.length > 1 && Buffer.byteLength(chars.join('') + ext) > MAX_NAME_BYTES) {
+      chars.pop();
+    }
+    fixed = chars.join('') + ext;
+  }
+
+  return fixed;
+}
+
 // 요청을 거절할 때, 임시로 받아 둔 업로드 파일 지우기
 function removeUploaded(files) {
   (files || []).forEach(file => {
@@ -147,6 +188,7 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
+    file.originalname = fixUploadName(file.originalname);
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   }
@@ -179,6 +221,7 @@ const uploadOrder = multer({
     },
     filename: (req, file, cb) => {
       // 고유한 임시 파일명
+      file.originalname = fixUploadName(file.originalname);
       const uniqueName = Date.now() + '-' + file.originalname;
       cb(null, uniqueName);
     }
@@ -395,6 +438,7 @@ const uploadSavedQuote = multer({
       cb(null, tempDir);
     },
     filename: (req, file, cb) => {
+      file.originalname = fixUploadName(file.originalname);
       const uniqueName = Date.now() + '-' + file.originalname;
       cb(null, uniqueName);
     }
@@ -670,6 +714,7 @@ const uploadFreeNotice = multer({
       cb(null, tempDir);
     },
     filename: (req, file, cb) => {
+      file.originalname = fixUploadName(file.originalname);
       const timestamp = Date.now();
       const randomId = Math.random().toString(36).substring(7);
       const fileExtension = path.extname(file.originalname);
@@ -1156,6 +1201,7 @@ const uploadPortfolio = multer({
       cb(null, portfolioDir);
     },
     filename: (req, file, cb) => {
+      file.originalname = fixUploadName(file.originalname);
       const timestamp = Date.now();
       const randomId = Math.random().toString(36).substring(7);
       const fileExtension = path.extname(file.originalname);
@@ -1310,6 +1356,7 @@ const uploadNotice = multer({
     },
     filename: (req, file, cb) => {
       // 타임스탬프와 랜덤값을 추가하여 중복 방지
+      file.originalname = fixUploadName(file.originalname);
       const timestamp = Date.now();
       const randomId = Math.random().toString(36).substring(7);
       const fileExtension = path.extname(file.originalname);
