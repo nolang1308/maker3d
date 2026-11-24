@@ -5,6 +5,8 @@
 !package-lock.json
 !server.js
 !prusaClicer.js
+!orcaSlicer.js
 !prusa-config.ini
 !docker-entrypoint.sh
 !ini
+!orca-profiles

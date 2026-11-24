@@ -207,6 +207,18 @@ docker builder prune -f --keep-storage 5GB
 
 ## 참고: 견적 계산
 
+견적은 올라온 모델을 슬라이서로 돌려 나온 출력 시간에 단가표(`backend/server.js` 의 `calculatePrice`)를 적용해 계산합니다.
+어떤 슬라이서로 계산할지는 `deploy/.env` 의 `QUOTE_SLICER` 로 정합니다.
+
+| 값 | 계산 방식 |
+|---|---|
+| `orca` | 오르카 슬라이서 2.5.2. 기준은 **Prusa XL · 0.4 노즐 · 0.20mm Structural** (`backend/orca-profiles/`). 소재마다 출력 시간이 다르게 나오고, 360mm 까지 계산됩니다. |
+| `prusa` (적지 않으면 이쪽) | 예전 방식. PrusaSlicer 기본 설정으로 계산해서 소재와 무관하게 같은 시간이 나오고, 200mm 를 넘는 모델은 실패합니다. |
+
+- 바꾸는 방법: `nano .env` 에서 `QUOTE_SLICER=orca` (또는 `prusa`) → `docker compose up -d api`. 다시 빌드할 필요가 없고 몇 초면 바뀝니다.
+- **두 방식은 견적 금액이 다릅니다.** 같은 모델이 오르카(XL 기준)에서는 출력 시간이 30~35% 짧게 나옵니다. 바꾸기 전에 단가표를 함께 확인하세요.
+- 광경화성 레진은 어느 쪽이든 예전 방식(PrusaSlicer 시간 x 분당 단가)으로 계산합니다. 오르카는 레진 방식을 계산하지 못합니다.
+- 기준 프린터 · 출력 설정을 바꾸려면 `backend/orca-profiles/README.md` 를 보세요.
 - 서버의 PrusaSlicer 는 2.9.4 입니다 (`backend/ini/` 설정을 만든 버전과 같음).
 - 계산 제한 시간은 3분입니다 (`.env` 의 `SLICE_TIMEOUT_MS` 로 조정). 서버 CPU 가 데스크탑보다 느려서 큰 모델에 여유를 둔 값입니다.
 - 계산에 쓴 G-code 는 끝나면 지웁니다. 확인용으로 남기려면 `env/api.env` 에 `KEEP_GCODE='1'`.

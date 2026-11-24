@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { getPrintTime, checkModelSize } from './prusaClicer.js';
+import { getOrcaEstimate, orcaSupports, formatDuration } from './orcaSlicer.js';
 import archiver from 'archiver';
 
 // ES module에서 __dirname 구현
@@ -356,6 +357,34 @@ function parseTimeToMinutes(timeString) {
   return parseInt(hours) * 60 + parseInt(minutes) + parseInt(seconds) / 60;
 }
 
+// ========================================================
+// 어떤 슬라이서로 출력 시간을 계산할지
+//   QUOTE_SLICER=orca  : 오르카 슬라이서 (기준: Prusa XL · 0.4 노즐 · 0.20mm Structural)
+//   QUOTE_SLICER=prusa : 예전 방식 (PrusaSlicer). 값을 주지 않으면 이쪽.
+// 오르카로 계산하지 않는 소재(광경화성 레진)는 어느 쪽이든 예전 방식으로 계산한다.
+// ========================================================
+const QUOTE_SLICER = (process.env.QUOTE_SLICER || 'prusa').toLowerCase();
+console.log(`견적 계산 슬라이서: ${QUOTE_SLICER === 'orca' ? 'OrcaSlicer (레진은 PrusaSlicer)' : 'PrusaSlicer'}`);
+
+async function estimatePrint(filePath, material) {
+  if (QUOTE_SLICER === 'orca' && orcaSupports(material)) {
+    const { seconds, weightGrams } = await getOrcaEstimate(filePath, material);
+    return {
+      slicer: 'orca',
+      printTime: formatDuration(seconds),
+      printMinutes: seconds / 60,
+      weightGrams,
+    };
+  }
+
+  const printTime = await getPrintTime(filePath, material);
+  return {
+    slicer: 'prusa',
+    printTime,
+    printMinutes: parseTimeToMinutes(printTime),
+  };
+}
+
 app.post('/api/upload-stl', upload.single('stlFile'), async (req, res) => {
   try {
     if (!req.file) {
@@ -384,15 +413,15 @@ app.post('/api/upload-stl', upload.single('stlFile'), async (req, res) => {
     }
     console.log('모델 크기 검사 통과:', sizeCheck.dimensions);
 
-    // PrusaSlicer로 프린팅 시간 계산
-    const printTime = await getPrintTime(filePath, material);
+    // 슬라이서로 프린팅 시간 계산
+    const { slicer, printTime, printMinutes, weightGrams } = await estimatePrint(filePath, material);
     console.log('프린팅 시간:', printTime);
 
     // 가격 계산 (개당 가격)
-    const printMinutes = parseTimeToMinutes(printTime);
     const estimatedPrice = calculatePrice(material, printMinutes);
 
     console.log('가격 계산:', {
+      slicer,
       printMinutes: printMinutes.toFixed(2),
       material,
       estimatedPrice
@@ -409,6 +438,9 @@ app.post('/api/upload-stl', upload.single('stlFile'), async (req, res) => {
       calculation: {
         printMinutes: printMinutes.toFixed(2),
         material: material,
+        slicer: slicer,
+        // 재료 무게(g). 오르카로 계산했을 때만 들어 있다 (금액 계산에는 아직 쓰지 않음)
+        ...(weightGrams ? { filamentGrams: Number(weightGrams.toFixed(1)) } : {}),
       }
     });
 

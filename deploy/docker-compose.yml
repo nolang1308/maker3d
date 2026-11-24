@@ -75,6 +75,9 @@ services:
     environment:
       # 견적 계산 제한 시간(밀리초). 서버 CPU 는 데스크탑보다 느려서 큰 모델에 여유를 줍니다.
       SLICE_TIMEOUT_MS: ${SLICE_TIMEOUT_MS:-180000}
+      # 견적을 계산하는 슬라이서: orca(오르카, Prusa XL 기준) 또는 prusa(예전 방식).
+      # .env 에서 바꾼 뒤  docker compose up -d api  (다시 빌드할 필요 없음)
+      QUOTE_SLICER: ${QUOTE_SLICER:-prusa}
     # 프로그램 영역은 읽기 전용. 쓸 수 있는 곳은 올라온 파일 폴더와 /tmp 뿐입니다.
     read_only: true
     tmpfs:
