@@ -162,19 +162,26 @@ function canvasToPng(canvas: HTMLCanvasElement): Promise<Uint8Array | null> {
   });
 }
 
+export interface KeyFaceImage {
+  /** 키 번호 (1부터. 위에서 봤을 때 왼쪽 위부터 오른쪽으로, 그다음 줄 순서) */
+  key: number;
+  /** 인쇄면 크기 정보가 들어 있는 PNG */
+  data: Uint8Array;
+}
+
 /**
- * 사진이 들어간 키마다 인쇄면 크기의 PNG 를 만든다.
- * 한 장이면 PNG 그대로, 여러 장이면 ZIP 으로 돌려준다. 사진이 하나도 없으면 null.
+ * 사진이 들어간 키마다 인쇄면 크기의 PNG 를 만들어 키 번호 순서로 돌려준다.
+ * 파일로 저장할 때(exportKeyFaces)와 주문에 붙일 때(order.ts)가 함께 쓴다.
  */
-export async function exportKeyFaces(
+export async function renderKeyFaces(
   layout: ClickerLayout,
   mode: PhotoMode,
   slots: readonly (Placement | null)[],
   span: Placement | null,
   photos: ReadonlyMap<string, PhotoAsset>,
-): Promise<FaceExport | null> {
+): Promise<KeyFaceImage[]> {
   const pixelsPerMeter = Math.round(EXPORT_PIXELS / (PRINT_FACE / 1000));
-  const images: { key: number; data: Uint8Array }[] = [];
+  const images: KeyFaceImage[] = [];
 
   for (const key of layout.keys) {
     const placement = mode === 'span' ? span : (slots[key.index] ?? null);
@@ -187,6 +194,21 @@ export async function exportKeyFaces(
     canvas.height = 0;
     if (png) images.push({ key: key.index + 1, data: withPhysicalSize(png, pixelsPerMeter) });
   }
+  return images;
+}
+
+/**
+ * 사진이 들어간 키마다 인쇄면 크기의 PNG 를 만든다.
+ * 한 장이면 PNG 그대로, 여러 장이면 ZIP 으로 돌려준다. 사진이 하나도 없으면 null.
+ */
+export async function exportKeyFaces(
+  layout: ClickerLayout,
+  mode: PhotoMode,
+  slots: readonly (Placement | null)[],
+  span: Placement | null,
+  photos: ReadonlyMap<string, PhotoAsset>,
+): Promise<FaceExport | null> {
+  const images = await renderKeyFaces(layout, mode, slots, span, photos);
   if (images.length === 0) return null;
 
   const base = `maker3d-clicker-${layout.label}`;

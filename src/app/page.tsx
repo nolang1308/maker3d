@@ -8,6 +8,8 @@ import QuickMenu from '@/components/QuickMenu';
 import HeroBanner from '@/components/home/HeroBanner';
 import {
     ChevronIcon,
+    ClickerIcon,
+    ShapeClickerIcon,
     KakaoIcon,
     ModelingSection,
     ProcessVideo,
@@ -161,6 +163,14 @@ export default function Home() {
                     <Link href="/quote" className={styles.checkQuoteButton}>
                         <QuoteIcon />
                         <p className={styles.storeButtonText}>실시간 견적확인</p>
+                    </Link>
+                    <Link href="/clicker" className={styles.clickerButton}>
+                        <ClickerIcon />
+                        <p className={styles.storeButtonText}>키보드 클리커</p>
+                    </Link>
+                    <Link href="/shapeclicker" className={styles.shapeClickerButton}>
+                        <ShapeClickerIcon />
+                        <p className={styles.storeButtonText}>쉐이프 클리커</p>
                     </Link>
 
                     <a

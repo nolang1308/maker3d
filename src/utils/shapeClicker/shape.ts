@@ -8,7 +8,7 @@
  *   4. 그 모양이 "누르는 곳(뚜껑)"이 되고, 바깥으로 일정하게 키운 선들이 뚜껑이 들어가는 자리와 몸체가 된다
  *
  * 좌표는 위에서 내려다본 것으로 x 는 오른쪽, y 는 앞쪽(화면 아래)이다. 단위는 mm, 원점은 몸체 중심.
- * 3D 에서는 (x, y) 가 그대로 (x, z) 가 된다 — /cliker 와 같은 약속이다.
+ * 3D 에서는 (x, y) 가 그대로 (x, z) 가 된다 — /clicker 와 같은 약속이다.
  */
 
 import { CASE_SPEC, CLICKER, type ClickerLug } from '../clicker/layouts';

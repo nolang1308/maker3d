@@ -24,21 +24,16 @@ interface ShapeClickerViewerProps {
   face: HTMLCanvasElement | null;
   /** 윗면 그림이 원본 그림의 어느 부분인지 */
   artRect?: ArtRect;
-  /** 부품을 위아래로 떼어 놓고 보여준다 */
-  exploded: boolean;
   className?: string;
   onApi?: (api: ShapeClickerViewerApi | null) => void;
 }
 
-// 장면 구성(배경 · 조명 · 시점)은 /cliker 의 3D 미리보기와 같게 맞춘다
+// 장면 구성(배경 · 조명 · 시점)은 /clicker 의 3D 미리보기와 같게 맞춘다
 const BACKGROUND = 0xf3f5f7;
 const VIEW_AZIMUTH = THREE.MathUtils.degToRad(26);
 const VIEW_POLAR = THREE.MathUtils.degToRad(41);
 const INTRO_DURATION = 1.5;
 const FIT_MARGIN = 1.14;
-/** 분해해서 볼 때 뚜껑 · 스위치가 떠오르는 높이 (mm) */
-const LIFT_CAP = 26;
-const LIFT_SWITCH = 11;
 
 interface Intro {
   elapsed: number;
@@ -55,10 +50,10 @@ interface ViewerState {
   keyLight: THREE.DirectionalLight;
   contact: THREE.Mesh;
   model: ShapeClickerModel | null;
-  /** 화면 맞춤 기준: 회전 중심과 모델을 감싸는 상자 (분해했을 때의 자리까지 포함) */
+  /** 화면 맞춤 기준: 회전 중심과 모델을 감싸는 상자 */
   center: THREE.Vector3;
   box: THREE.Box3;
-  /** 조립된 상태의 상자 */
+  /** 모델을 새로 만들 때 잰 상자 */
   restBox: THREE.Box3;
   intro: Intro | null;
   userMoved: boolean;
@@ -67,9 +62,6 @@ interface ViewerState {
   press: number;
   pressTarget: number;
   hold: number;
-  /** 분해: 0(조립) ~ 1(떼어 놓음) */
-  explode: number;
-  explodeTarget: number;
   dirty: boolean;
 }
 
@@ -127,18 +119,17 @@ function placeCamera(state: ViewerState, azimuth: number, polar: number, distanc
   state.camera.lookAt(state.center);
 }
 
-/** 눌림 · 분해 정도에 맞춰 뚜껑과 스위치를 제자리에 놓는다 */
+/** 눌린 정도에 맞춰 뚜껑을 제자리에 놓는다 */
 function poseParts(state: ViewerState): void {
   const { model } = state;
   if (!model) return;
-  model.cap.position.y = model.capRestY - state.press * SHAPE_SPEC.capTravel + state.explode * LIFT_CAP;
-  model.switchPart.position.y = model.switchRestY + state.explode * LIFT_SWITCH;
+  model.cap.position.y = model.capRestY - state.press * SHAPE_SPEC.capTravel;
+  model.switchPart.position.y = model.switchRestY;
 }
 
-/** 화면 맞춤 기준을 다시 잡는다: 분해해서 볼 때는 떠오른 뚜껑까지 들어오게 한다 */
+/** 화면 맞춤 기준을 다시 잡는다 */
 function updateBounds(state: ViewerState): void {
   state.box.copy(state.restBox);
-  if (state.explodeTarget > 0) state.box.max.y += LIFT_CAP;
   const boxCenter = state.restBox.getCenter(new THREE.Vector3());
   // 한쪽으로 튀어나온 키링 때문에 화면이 치우치지 않게 회전 중심은 몸체 쪽에 둔다
   state.center.set(boxCenter.x * 0.4, (state.box.max.y - state.box.min.y) * 0.45, boxCenter.z * 0.4);
@@ -150,7 +141,8 @@ function frame(state: ViewerState, design: ShapeDesign, model: ShapeClickerModel
   state.restBox.setFromObject(model.group);
   updateBounds(state);
 
-  const reach = Math.max(60, state.restBox.getSize(new THREE.Vector3()).length() * 0.75 + LIFT_CAP * 0.5);
+  // 조명과 그림자가 닿는 범위. 끝의 13 은 모델 위쪽에 두는 여유(mm)다
+  const reach = Math.max(60, state.restBox.getSize(new THREE.Vector3()).length() * 0.75 + 13);
   state.keyLight.position.set(state.center.x - reach * 0.75, reach * 1.7, state.center.z + reach * 0.65);
   state.keyLight.target.position.copy(state.center);
   const shadowCamera = state.keyLight.shadow.camera;
@@ -206,7 +198,6 @@ export default function ShapeClickerViewer({
   showRing,
   face,
   artRect,
-  exploded,
   className,
   onApi,
 }: ShapeClickerViewerProps) {
@@ -214,9 +205,9 @@ export default function ShapeClickerViewer({
   const stateRef = useRef<ViewerState | null>(null);
 
   // 색과 그림은 모델을 다시 만들지 않고 갱신하므로, 모델을 새로 만들 때 쓸 최신 값을 따로 들고 있는다
-  const latest = useRef({ bodyColor, capColor, face, artRect, logoId, exploded });
+  const latest = useRef({ bodyColor, capColor, face, artRect, logoId });
   useEffect(() => {
-    latest.current = { bodyColor, capColor, face, artRect, logoId, exploded };
+    latest.current = { bodyColor, capColor, face, artRect, logoId };
   });
 
   // 렌더러와 장면 (한 번만)
@@ -310,8 +301,6 @@ export default function ShapeClickerViewer({
       press: 0,
       pressTarget: 0,
       hold: 0,
-      explode: latest.current.exploded ? 1 : 0,
-      explodeTarget: latest.current.exploded ? 1 : 0,
       dirty: true,
     };
     stateRef.current = state;
@@ -423,15 +412,6 @@ export default function ShapeClickerViewer({
         animating = true;
       }
 
-      // 분해 / 조립. 시점을 직접 돌리지 않았다면 떠오른 뚜껑까지 화면에 들어오도록 카메라도 따라 움직인다
-      const explodeDiff = state.explodeTarget - state.explode;
-      if (Math.abs(explodeDiff) > 0.001) {
-        state.explode += explodeDiff * (1 - Math.exp(-dt * 7));
-        animating = true;
-      } else if (state.explode !== state.explodeTarget) {
-        state.explode = state.explodeTarget;
-        animating = true;
-      }
       if (animating) poseParts(state);
 
       const moved = controls.update();
@@ -502,19 +482,6 @@ export default function ShapeClickerViewer({
     state.model.setFace(face, state.renderer.capabilities.getMaxAnisotropy());
     state.dirty = true;
   }, [face]);
-
-  useEffect(() => {
-    const state = stateRef.current;
-    if (!state) return;
-    state.explodeTarget = exploded ? 1 : 0;
-    updateBounds(state);
-    if (!state.userMoved && !state.intro && state.model) {
-      // 뚜껑이 떠오를 자리까지 한 화면에 들어오게 물러난다 (조립하면 다시 다가간다)
-      state.controls.target.copy(state.center);
-      placeCamera(state, VIEW_AZIMUTH, VIEW_POLAR, fitDistance(state));
-    }
-    state.dirty = true;
-  }, [exploded]);
 
   useEffect(() => {
     if (!onApi) return;

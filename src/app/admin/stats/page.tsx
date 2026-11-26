@@ -682,7 +682,7 @@ function FunnelView({ total }: { total: DayStats }) {
 // 광고 링크 만들기 + 설정
 // ---------------------------------------------------------------------------
 
-const LANDING_PAGES = ['/', '/quote', '/store', '/portfolio', '/contact', '/cliker', '/shapecliker'];
+const LANDING_PAGES = ['/', '/quote', '/store', '/portfolio', '/contact', '/clicker', '/shapeclicker'];
 const CUSTOM = 'custom';
 
 function LinksView() {

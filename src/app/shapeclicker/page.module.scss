@@ -1,4 +1,4 @@
-// 쉐이프 클리커 만들기: 화면 뼈대와 버튼 · 카드는 ../cliker/page.module.scss 를 그대로 쓰고,
+// 쉐이프 클리커 만들기: 화면 뼈대와 버튼 · 카드는 ../clicker/page.module.scss 를 그대로 쓰고,
 // 여기에는 이 페이지에만 있는 것(올린 로고, 슬라이더 묶음, 위에서 본 모습)만 둔다.
 
 $primary: #2493D8;
@@ -12,7 +12,7 @@ $panel: #f7f9fb;
 // ---------------------------------------------------------------------------
 
 // 좁은 화면의 모양 다듬기 단계: 3D 를 위에 붙여 두고 아래의 조절 항목만 넘긴다 (슬라이더를 움직이면 바로 보이게).
-// 같은 요소에 붙는 cliker 쪽 규칙보다 앞서도록 선택자를 겹쳐 쓴다
+// 같은 요소에 붙는 clicker 쪽 규칙보다 앞서도록 선택자를 겹쳐 쓴다
 .stageSticky.stageSticky {
   @media (max-width: 1100px) {
     position: sticky;
@@ -32,13 +32,6 @@ $panel: #f7f9fb;
   @media (max-width: 1100px) {
     display: none;
   }
-}
-
-// "분해해서 보기"가 켜져 있을 때
-.ghostOn.ghostOn {
-  border-color: $primary;
-  background: $primary;
-  color: #fff;
 }
 
 // ---------------------------------------------------------------------------

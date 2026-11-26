@@ -3,7 +3,14 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import styles from './page.module.scss';
+import { useAuth } from '@/contexts/AuthContext';
+import { clearAfterLogin, setAfterLogin } from '@/utils/afterLogin';
+import { loadDraft, saveDraft } from '@/utils/clicker/draftStore';
+import { placeClickerOrder } from '@/utils/clicker/order';
+import OrderModal, { CustomerInfo } from '@/components/OrderModal';
+import LoginDialog, { type LoginDialogContent, type LoginDialogKind } from '@/components/clicker/LoginDialog';
 import ClickerEditor, { PHOTO_DRAG_TYPE } from '@/components/ClickerEditor';
 import type { ClickerViewerApi } from '@/components/ClickerViewer';
 import {
@@ -246,6 +253,40 @@ const ArrowIcon = ({ back = false }: { back?: boolean }) => (
   </svg>
 );
 
+// ---------------------------------------------------------------------------
+// 로그인 안내 창
+// ---------------------------------------------------------------------------
+
+/**
+ * entry : 로그인하지 않고 들어왔을 때. 로그인하거나, 그냥 만들어 보거나
+ * order : 로그인하지 않고 주문하기를 눌렀을 때
+ * (로그인한 사람이 주문하기를 누르면 이 창이 아니라 주문 정보 입력 창이 뜬다)
+ */
+type DialogKind = LoginDialogKind;
+
+const DIALOGS: Record<DialogKind, LoginDialogContent> = {
+  entry: {
+    title: '로그인하고 시작할까요?',
+    lines: [
+      <>
+        키보드 클리커를 만들고 <strong>주문까지 완료하려면 로그인이 필요해요.</strong>
+      </>,
+      '로그인하지 않아도 클리커를 만들어 볼 수는 있어요. 만들던 내용은 이 기기에 보관되니, 나중에 로그인해도 이어서 할 수 있어요.',
+    ],
+    primary: '로그인',
+    secondary: '그냥 할래요',
+  },
+  order: {
+    title: '주문하려면 로그인이 필요해요',
+    lines: [
+      '지금까지 만든 클리커는 이 기기에 그대로 보관돼요.',
+      '로그인(또는 회원가입)하고 돌아오면 이어서 주문할 수 있어요.',
+    ],
+    primary: '로그인하러 가기',
+    secondary: '계속 만들기',
+  },
+};
+
 export default function ClickerPage() {
   const [design, dispatch] = useReducer(designReducer, initialDesign);
   const [step, setStep] = useState<StepId>('type');
@@ -275,6 +316,29 @@ export default function ClickerPage() {
   const viewerApiRef = useRef<ClickerViewerApi | null>(null);
   const photoCountRef = useRef(0);
   const knownPhotosRef = useRef<PhotoAsset[]>([]);
+
+  // 로그인 여부와 안내 창
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+  const [dialog, setDialog] = useState<DialogKind | null>(null);
+  /** 들어올 때의 안내 창은 한 번만 띄운다 ("그냥 할래요"를 고른 뒤 다시 뜨지 않게) */
+  const entryAsked = useRef(false);
+  const [leavingToLogin, setLeavingToLogin] = useState(false);
+  /** 주문 정보 입력 창 (로그인한 사람이 주문하기를 눌렀을 때) */
+  const [isOrderOpen, setIsOrderOpen] = useState(false);
+
+  // 만들던 내용을 이 기기에 보관하기 (utils/clicker/draftStore)
+  /** 보관해 둔 사진을 다시 불러오는 동안 */
+  const [restoring, setRestoring] = useState(false);
+  /** 보관해 둔 내용을 다 읽은 뒤에만 보관을 시작한다 (읽기 전에 빈 상태로 덮어쓰지 않게) */
+  const persistReady = useRef(false);
+  /** 사진 id → 올린 파일. 보관함에 넣을 때 쓴다 */
+  const photoFiles = useRef(new Map<string, Blob>());
+  /** 보관함에 이미 들어간 사진 id */
+  const persistedIds = useRef(new Set<string>());
+  /** 보관 작업을 한 줄로 세운다 (앞의 것이 끝난 뒤 다음 것) */
+  const saveChain = useRef<Promise<void>>(Promise.resolve());
+  const saveFailedOnce = useRef(false);
 
   const layout = getLayout(design);
   const mode = getMode(design);
@@ -384,12 +448,203 @@ export default function ClickerPage() {
   });
 
   useEffect(() => {
-    // 새로 고치면 올린 사진이 남아 있지 않으므로 항상 첫 단계에서 시작한다
+    // 첫 단계에서 시작한다. 보관해 둔 내용이 있으면 아래에서 되살린 뒤 하던 단계로 옮겨 간다
     if (window.location.search) window.history.replaceState(null, '', window.location.pathname);
     const onPopState = () => latest.current.syncFromHistory();
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
+
+  // -------------------------------------------------------------------------
+  // 만들던 내용 보관 · 되살리기 (로그인 · 회원가입을 하고 돌아와도 이어서 만들 수 있게)
+  // -------------------------------------------------------------------------
+
+  // 보관할 때 가장 최근 상태를 보기 위한 참조
+  const persistSource = useRef({ design, step, caseColor, keycapColor, showRing, grid });
+  useEffect(() => {
+    persistSource.current = { design, step, caseColor, keycapColor, showRing, grid };
+  });
+
+  /** 지금 상태를 이 기기에 보관한다. 새로 올린 사진은 넣고, 지운 사진은 뺀다 */
+  const persistNow = useCallback((): Promise<void> => {
+    if (!persistReady.current) return Promise.resolve();
+    saveChain.current = saveChain.current.then(async () => {
+      const now = persistSource.current;
+      const files = photoFiles.current;
+      const stored = persistedIds.current;
+      const photos = now.design.photos.filter((photo) => files.has(photo.id));
+      const keep = new Set(photos.map((photo) => photo.id));
+      const added = photos
+        .filter((photo) => !stored.has(photo.id))
+        .map((photo) => ({ id: photo.id, name: photo.name, blob: files.get(photo.id)! }));
+      const removed = [...stored].filter((id) => !keep.has(id));
+      try {
+        await saveDraft(
+          {
+            step: now.step,
+            layoutId: now.design.layoutId,
+            mode: now.design.mode,
+            slots: now.design.slots,
+            span: now.design.span,
+            photos: photos.map((photo) => ({ id: photo.id, name: photo.name })),
+            caseColor: now.caseColor.hex,
+            keycapColor: now.keycapColor.hex,
+            showRing: now.showRing,
+            grid: now.grid,
+          },
+          added,
+          removed,
+        );
+        for (const photo of added) stored.add(photo.id);
+        for (const id of removed) {
+          stored.delete(id);
+          files.delete(id);
+        }
+      } catch (err) {
+        console.warn('만들던 내용을 보관하지 못했습니다:', err);
+        if (!saveFailedOnce.current) {
+          saveFailedOnce.current = true;
+          setNotice({
+            id: Date.now(),
+            text: '이 기기의 저장 공간이 부족해 만들던 내용을 보관하지 못했어요. 페이지를 떠나면 사라질 수 있어요.',
+          });
+        }
+      }
+    });
+    return saveChain.current;
+  }, []);
+
+  // 들어왔을 때: 보관해 둔 내용이 있으면 되살린다
+  useEffect(() => {
+    // 로그인하고 돌아왔으면(또는 그냥 돌아왔으면) "로그인 뒤 돌아올 곳" 기록은 더 필요 없다
+    clearAfterLogin();
+    let cancelled = false;
+
+    (async () => {
+      const saved = await loadDraft();
+      if (cancelled) return;
+      if (!saved) {
+        persistReady.current = true;
+        return;
+      }
+      const { draft, files } = saved;
+      const wanted = draft.photos.filter((item) => files.has(item.id));
+      if (wanted.length > 0) setRestoring(true);
+
+      const sideLimit = workingSideFor(wanted.length);
+      const photos: PhotoAsset[] = [];
+      const restoredFiles = new Map<string, Blob>();
+      for (const item of wanted) {
+        const blob = files.get(item.id)!;
+        try {
+          const asset = await loadPhotoFile(new File([blob], item.name, { type: blob.type }), sideLimit);
+          if (cancelled) {
+            disposePhoto(asset);
+            break;
+          }
+          // 배치가 가리키는 id 를 그대로 쓴다
+          photos.push({ ...asset, id: item.id });
+          restoredFiles.set(item.id, blob);
+        } catch (err) {
+          console.warn('보관해 둔 사진을 다시 열지 못했습니다:', item.name, err);
+        }
+      }
+      if (cancelled) {
+        photos.forEach(disposePhoto);
+        return;
+      }
+
+      const restore = {
+        type: 'restore' as const,
+        layoutId: draft.layoutId,
+        mode: draft.mode,
+        photos,
+        slots: draft.slots,
+        span: draft.span,
+      };
+      const restored = designReducer(initialDesign, restore);
+      photoFiles.current = restoredFiles;
+      persistedIds.current = new Set(files.keys());
+      photoCountRef.current = photos.length;
+      dispatch(restore);
+
+      setCaseColor(CASE_COLORS.find((color) => color.hex === draft.caseColor) ?? CASE_COLORS[3]);
+      setKeycapColor(KEYCAP_COLORS.find((color) => color.hex === draft.keycapColor) ?? KEYCAP_COLORS[0]);
+      setShowRing(draft.showRing);
+      setGrid(draft.grid);
+
+      // 하던 단계로 돌아간다 (사진이 있어야 들어갈 수 있는 단계인데 사진을 되살리지 못했으면 사진 넣기로)
+      const wantedStep: StepId = isStepId(draft.step) ? draft.step : 'type';
+      const target: StepId = canEnterStep(wantedStep, restored) ? wantedStep : 'photos';
+      if (target === 'adjust') {
+        const firstFilled = getLayout(restored).keys.find((key) => restored.slots[key.index]);
+        dispatch({ type: 'select', index: getMode(restored) === 'span' ? 0 : (firstFilled?.index ?? null) });
+      }
+      setStep(target);
+      window.history.replaceState(null, '', target === 'type' ? window.location.pathname : `?step=${target}`);
+
+      persistReady.current = true;
+      setRestoring(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // 바뀔 때마다 조금 뒤에 보관한다 (끌어서 옮기는 동안 매번 쓰지 않게)
+  useEffect(() => {
+    if (!persistReady.current) return;
+    const timer = window.setTimeout(() => void persistNow(), 400);
+    return () => window.clearTimeout(timer);
+  }, [design.layoutId, design.mode, design.photos, design.slots, design.span, step, caseColor, keycapColor, showRing, grid, persistNow]);
+
+  // 페이지를 떠나거나 탭을 닫을 때는 기다리지 않고 바로 보관한다
+  useEffect(() => {
+    const flush = () => void persistNow();
+    window.addEventListener('pagehide', flush);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      flush();
+    };
+  }, [persistNow]);
+
+  // -------------------------------------------------------------------------
+  // 로그인 안내
+  // -------------------------------------------------------------------------
+
+  // 로그인하지 않고 들어왔으면 안내 창을 띄운다. 로그인 여부를 확인하는 동안에는 띄우지 않는다
+  useEffect(() => {
+    if (authLoading) return;
+    if (user) {
+      // 다른 탭에서 로그인한 경우 등: 로그인을 권하던 창은 닫는다
+      setDialog(null);
+      return;
+    }
+    if (!entryAsked.current) {
+      entryAsked.current = true;
+      setDialog('entry');
+    }
+  }, [authLoading, user]);
+
+  /** 로그인 페이지로 보낸다. 만들던 내용을 먼저 보관하고, 로그인하면 이 페이지로 돌아오게 적어 둔다 */
+  const goToLogin = async () => {
+    if (leavingToLogin) return;
+    setLeavingToLogin(true);
+    await persistNow();
+    setAfterLogin('/clicker');
+    router.push('/login');
+  };
+
+  const handleOrder = () => {
+    // 로그인 여부를 아직 확인하는 중이면 잠깐 기다리게 한다
+    if (authLoading) {
+      notify('로그인 상태를 확인하고 있어요. 잠시 후 다시 눌러 주세요.');
+      return;
+    }
+    if (user) setIsOrderOpen(true);
+    else setDialog('order');
+  };
 
   useEffect(
     () => () => {
@@ -450,7 +705,10 @@ export default function ClickerPage() {
           continue;
         }
         try {
-          loaded.push(await loadPhotoFile(file, sideLimit));
+          const asset = await loadPhotoFile(file, sideLimit);
+          // 올린 파일을 기억해 둔다 (만들던 내용을 이 기기에 보관할 때 쓴다)
+          photoFiles.current.set(asset.id, file);
+          loaded.push(asset);
         } catch (err) {
           console.error('사진을 불러오지 못했습니다:', file.name, err);
           failed += 1;
@@ -679,6 +937,28 @@ export default function ClickerPage() {
       return;
     }
     download(url, `maker3d-clicker-${layout.label}.png`);
+  };
+
+  /**
+   * 주문을 넣는다 (주문 정보 입력 창에서 이름 · 연락처를 받은 뒤).
+   * 키캡 사진과 미리보기를 주문 폴더에 올리고 주문 문서를 만든다. 관리자 주문관리에 바로 나타난다.
+   * 알림 메일은 보내지 않는다.
+   */
+  const submitOrder = async (customer: CustomerInfo): Promise<string> => {
+    if (!user) throw new Error('로그인이 필요합니다.');
+    return placeClickerOrder({
+      layout,
+      mode,
+      slots: design.slots,
+      span: design.span,
+      photos: photoMap,
+      caseColor,
+      keycapColor,
+      showRing,
+      previewDataUrl: viewerApiRef.current?.capture() ?? null,
+      customer,
+      userEmail: user.email ?? '',
+    });
   };
 
   /** 키캡 윗면에 올라가는 사진만, 맞춰 둔 그대로 인쇄면 크기로 잘라 저장한다 */
@@ -1322,6 +1602,9 @@ export default function ClickerPage() {
               </dd>
             </div>
           </dl>
+          <button type="button" className={styles.outlineBtn} onClick={handleSaveImage}>
+            미리보기 이미지 저장
+          </button>
           <button type="button" className={styles.outlineBtn} onClick={handleSaveFaces} disabled={isExportingFaces}>
             {isExportingFaces ? '사진을 자르는 중…' : '키캡 사진만 잘라서 저장'}
           </button>
@@ -1335,11 +1618,14 @@ export default function ClickerPage() {
         </section>
 
         <section className={styles.tips}>
-          <h3>체험 페이지 안내</h3>
+          <h3>안내</h3>
           <ul>
-            <li>지금은 꾸미기와 3D 미리보기만 해 볼 수 있는 체험 버전입니다</li>
-            <li>올린 사진은 어디에도 전송되거나 저장되지 않습니다</li>
-            <li>페이지를 새로 고치면 작업한 내용이 사라지니, 마음에 들면 이미지를 저장해 두세요</li>
+            <li>주문하기 전까지는 올린 사진이 서버로 전송되지 않습니다</li>
+            <li>주문하면 키캡에 들어갈 사진과 미리보기 이미지가 제작을 위해 MAKER3D로 전송됩니다</li>
+            <li>
+              만들던 내용은 이 기기(브라우저)에만 하루 동안 보관됩니다. 로그인하고 돌아오거나 새로 고쳐도 이어서 만들 수
+              있어요
+            </li>
           </ul>
         </section>
       </div>
@@ -1482,7 +1768,7 @@ export default function ClickerPage() {
 
   return (
     <div className={styles.container}>
-      <div className={`${styles.innerContainer} ${hasMoved ? styles.motionOn : ''}`}>
+      <div className={`${styles.innerContainer} ${hasMoved ? styles.motionOn : ''}`} inert={restoring}>
         <div className={styles.topBar}>
           {/* 좁은 화면에서는 첫 단계가 지나면 제목을 접어 편집 화면에 자리를 내준다 */}
           <h1 className={`${styles.title} ${step === 'type' ? '' : styles.titleCompact}`}>
@@ -1570,18 +1856,54 @@ export default function ClickerPage() {
               <ArrowIcon />
             </button>
           ) : (
-            <button type="button" className={`${styles.navNext} ${styles.navDone}`} onClick={handleSaveImage}>
-              미리보기 이미지 저장
+            <button type="button" className={`${styles.navNext} ${styles.navDone}`} onClick={handleOrder}>
+              주문하기
             </button>
           )}
         </div>
       </div>
+
+      {/* 보관해 둔 사진을 다시 불러오는 동안: 잠깐 가려 두고 기다리게 한다 */}
+      {restoring && (
+        <div className={styles.restoreVeil} role="status">
+          <span className={styles.restoreSpinner} aria-hidden="true" />
+          만들던 클리커를 불러오는 중…
+        </div>
+      )}
 
       {notice && (
         <div key={notice.id} className={styles.toast} role="status">
           {notice.text}
         </div>
       )}
+
+      {dialog && (
+        <LoginDialog
+          kind={dialog}
+          content={DIALOGS[dialog]}
+          busy={leavingToLogin}
+          onPrimary={goToLogin}
+          onClose={() => setDialog(null)}
+        />
+      )}
+
+      {/* 주문 정보 입력 (실시간 견적 · 키캡제작과 같은 창). 가격은 아직 정해져 있지 않아 상담 후 안내한다 */}
+      <OrderModal
+        isOpen={isOrderOpen}
+        onClose={() => setIsOrderOpen(false)}
+        onSubmit={() => {}}
+        onNaverPayOrder={submitOrder}
+        totalPrice={0}
+        fileCount={filledCount}
+        summaryItems={[
+          { label: '상품', value: `키보드 클리커 ${layout.label}` },
+          { label: '색상', value: `케이스 ${caseColor.name} · 키캡 ${keycapColor.name}` },
+          { label: '금액', value: '상담 후 안내' },
+        ]}
+        submitLabel="주문하기"
+        successTitle="주문 접수 완료"
+        successMessage="키보드 클리커 주문이 접수되었습니다."
+      />
     </div>
   );
 }

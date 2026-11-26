@@ -42,7 +42,16 @@ export type DesignAction =
   | { type: 'place'; index: number; placement: Placement }
   | { type: 'clear'; index: number }
   | { type: 'deletePhoto'; photoId: string }
-  | { type: 'reset' };
+  | { type: 'reset' }
+  /** 이 기기에 보관해 둔 내용을 되살린다 (draftStore). 사진은 미리 다시 불러 온 것을 넘긴다 */
+  | {
+      type: 'restore';
+      layoutId: ClickerLayoutId;
+      mode: PhotoMode;
+      photos: PhotoAsset[];
+      slots: (Placement | null)[];
+      span: Placement | null;
+    };
 
 export const initialDesign: DesignState = {
   layoutId: DEFAULT_LAYOUT_ID,
@@ -228,6 +237,24 @@ export function designReducer(state: DesignState, action: DesignAction): DesignS
 
     case 'reset':
       return { ...initialDesign, layoutId: state.layoutId, mode: state.mode };
+
+    case 'restore': {
+      const restoredLayout = getLayoutById(action.layoutId);
+      const photos = action.photos.slice(0, MAX_PHOTOS);
+      const byId = new Map(photos.map((photo) => [photo.id, photo]));
+      // 사진을 다시 불러오지 못한 배치는 버리고, 남은 배치는 허용 범위 안으로 정리한다
+      const slots = Array.from({ length: MAX_KEYS }, (_, index) => {
+        const slot = action.slots[index] ?? null;
+        const photo = slot ? byId.get(slot.photoId) : undefined;
+        if (!slot || !photo) return null;
+        return index < restoredLayout.keys.length
+          ? clampPlacement(slot, photo, regionFor(restoredLayout, 'each', index))
+          : slot;
+      });
+      const spanPhoto = action.span ? byId.get(action.span.photoId) : undefined;
+      const span = action.span && spanPhoto ? clampPlacement(action.span, spanPhoto, spanRegion(restoredLayout)) : null;
+      return { layoutId: restoredLayout.id, mode: action.mode, photos, slots, span, selected: null };
+    }
 
     default:
       return state;

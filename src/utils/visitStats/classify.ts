@@ -262,8 +262,11 @@ const PAGE_LABELS: Record<string, string> = {
   '/notice': '공지사항',
   '/notice/[id]': '공지사항 글',
   '/intro': '소개',
-  '/cliker': '클리커 꾸미기',
-  '/shapecliker': '쉐이프 클리커',
+  '/clicker': '클리커 꾸미기',
+  '/shapeclicker': '쉐이프 클리커',
+  // 2026-11-26 에 주소를 바꾸기 전의 이름. 그 전에 쌓인 기록은 이 이름으로 남아 있다
+  '/cliker': '클리커 꾸미기 (옛 주소)',
+  '/shapecliker': '쉐이프 클리커 (옛 주소)',
   '/makekeycap': '키캡 제작',
   '/freenoticeboard': '자유게시판',
   '/freenoticeboard/[id]': '자유게시판 글',

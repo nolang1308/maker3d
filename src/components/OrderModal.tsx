@@ -10,6 +10,13 @@ interface OrderModalProps {
   onNaverPayOrder: (data: CustomerInfo) => Promise<string>; // 주문번호 반환
   totalPrice: number;
   fileCount: number;
+  /** 주문 요약에 보여 줄 줄. 주지 않으면 "파일 개수 · 총 금액" 두 줄을 보여 준다 */
+  summaryItems?: { label: string; value: string }[];
+  /** 보내기 버튼의 글자. 주지 않으면 "견적 보내기" */
+  submitLabel?: string;
+  /** 접수된 뒤 화면의 제목과 안내. 주지 않으면 견적 요청용 문구 */
+  successTitle?: string;
+  successMessage?: string;
 }
 
 export interface CustomerInfo {
@@ -24,7 +31,11 @@ export default function OrderModal({
   onSubmit,
   onNaverPayOrder,
   totalPrice,
-  fileCount
+  fileCount,
+  summaryItems,
+  submitLabel = '견적 보내기',
+  successTitle = '견적 요청 완료',
+  successMessage = '견적 요청이 성공적으로 접수되었습니다.',
 }: OrderModalProps) {
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -116,12 +127,15 @@ export default function OrderModal({
     }
 
     setIsSubmitting(true);
+    setErrors({});
     try {
       const resultOrderNumber = await onNaverPayOrder({ name, phoneNumber, email });
       setOrderNumber(resultOrderNumber);
       setIsSuccess(true);
     } catch (error) {
       console.error('주문 처리 오류:', error);
+      // 접수되지 않았다는 것을 알린다 (아무 말 없이 멈춰 있으면 접수된 줄 알 수 있다)
+      setErrors({ submit: '접수하지 못했습니다. 잠시 후 다시 시도해 주세요.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -156,9 +170,9 @@ export default function OrderModal({
         <div className={styles.successModal} onClick={(e) => e.stopPropagation()}>
           <div className={styles.successContent}>
             <div className={styles.successIcon}>✓</div>
-            <h2 className={styles.successTitle}>견적 요청 완료</h2>
+            <h2 className={styles.successTitle}>{successTitle}</h2>
             <p className={styles.successMessage}>
-              견적 요청이 성공적으로 접수되었습니다.
+              {successMessage}
             </p>
             <div className={styles.orderNumberBox}>
               <span className={styles.orderNumberLabel}>주문번호</span>
@@ -193,14 +207,25 @@ export default function OrderModal({
         <div className={styles.content}>
           <div className={styles.orderSummary}>
             <p className={styles.summaryTitle}>주문 요약</p>
-            <div className={styles.summaryItem}>
-              <span>파일 개수</span>
-              <span>{fileCount}개</span>
-            </div>
-            <div className={styles.summaryItem}>
-              <span>총 금액</span>
-              <span className={styles.price}>₩ {totalPrice.toLocaleString()}</span>
-            </div>
+            {summaryItems ? (
+              summaryItems.map((item) => (
+                <div key={item.label} className={styles.summaryItem}>
+                  <span>{item.label}</span>
+                  <span>{item.value}</span>
+                </div>
+              ))
+            ) : (
+              <>
+                <div className={styles.summaryItem}>
+                  <span>파일 개수</span>
+                  <span>{fileCount}개</span>
+                </div>
+                <div className={styles.summaryItem}>
+                  <span>총 금액</span>
+                  <span className={styles.price}>₩ {totalPrice.toLocaleString()}</span>
+                </div>
+              </>
+            )}
           </div>
 
           <div className={styles.divider}></div>
@@ -302,6 +327,11 @@ export default function OrderModal({
               </div>
               {errors.agreement && <span className={styles.errorText}>{errors.agreement}</span>}
             </div>
+            {errors.submit && (
+              <span className={styles.errorText} role="alert">
+                {errors.submit}
+              </span>
+            )}
           </div>
         </div>
 
@@ -314,7 +344,7 @@ export default function OrderModal({
             onClick={handleSubmit}
             disabled={!isAgreed || !isOrderConfirmed || isSubmitting}
           >
-            {isSubmitting ? '처리 중...' : '견적 보내기'}
+            {isSubmitting ? '처리 중...' : submitLabel}
           </button>
         </div>
       </div>

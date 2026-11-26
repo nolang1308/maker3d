@@ -37,6 +37,26 @@ export const QuoteIcon = () => (
   </svg>
 );
 
+// 키캡 모양 (바깥 테두리 + 손가락이 닿는 윗면. 윗면을 위로 올려 앞쪽 옆면이 보이게 한다)
+export const ClickerIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+    <rect x="1.5" y="1.5" width="19" height="19" rx="4.5" stroke="white" strokeWidth="2" />
+    <rect x="5" y="4" width="12" height="10" rx="2.5" stroke="white" strokeWidth="2" />
+  </svg>
+);
+
+// 네모가 아닌 모양 (쉐이프 클리커: 올린 로고의 모양대로 만들어진다는 뜻으로 별 모양을 쓴다)
+export const ShapeClickerIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+    <path
+      d="M11 2.5 13.47 8.1l6.09.62-4.57 4.08 1.3 5.98L11 15.7l-5.29 3.08 1.3-5.98L2.44 8.72l6.09-.62L11 2.5Z"
+      stroke="white"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 export const KakaoIcon = () => (
   <svg width="19" height="22" viewBox="0 0 21 21" fill="none" aria-hidden="true">
     <path

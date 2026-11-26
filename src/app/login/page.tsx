@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { takeAfterLogin } from '@/utils/afterLogin';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -30,7 +31,8 @@ export default function LoginPage() {
 
         try {
             await signIn(email, password);
-            router.push('/'); // 메인 페이지로 이동
+            // 하던 일이 있어 로그인하러 온 경우(예: 클리커 만들기)에는 그 자리로, 아니면 메인 페이지로
+            router.push(takeAfterLogin() ?? '/');
         } catch (error: any) {
             console.error('로그인 에러:', error);
             

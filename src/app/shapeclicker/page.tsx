@@ -1,11 +1,12 @@
 'use client';
 
 /**
- * 쉐이프 클리커 만들기 (체험 페이지)
+ * 쉐이프 클리커 만들기
  *
  * 로고 그림을 올리면 그 모양대로 몸체 · 스위치 자리 · 누르는 곳을 만들어 3D 로 보여준다.
- * 계산은 전부 브라우저 안에서 하고, 올린 그림은 어디에도 보내지 않는다.
- * 화면 구성과 모양새는 /cliker 와 같게 맞춘다 (스타일도 그쪽 것을 함께 쓴다).
+ * 계산은 전부 브라우저 안에서 한다. 올린 그림은 주문하기 전까지 어디에도 보내지 않고,
+ * 주문하면 출력용 파일 · 로고 그림 · 미리보기를 주문 폴더에 올린다 (utils/shapeClicker/order).
+ * 화면 구성 · 로그인 안내 · 만들던 내용 보관 · 주문은 /clicker 와 같게 맞춘다 (스타일도 그쪽 것을 함께 쓴다).
  */
 
 import dynamic from 'next/dynamic';
@@ -22,9 +23,15 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import base from '../cliker/page.module.scss';
+import { useRouter } from 'next/navigation';
+import base from '../clicker/page.module.scss';
 import styles from './page.module.scss';
 import { useAuth } from '@/contexts/AuthContext';
+import { clearAfterLogin, setAfterLogin } from '@/utils/afterLogin';
+import { loadShapeDraft, saveShapeDraft } from '@/utils/shapeClicker/draftStore';
+import { placeShapeClickerOrder } from '@/utils/shapeClicker/order';
+import OrderModal, { CustomerInfo } from '@/components/OrderModal';
+import LoginDialog, { type LoginDialogContent, type LoginDialogKind } from '@/components/clicker/LoginDialog';
 import type { ShapeClickerViewerApi } from '@/components/ShapeClickerViewer';
 import {
   computeShape,
@@ -71,7 +78,7 @@ const STEPS = [
     id: 'finish',
     label: '색상 · 완성',
     title: '색을 고르고 완성된 모습을 확인하세요',
-    description: '돌려 보고, 눌러 보고, 분해해서 안쪽까지 확인해 보세요.',
+    description: '돌려 보고, 눌러 보면서 완성된 모습을 확인해 보세요.',
   },
 ] as const;
 
@@ -79,7 +86,38 @@ type StepId = (typeof STEPS)[number]['id'];
 const isStepId = (value: string | null): value is StepId => STEPS.some((s) => s.id === value);
 
 // ---------------------------------------------------------------------------
-// 선택지 (색은 /cliker 와 같은 목록)
+// 로그인 안내 창 (/clicker 와 같은 창, 글만 다르다)
+//   entry : 로그인하지 않고 들어왔을 때. 로그인하거나, 그냥 만들어 보거나
+//   order : 로그인하지 않고 주문하기를 눌렀을 때
+// ---------------------------------------------------------------------------
+
+const DIALOGS: Record<LoginDialogKind, LoginDialogContent> = {
+  entry: {
+    title: '로그인하고 시작할까요?',
+    lines: [
+      <>
+        쉐이프 클리커를 만들고 <strong>주문까지 완료하려면 로그인이 필요해요.</strong>
+      </>,
+      '로그인하지 않아도 클리커를 만들어 볼 수는 있어요. 만들던 내용은 이 기기에 보관되니, 나중에 로그인해도 이어서 할 수 있어요.',
+    ],
+    primary: '로그인',
+    secondary: '그냥 할래요',
+  },
+  order: {
+    title: '주문하려면 로그인이 필요해요',
+    lines: [
+      '지금까지 만든 클리커는 이 기기에 그대로 보관돼요.',
+      '로그인(또는 회원가입)하고 돌아오면 이어서 주문할 수 있어요.',
+    ],
+    primary: '로그인하러 가기',
+    secondary: '계속 만들기',
+  },
+};
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+// ---------------------------------------------------------------------------
+// 선택지 (색은 /clicker 와 같은 목록)
 // ---------------------------------------------------------------------------
 
 interface ColorChoice {
@@ -271,7 +309,8 @@ function TopView({
 // ---------------------------------------------------------------------------
 
 export default function ShapeClickerPage() {
-  const { userRole } = useAuth();
+  const router = useRouter();
+  const { user, userRole, loading: authLoading } = useAuth();
   // 예시 모양은 캔버스로 그리므로 브라우저에서만 만든다 (서버에서 그릴 때는 비워 둔다)
   const mounted = useSyncExternalStore(
     noSubscribe,
@@ -297,7 +336,6 @@ export default function ShapeClickerPage() {
 
   const [bodyColor, setBodyColor] = useState<ColorChoice>(BODY_COLORS[3]);
   const [capColor, setCapColor] = useState<ColorChoice>(CAP_COLORS[0]);
-  const [exploded, setExploded] = useState(false);
 
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -307,6 +345,27 @@ export default function ShapeClickerPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const viewerApiRef = useRef<ShapeClickerViewerApi | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
+
+  // 로그인 여부와 안내 창
+  const [dialog, setDialog] = useState<LoginDialogKind | null>(null);
+  /** 들어올 때의 안내 창은 한 번만 띄운다 ("그냥 할래요"를 고른 뒤 다시 뜨지 않게) */
+  const entryAsked = useRef(false);
+  const [leavingToLogin, setLeavingToLogin] = useState(false);
+  /** 주문 정보 입력 창 (로그인한 사람이 주문하기를 눌렀을 때) */
+  const [isOrderOpen, setIsOrderOpen] = useState(false);
+
+  // 만들던 내용을 이 기기에 보관하기 (utils/shapeClicker/draftStore)
+  /** 보관해 둔 로고를 다시 불러오는 동안 */
+  const [restoring, setRestoring] = useState(false);
+  /** 보관해 둔 내용을 다 읽은 뒤에만 보관을 시작한다 (읽기 전에 빈 상태로 덮어쓰지 않게) */
+  const persistReady = useRef(false);
+  /** 올린 로고의 원본 파일. 보관함에 넣을 때 쓴다 */
+  const uploadedFile = useRef<Blob | null>(null);
+  /** 보관함에 들어 있는 로고가 어느 것인지 (LogoAsset.id). 없으면 null */
+  const persistedLogoId = useRef<string | null>(null);
+  /** 보관 작업을 한 줄로 세운다 (앞의 것이 끝난 뒤 다음 것) */
+  const saveChain = useRef<Promise<void>>(Promise.resolve());
+  const saveFailedOnce = useRef(false);
 
   const notify = useCallback((text: string) => setNotice({ id: Date.now(), text }), []);
 
@@ -352,7 +411,8 @@ export default function ShapeClickerPage() {
     };
   }, [adjusting]);
 
-  // 뒤로 · 앞으로 가기로 단계를 오간다. 새로 고치면 작업이 사라지므로 주소에 남은 단계는 지운다
+  // 뒤로 · 앞으로 가기로 단계를 오간다.
+  // 첫 단계에서 시작한다. 보관해 둔 내용이 있으면 아래에서 되살린 뒤 하던 단계로 옮겨 간다
   useEffect(() => {
     if (window.location.search) window.history.replaceState(null, '', window.location.pathname);
     const onPop = () => {
@@ -451,6 +511,7 @@ export default function ShapeClickerPage() {
       const asset = await loadLogoFile(file);
       // 올린 그림으로 실제로 모양이 만들어지는지 먼저 확인한다 (빈 그림 등)
       computeShape(asset.source, { sizeMm, marginMm, switchAt: null, lug: showRing, lugAngle: null, draft: true });
+      uploadedFile.current = file;
       setUploaded(asset);
       resetPlacement();
       notify(
@@ -478,9 +539,195 @@ export default function ShapeClickerPage() {
   };
 
   const pickSample = (id: SampleId) => {
+    uploadedFile.current = null;
     setUploaded(null);
     setSampleId(id);
     resetPlacement();
+  };
+
+  // -------------------------------------------------------------------------
+  // 만들던 내용 보관 · 되살리기 (로그인 · 회원가입을 하고 돌아와도 이어서 만들 수 있게)
+  // -------------------------------------------------------------------------
+
+  // 보관할 때 가장 최근 상태를 보기 위한 참조
+  const persistSource = useRef({ step, uploaded, sampleId, sizeMm, marginMm, switchAt, showRing, lugAngle, bodyColor, capColor });
+  useEffect(() => {
+    persistSource.current = { step, uploaded, sampleId, sizeMm, marginMm, switchAt, showRing, lugAngle, bodyColor, capColor };
+  });
+
+  /** 지금 상태를 이 기기에 보관한다. 로고 파일은 바뀌었을 때만 다시 넣는다 */
+  const persistNow = useCallback((): Promise<void> => {
+    if (!persistReady.current) return Promise.resolve();
+    saveChain.current = saveChain.current.then(async () => {
+      const now = persistSource.current;
+      const file = now.uploaded ? uploadedFile.current : null;
+      const logoId = now.uploaded && file ? now.uploaded.id : null;
+      try {
+        await saveShapeDraft(
+          {
+            step: now.step,
+            logoName: logoId !== null && now.uploaded ? now.uploaded.name : null,
+            sampleId: now.sampleId,
+            sizeMm: now.sizeMm,
+            marginMm: now.marginMm,
+            switchAt: now.switchAt,
+            showRing: now.showRing,
+            lugAngle: now.lugAngle,
+            bodyColor: now.bodyColor.hex,
+            capColor: now.capColor.hex,
+          },
+          logoId === persistedLogoId.current ? 'keep' : logoId !== null && file ? file : 'remove',
+        );
+        persistedLogoId.current = logoId;
+      } catch (err) {
+        console.warn('만들던 내용을 보관하지 못했습니다:', err);
+        if (!saveFailedOnce.current) {
+          saveFailedOnce.current = true;
+          setNotice({
+            id: Date.now(),
+            text: '이 기기의 저장 공간이 부족해 만들던 내용을 보관하지 못했어요. 페이지를 떠나면 사라질 수 있어요.',
+          });
+        }
+      }
+    });
+    return saveChain.current;
+  }, []);
+
+  // 들어왔을 때: 보관해 둔 내용이 있으면 되살린다
+  useEffect(() => {
+    // 로그인하고 돌아왔으면(또는 그냥 돌아왔으면) "로그인 뒤 돌아올 곳" 기록은 더 필요 없다
+    clearAfterLogin();
+    let cancelled = false;
+
+    (async () => {
+      const saved = await loadShapeDraft();
+      if (cancelled) return;
+      if (!saved) {
+        persistReady.current = true;
+        return;
+      }
+      const { draft, logoFile } = saved;
+
+      let asset: LogoAsset | null = null;
+      if (draft.logoName !== null && logoFile) {
+        setRestoring(true);
+        try {
+          // 보관함에서 꺼낸 것은 올렸던 파일 그대로다 (이름 · 형식이 남아 있다). 이름이 없는 경우에만 붙여 준다
+          asset = await loadLogoFile(
+            logoFile instanceof File ? logoFile : new File([logoFile], draft.logoName, { type: logoFile.type }),
+          );
+        } catch (err) {
+          console.warn('보관해 둔 로고를 다시 열지 못했습니다:', draft.logoName, err);
+        }
+        if (cancelled) return;
+      }
+
+      if (asset) {
+        uploadedFile.current = logoFile;
+        persistedLogoId.current = asset.id;
+        setUploaded(asset);
+      }
+      const savedSample = SAMPLES.find((item) => item.id === draft.sampleId);
+      if (savedSample) setSampleId(savedSample.id);
+      setSizeMm(clamp(draft.sizeMm, SHAPE_SPEC.size.min, SHAPE_SPEC.size.max));
+      setMarginMm(clamp(draft.marginMm, SHAPE_SPEC.margin.min, SHAPE_SPEC.margin.max));
+      setSwitchAt(draft.switchAt);
+      setShowRing(draft.showRing);
+      setLugAngle(draft.lugAngle);
+      setBodyColor(BODY_COLORS.find((color) => color.hex === draft.bodyColor) ?? BODY_COLORS[3]);
+      setCapColor(CAP_COLORS.find((color) => color.hex === draft.capColor) ?? CAP_COLORS[0]);
+
+      // 하던 단계로 돌아간다 (올렸던 로고를 되살리지 못했으면 로고 올리기부터)
+      const wanted: StepId = isStepId(draft.step) ? draft.step : 'logo';
+      const target: StepId = draft.logoName !== null && !asset ? 'logo' : wanted;
+      setStep(target);
+      window.history.replaceState(null, '', target === 'logo' ? window.location.pathname : `?step=${target}`);
+
+      persistReady.current = true;
+      setRestoring(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // 바뀔 때마다 조금 뒤에 보관한다 (슬라이더를 끄는 동안 매번 쓰지 않게)
+  useEffect(() => {
+    if (!persistReady.current) return;
+    const timer = window.setTimeout(() => void persistNow(), 400);
+    return () => window.clearTimeout(timer);
+  }, [step, uploaded, sampleId, sizeMm, marginMm, switchAt, showRing, lugAngle, bodyColor, capColor, persistNow]);
+
+  // 페이지를 떠나거나 탭을 닫을 때는 기다리지 않고 바로 보관한다
+  useEffect(() => {
+    const flush = () => void persistNow();
+    window.addEventListener('pagehide', flush);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      flush();
+    };
+  }, [persistNow]);
+
+  // -------------------------------------------------------------------------
+  // 로그인 안내 · 주문
+  // -------------------------------------------------------------------------
+
+  // 로그인하지 않고 들어왔으면 안내 창을 띄운다. 로그인 여부를 확인하는 동안에는 띄우지 않는다
+  useEffect(() => {
+    if (authLoading) return;
+    if (user) {
+      // 다른 탭에서 로그인한 경우 등: 로그인을 권하던 창은 닫는다
+      setDialog(null);
+      return;
+    }
+    if (!entryAsked.current) {
+      entryAsked.current = true;
+      setDialog('entry');
+    }
+  }, [authLoading, user]);
+
+  /** 로그인 페이지로 보낸다. 만들던 내용을 먼저 보관하고, 로그인하면 이 페이지로 돌아오게 적어 둔다 */
+  const goToLogin = async () => {
+    if (leavingToLogin) return;
+    setLeavingToLogin(true);
+    await persistNow();
+    setAfterLogin('/shapeclicker');
+    router.push('/login');
+  };
+
+  const handleOrder = () => {
+    if (!design) {
+      notify(shape.error ?? '모양이 만들어진 뒤에 주문할 수 있어요.');
+      return;
+    }
+    // 로그인 여부를 아직 확인하는 중이면 잠깐 기다리게 한다
+    if (authLoading) {
+      notify('로그인 상태를 확인하고 있어요. 잠시 후 다시 눌러 주세요.');
+      return;
+    }
+    if (user) setIsOrderOpen(true);
+    else setDialog('order');
+  };
+
+  /**
+   * 주문을 넣는다 (주문 정보 입력 창에서 이름 · 연락처를 받은 뒤).
+   * 출력용 파일 · 로고 그림 · 미리보기를 주문 폴더에 올리고 주문 문서를 만든다. 관리자 주문관리에 바로 나타난다.
+   * 알림 메일은 보내지 않는다.
+   */
+  const submitOrder = async (customer: CustomerInfo): Promise<string> => {
+    if (!user) throw new Error('로그인이 필요합니다.');
+    if (!logo) throw new Error('로고가 없습니다.');
+    return placeShapeClickerOrder({
+      logo,
+      sample: uploaded === null,
+      params,
+      bodyColor,
+      capColor,
+      previewDataUrl: viewerApiRef.current?.capture() ?? null,
+      customer,
+      userEmail: user.email ?? '',
+    });
   };
 
   // ----- 저장 -----
@@ -637,7 +884,7 @@ export default function ShapeClickerPage() {
           <li>윤곽이 뚜렷하고 한 덩어리로 이어진 모양 (심볼, 캐릭터, 아이콘)</li>
           <li>큰 그림일수록 윗면이 또렷합니다 (긴 쪽 {RECOMMENDED_LOGO_PIXELS}px 이상 또는 SVG 권장)</li>
           <li>글자만 있는 로고처럼 조각이 떨어져 있으면 자동으로 이어 붙입니다</li>
-          <li>올린 그림은 어디에도 전송되거나 저장되지 않습니다</li>
+          <li>주문하기 전까지는 올린 그림이 서버로 전송되지 않습니다</li>
         </ul>
       </section>
     </div>
@@ -877,6 +1124,9 @@ export default function ShapeClickerPage() {
             </dd>
           </div>
         </dl>
+        <button type="button" className={base.outlineBtn} onClick={handleSaveImage}>
+          미리보기 이미지 저장
+        </button>
         {userRole === 'admin' && (
           <>
             <button type="button" className={base.outlineBtn} onClick={handleSaveStl} disabled={isExporting || !design}>
@@ -893,11 +1143,14 @@ export default function ShapeClickerPage() {
       </section>
 
       <section className={base.tips}>
-        <h3>체험 페이지 안내</h3>
+        <h3>안내</h3>
         <ul>
-          <li>지금은 모양 만들기와 3D 미리보기만 해 볼 수 있는 체험 버전입니다</li>
-          <li>올린 그림은 어디에도 전송되거나 저장되지 않습니다</li>
-          <li>페이지를 새로 고치면 작업한 내용이 사라지니, 마음에 들면 이미지를 저장해 두세요</li>
+          <li>주문하기 전까지는 올린 그림이 서버로 전송되지 않습니다</li>
+          <li>주문하면 만든 모양(출력용 파일)과 로고 그림, 미리보기 이미지가 제작을 위해 MAKER3D로 전송됩니다</li>
+          <li>
+            만들던 내용은 이 기기(브라우저)에만 하루 동안 보관됩니다. 로그인하고 돌아오거나 새로 고쳐도 이어서 만들 수
+            있어요
+          </li>
         </ul>
       </section>
     </div>
@@ -916,7 +1169,7 @@ export default function ShapeClickerPage() {
       )
     ) : step === 'shape' ? (
       <>
-        <strong>분해해서 보기</strong>를 누르면 스위치가 들어가는 자리와 누르는 곳의 안쪽을 볼 수 있어요.
+        크기와 여백을 바꾸면 3D 모습도 바로 바뀝니다. <strong>스위치 자리는 &lsquo;위에서 본 모습&rsquo; 그림에서 끌어 옮길 수 있어요.</strong>
       </>
     ) : (
       <>
@@ -930,7 +1183,7 @@ export default function ShapeClickerPage() {
 
   return (
     <div className={base.container}>
-      <div className={`${base.innerContainer} ${hasMoved ? base.motionOn : ''}`}>
+      <div className={`${base.innerContainer} ${hasMoved ? base.motionOn : ''}`} inert={restoring}>
         <div className={base.topBar}>
           {/* 좁은 화면에서는 첫 단계가 지나면 제목을 접어 3D 화면에 자리를 내준다 */}
           <h1 className={`${base.title} ${step === 'logo' ? '' : base.titleCompact}`}>
@@ -1005,19 +1258,10 @@ export default function ShapeClickerPage() {
                       showRing={showRing}
                       face={face}
                       artRect={logo?.artRect}
-                      exploded={exploded}
                       onApi={handleViewerApi}
                     />
                   </div>
                   <div className={base.viewerActions}>
-                    <button
-                      type="button"
-                      className={`${base.ghostBtn} ${exploded ? styles.ghostOn : ''}`}
-                      aria-pressed={exploded}
-                      onClick={() => setExploded((v) => !v)}
-                    >
-                      {exploded ? '다시 조립하기' : '분해해서 보기'}
-                    </button>
                     <button type="button" className={base.ghostBtn} onClick={() => viewerApiRef.current?.resetView()}>
                       시점 초기화
                     </button>
@@ -1062,18 +1306,60 @@ export default function ShapeClickerPage() {
               <ArrowIcon />
             </button>
           ) : (
-            <button type="button" className={`${base.navNext} ${base.navDone}`} onClick={handleSaveImage}>
-              미리보기 이미지 저장
+            <button type="button" className={`${base.navNext} ${base.navDone}`} onClick={handleOrder}>
+              주문하기
             </button>
           )}
         </div>
       </div>
+
+      {/* 보관해 둔 로고를 다시 불러오는 동안: 잠깐 가려 두고 기다리게 한다 */}
+      {restoring && (
+        <div className={base.restoreVeil} role="status">
+          <span className={base.restoreSpinner} aria-hidden="true" />
+          만들던 클리커를 불러오는 중…
+        </div>
+      )}
 
       {notice && (
         <div key={notice.id} className={base.toast} role="status">
           {notice.text}
         </div>
       )}
+
+      {dialog && (
+        <LoginDialog
+          kind={dialog}
+          content={DIALOGS[dialog]}
+          busy={leavingToLogin}
+          onPrimary={goToLogin}
+          onClose={() => setDialog(null)}
+        />
+      )}
+
+      {/* 주문 정보 입력 (실시간 견적 · 키보드 클리커와 같은 창). 가격은 아직 정해져 있지 않아 상담 후 안내한다 */}
+      <OrderModal
+        isOpen={isOrderOpen}
+        onClose={() => setIsOrderOpen(false)}
+        onSubmit={() => {}}
+        onNaverPayOrder={submitOrder}
+        totalPrice={0}
+        fileCount={1}
+        summaryItems={[
+          { label: '상품', value: '쉐이프 클리커' },
+          {
+            label: '크기',
+            value: design
+              ? `약 ${design.size.width.toFixed(1)} × ${design.size.depth.toFixed(1)} × ${design.size.height.toFixed(1)} mm`
+              : '-',
+          },
+          { label: '색상', value: `몸체 ${bodyColor.name} · 누르는 곳 ${capColor.name}` },
+          { label: '금액', value: '상담 후 안내' },
+        ]}
+        submitLabel="주문하기"
+        successTitle="주문 접수 완료"
+        successMessage="쉐이프 클리커 주문이 접수되었습니다."
+      />
     </div>
   );
 }

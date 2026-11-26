@@ -321,12 +321,12 @@ export function buildCapGeometries(
 
 export interface ShapeClickerModel {
   group: THREE.Group;
-  /** 누르는 곳. 누르거나 분해해서 볼 때 위아래로 움직인다 */
+  /** 누르는 곳. 누르면 위아래로 움직인다 */
   cap: THREE.Group;
   capRestY: number;
   switchPart: THREE.Mesh;
   switchRestY: number;
-  /** 키링 (분해해서 볼 때는 숨긴다) */
+  /** 키링 */
   ring: THREE.Mesh | null;
   setColors(bodyHex: string, capHex: string): void;
   /** 뚜껑 윗면 그림 (null 이면 뚜껑 색 그대로) */
@@ -365,7 +365,7 @@ export function buildShapeClickerModel(design: ShapeDesign, options: ShapeClicke
     return mesh;
   };
 
-  // 재질은 /cliker 의 케이스 · 키캡 · 스위치와 같게 맞춘다
+  // 재질은 /clicker 의 케이스 · 키캡 · 스위치와 같게 맞춘다
   const bodyMaterial = material(new THREE.MeshStandardMaterial({ color: options.bodyColor, roughness: 0.46, metalness: 0 }));
   const capMaterial = material(new THREE.MeshStandardMaterial({ color: options.capColor, roughness: 0.6, metalness: 0 }));
   const faceMaterial = material(new THREE.MeshStandardMaterial({ color: options.capColor, roughness: 0.68, metalness: 0 }));
