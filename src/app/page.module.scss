@@ -45,7 +45,7 @@
 
       .storeButton {
         gap: 10px;
-        width: 108px;
+        width: 162px;
         height: 80px;
         background-color: #2493D8;
         border-radius: 12px;
@@ -78,7 +78,7 @@
 
       .checkQuoteButton {
         gap: 10px;
-        width: 175px;
+        width: 229px;
         height: 80px;
         background-color: #2493D8;
         border-radius: 12px;
@@ -109,49 +109,11 @@
         }
       }
 
-      // 키보드 클리커 만들기(/clicker) · 쉐이프 클리커 만들기(/shapeclicker)로 가는 버튼.
-      // 서비스 버튼(파란색) 묶음의 세 번째 · 네 번째. 둘은 같은 모양이라 규칙을 함께 쓴다.
-      //
-      // 버튼 여섯 개의 폭은 "글자 + 아이콘 + 양옆 여백 약 16px"로 맞춘 값이다.
-      // 합이 939px 이라 사이 간격(12px × 5)을 더하면 한 줄(999px)에 딱 맞는다.
-      // 버튼을 더하거나 글자를 바꾸면 여섯 개의 폭을 다시 맞춰야 한다 (넘치면 줄이 삐져나온다).
-      .clickerButton,
-      .shapeClickerButton {
-        gap: 10px;
-        width: 160px;
-        height: 80px;
-        background-color: #2493D8;
-        border-radius: 12px;
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
-        box-shadow: 0 2px 30px rgba(0, 0, 0, 0.25);
-        cursor: pointer;
-        text-decoration: none;
-        color: inherit;
 
-        &:visited {
-          color: inherit;
-        }
-
-        &:hover {
-          color: inherit;
-        }
-
-        @media (max-width: 1024px) {
-          width: 100%;
-          height: 60px;
-        }
-
-        .storeButtonText {
-          @include title-small();
-        }
-      }
 
       .kakaoRequestButton {
         gap: 10px;
-        width: 190px;
+        width: 194px;
         height: 80px;
         background-color: white;
         border-radius: 12px;
@@ -176,7 +138,7 @@
 
       .naverTalkButton {
         gap: 10px;
-        width: 146px;
+        width: 194px;
         height: 80px;
         background-color: white;
         border-radius: 12px;
@@ -950,10 +912,6 @@ $home-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
     &:nth-child(5) {
       animation-delay: 0.58s;
-    }
-
-    &:nth-child(6) {
-      animation-delay: 0.65s;
     }
 
     &:hover {
